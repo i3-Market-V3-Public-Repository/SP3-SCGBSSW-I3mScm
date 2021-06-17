@@ -2,6 +2,12 @@
 	"folders": [
 		{
 			"path": "diagrams"
+		},
+		{
+			"path": "i3m-scm-oas"
+		},
+		{
+			"path": "."
 		}
 	],
 	"settings": {}

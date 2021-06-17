@@ -11,6 +11,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "tplant": "^2.3.6"
+    "tplant": "^2.3.6",
+    "typeconv": "^1.4.1"
   }
 }

@@ -19,7 +19,7 @@ box "DLT" #white
   ' participant "AgreementA" as A
 end box
 
-SDK->>SCM++: POST /query { query: 'activeAgreements', filter: Filter }
+SDK->>SCM++: POST /query { query: 'agreements', filter: Filter }
 note left 
 For more information on the
 <i>Filter</i> type look into the 

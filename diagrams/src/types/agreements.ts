@@ -3,32 +3,30 @@ type DID = string
 type AgreementType = 'A' | 'B' | 'C'
 type AgreementState = 'active' | 'pause' | 'cancelled'
 
-interface BaseFilter {
-    type?: AgreementType
+type AgreementsFilter = Partial<Agreement>
+
+type AgreementField = keyof Agreement
+
+interface AgreementQueryArgs {
+  filter?: AgreementsFilter
+  fields: Array<AgreementField>
 }
 
-interface ProviderFilter extends BaseFilter {
-    providerId: DID
-    dataSetId?: string
+interface AgreementsQueryBody {
+  query: 'agreements'
+  args: AgreementQueryArgs
 }
 
-interface ConsumerFilter extends BaseFilter {
-    consumerId: DID
-}
-
-interface DataSetFilter extends BaseFilter {
-    dataSetId: string
-}
-
-interface ActiveAgreementsBody {
-    query: 'activeAgreements'
-    filter: ProviderFilter | ConsumerFilter | DataSetFilter
+interface ArgreementsQueryResponse {
+  agreements: Array<Partial<Agreement>>
 }
 
 interface Agreement {
-    type: AgreementState
-    cosumer: DID
-    provider: DID
-    recipe: string // hash
-    state: AgreementState
+  id: string
+  offeringId: string
+  cosumer: DID // Hello
+  provider: DID
+
+  type: AgreementType
+  state: AgreementState
 }
