@@ -1,0 +1,35 @@
+@startuml agreements-classes
+skinparam Shadowing false
+skinparam DefaultFontName Bitstream Vera Sans
+skinparam DefaultMonospacedFontName Bitstream Vera Sans Mono
+skinparam SequenceMessageAlign direction
+skinparam MaxMessageSize 250
+skinparam Style strictuml
+skinparam Monochrome true
+skinparam Dpi 300
+
+hide footbox
+
+interface AgreementQueryArgs {
+    +filter?: Partial<Agreement>
+    +fields: Array<keyof Agreement>
+}
+interface AgreementsQueryBody {
+    +query: "agreements"
+    +args: AgreementQueryArgs
+}
+interface ArgreementsQueryResponse {
+    +agreements: Partial<Agreement>[]
+}
+interface Agreement {
+    +id: string
+    +offeringId: string
+    +cosumer: string // DID of the consumer
+    +provider: string // DID of the provider
+    +type: AgreementType
+    +status: AgreementStatus // 'active' | 'pause' | 'violated' | 'terminated'
+}
+AgreementQueryArgs *-- Agreement
+AgreementsQueryBody *-- AgreementQueryArgs
+ArgreementsQueryResponse *-- Agreement
+@enduml

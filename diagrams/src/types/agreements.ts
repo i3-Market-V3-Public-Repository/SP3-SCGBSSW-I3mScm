@@ -1,7 +1,7 @@
 
 type DID = string
 type AgreementType = 'A' | 'B' | 'C'
-type AgreementState = 'active' | 'pause' | 'cancelled'
+type AgreementStatus = 'active' | 'pause' | 'violated' | 'terminated'
 
 type AgreementsFilter = Partial<Agreement>
 
@@ -28,5 +28,5 @@ interface Agreement {
   provider: DID
 
   type: AgreementType
-  state: AgreementState
+  status: AgreementStatus
 }
