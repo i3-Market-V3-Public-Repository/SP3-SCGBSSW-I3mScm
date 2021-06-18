@@ -7,14 +7,14 @@ type AgreementsFilter = Partial<Agreement>
 
 type AgreementField = keyof Agreement
 
-interface AgreementQueryArgs {
+interface AgreementsQueryArgs {
   filter?: AgreementsFilter
   fields: Array<AgreementField>
 }
 
 interface AgreementsQueryBody {
   query: 'agreements'
-  args: AgreementQueryArgs
+  args: AgreementsQueryArgs
 }
 
 interface ArgreementsQueryResponse {

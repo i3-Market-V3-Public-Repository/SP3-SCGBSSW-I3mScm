@@ -10,13 +10,13 @@ skinparam Dpi 300
 
 hide footbox
 
-interface AgreementQueryArgs {
+interface AgreementsQueryArgs {
     +filter?: Partial<Agreement>
     +fields: Array<keyof Agreement>
 }
 interface AgreementsQueryBody {
     +query: "agreements"
-    +args: AgreementQueryArgs
+    +args: AgreementsQueryArgs
 }
 interface ArgreementsQueryResponse {
     +agreements: Partial<Agreement>[]
@@ -29,7 +29,7 @@ interface Agreement {
     +type: AgreementType
     +status: AgreementStatus // 'active' | 'pause' | 'violated' | 'terminated'
 }
-AgreementQueryArgs *-- Agreement
-AgreementsQueryBody *-- AgreementQueryArgs
+AgreementsQueryArgs *-- Agreement
+AgreementsQueryBody *-- AgreementsQueryArgs
 ArgreementsQueryResponse *-- Agreement
 @enduml
