@@ -1,0 +1,329 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Smart Contract Manager API",
+    "description": "Smart Contract Manager API",
+    "license": {
+      "name": "Apache 2.0",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+    },
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "/"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "DataPurchase",
+      "description": "A purchase for Data Transfer."
+    },
+    {
+      "name": "Agreement",
+      "description": "Contractual Agreement between Provider and Consumer."
+    }
+  ],
+  "paths": {
+    "/{idOffering}": {
+      "get": {
+        "tags": [
+          "DataPurchase"
+        ],
+        "summary": "Create Data Purchase Request",
+        "parameters": [
+          {
+            "name": "idOffering",
+            "in": "path",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/query": {
+      "post": {
+        "tags": [
+          "Agreement"
+        ],
+        "summary": "Query agreements information",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/query_body"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/query_response"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/{idTemplate}": {
+      "get": {
+        "tags": [
+          "Agreement"
+        ],
+        "summary": "Request template with static and dynamic parameters",
+        "parameters": [
+          {
+            "name": "idTemplate",
+            "in": "path",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/create": {
+      "post": {
+        "tags": [
+          "Agreement"
+        ],
+        "summary": "Create agreement",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/create_body"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/update": {
+      "post": {
+        "tags": [
+          "Agreement"
+        ],
+        "summary": "Update agreement",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/update_body"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "update_body": {
+        "required": [
+          "agreement"
+        ],
+        "type": "object",
+        "properties": {
+          "agreement": {
+            "type": "object"
+          }
+        }
+      },
+      "create_body": {
+        "required": [
+          "proposal"
+        ],
+        "type": "object",
+        "properties": {
+          "proposal": {
+            "type": "object"
+          }
+        }
+      },
+      "query_body": {
+        "required": [
+          "args",
+          "query"
+        ],
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "args": {
+            "$ref": "#/components/schemas/query_args"
+          }
+        }
+      },
+      "query_args": {
+        "type": "object",
+        "properties": {
+          "filter": {
+            "$ref": "#/components/schemas/partial_agreement"
+          },
+          "fields": {
+            "type": "array",
+            "example": [
+              "id",
+              "dataSetId",
+              "consumer",
+              "type"
+            ],
+            "items": {
+              "type": "string",
+              "enum": [
+                "id",
+                "dataSetId",
+                "consumer",
+                "provider",
+                "type",
+                "status"
+              ]
+            }
+          }
+        }
+      },
+      "query_response": {
+        "type": "object",
+        "properties": {
+          "agreements": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/partial_agreement"
+            }
+          }
+        },
+        "required": [
+          "agreements"
+        ]
+      },
+      "agreement": {
+        "$ref": "#/components/schemas/partial_agreement",
+        "required": [
+          "id",
+          "dataSetId",
+          "consumer",
+          "provider",
+          "type",
+          "status"
+        ]
+      },
+      "partial_agreement": {
+        "type": "object",
+        "example": {
+          "provider": "did:ethr:0xb9c5714089478a327f09197987f16f9e5d936e8a",
+          "status": "active"
+        },
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "dataSetId": {
+            "type": "string"
+          },
+          "consumer": {
+            "$ref": "#/components/schemas/did"
+          },
+          "provider": {
+            "$ref": "#/components/schemas/did"
+          },
+          "type": {
+            "$ref": "#/components/schemas/agreement_type"
+          },
+          "status": {
+            "$ref": "#/components/schemas/agreement_status"
+          }
+        }
+      },
+      "agreement_type": {
+        "type": "string",
+        "enum": [
+          "A",
+          "B",
+          "C"
+        ]
+      },
+      "agreement_status": {
+        "type": "string",
+        "enum": [
+          "active",
+          "pause",
+          "violated",
+          "terminated"
+        ]
+      },
+      "did": {
+        "type": "string",
+        "example": "did:ethr:0xb9c5714089478a327f09197987f16f9e5d936e8a"
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}

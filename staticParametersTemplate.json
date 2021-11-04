@@ -1,0 +1,32 @@
+{
+    "dataOfferingId": "antoher_1",
+    "provider": "1",
+    "category": "other",
+    "contractParameters": [
+      {
+        "contractParametersId": "1_contractparameters2",
+        "interestOfProvider": "NA",
+        "interestDescription": "NA",
+        "hasGoverningJurisdiction": "NA",
+        "purpose": "NA",
+        "purposeDescription": "NA",
+        "hasIntendedUse": [
+          {
+            "intendedUseId": "1_intendeduse2",
+            "processData": "true OR false",
+            "shareDataWithThirdParty": "true OR false",
+            "editData": "true OR false"
+          }
+        ],
+        "hasLicenseGrant": [
+          {
+            "licenseGrantId": "1_licensegrant2",
+            "copyData": "true OR false",
+            "transferable": "true OR false",
+            "exclusiveness": "true OR false",
+            "revocable": "true OR false"
+          }
+        ]
+      }
+    ]
+}

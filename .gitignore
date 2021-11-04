@@ -1,1 +1,5 @@
-i3m-scm-oas
+src/node_modules
+src/out
+src/*.js
+src/routes/*.js
+.env
