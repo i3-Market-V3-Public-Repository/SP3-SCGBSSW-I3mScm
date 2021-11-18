@@ -115,7 +115,14 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/template"
+                }
+              }
+            }
           }
         }
       }
@@ -316,6 +323,157 @@
       "did": {
         "type": "string",
         "example": "did:ethr:0xb9c5714089478a327f09197987f16f9e5d936e8a"
+      },
+      "template": {
+        "type": "object",
+        "properties": {
+          "DataOfferingDescription": {
+            "type": "object",
+            "properties": {
+              "dataOfferingId": {
+                "type": "string"
+              },
+              "provider": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "category": {
+                "type": "string"
+              },
+              "isActive": {
+                "type": "boolean"
+              }
+            }
+          },
+          "Purpose": {
+            "type": "string"
+          },
+          "hasParties": {
+            "type": "object",
+            "properties": {
+              "Parties": {
+                "type": "object",
+                "properties": {
+                  "dataProvider": {
+                    "type": "string"
+                  },
+                  "dataConsumer": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "hasDuration": {
+            "type": "object",
+            "properties": {
+              "Duration": {
+                "type": "object",
+                "properties": {
+                  "creationDate": {
+                    "type": "string"
+                  },
+                  "startDate": {
+                    "type": "string"
+                  },
+                  "endDate": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "hasDuties/Obligations": {
+            "type": "object",
+            "properties": {
+              "Duties/Obligations": {
+                "type": "object",
+                "properties": {
+                  "qualityofData": {
+                    "type": "integer"
+                  },
+                  "characteristics": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "dataAvailability": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          },
+          "hasDescriptionOfData": {
+            "type": "object",
+            "properties": {
+              "DescriptionOfData": {
+                "type": "object",
+                "properties": {
+                  "dataType": {
+                    "type": "string"
+                  },
+                  "dataFormat": {
+                    "type": "string"
+                  },
+                  "dataSource": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "hasIntendedUse": {
+            "type": "object",
+            "properties": {
+              "IntendedUse": {
+                "type": "object",
+                "properties": {
+                  "processData": {
+                    "type": "boolean"
+                  },
+                  "shareDataWithThirdParty": {
+                    "type": "boolean"
+                  },
+                  "editData": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          },
+          "hasLicenseGrant": {
+            "type": "object",
+            "properties": {
+              "LicenseGrant": {
+                "type": "object",
+                "properties": {
+                  "copyData": {
+                    "type": "boolean"
+                  },
+                  "transferable": {
+                    "type": "boolean"
+                  },
+                  "exclusiveness": {
+                    "type": "boolean"
+                  },
+                  "revocable": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          },
+          "DataStream": {
+            "type": "boolean"
+          }
+        }
       }
     },
     "securitySchemes": {

@@ -26,7 +26,7 @@ const main = async function (): Promise<void> {
   app.use('/', await routesPromise())
 
   /**
-   * Listen on .env SERVER_PORT or 3000/tcp, on all network interfaces.
+   * Listen on .env SERVER_PORT or 3333/tcp, on all network interfaces.
    */
   const server = http.createServer(app)
   server.listen(port, addr)
