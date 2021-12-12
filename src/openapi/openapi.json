@@ -21,81 +21,12 @@
   ],
   "tags": [
     {
-      "name": "DataPurchase",
-      "description": "A purchase for Data Transfer."
-    },
-    {
       "name": "Agreement",
       "description": "Contractual Agreement between Provider and Consumer."
     }
   ],
   "paths": {
-    "/{idOffering}": {
-      "get": {
-        "tags": [
-          "DataPurchase"
-        ],
-        "summary": "Create Data Purchase Request",
-        "parameters": [
-          {
-            "name": "idOffering",
-            "in": "path",
-            "required": true,
-            "style": "simple",
-            "explode": false,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/query": {
-      "post": {
-        "tags": [
-          "Agreement"
-        ],
-        "summary": "Query agreements information",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/query_body"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/query_response"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/{idTemplate}": {
+    "/template/{template_id}": {
       "get": {
         "tags": [
           "Agreement"
@@ -103,7 +34,7 @@
         "summary": "Request template with static and dynamic parameters",
         "parameters": [
           {
-            "name": "idTemplate",
+            "name": "template_id",
             "in": "path",
             "required": true,
             "style": "simple",
@@ -127,7 +58,7 @@
         }
       }
     },
-    "/create": {
+    "/create_agreement": {
       "post": {
         "tags": [
           "Agreement"
@@ -137,7 +68,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/create_body"
+                "$ref": "#/components/schemas/template"
               }
             }
           },
@@ -145,7 +76,14 @@
         },
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/agreement_id"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -155,17 +93,29 @@
         ]
       }
     },
-    "/update": {
+    "/update_agreement/{agreement_id}": {
       "post": {
         "tags": [
           "Agreement"
         ],
         "summary": "Update agreement",
+        "parameters": [
+          {
+            "name": "agreement_id",
+            "in": "path",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/update_body"
+                "$ref": "#/components/schemas/template"
               }
             }
           },
@@ -173,7 +123,98 @@
         },
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/update_msg"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/get_agreement/{agreement_id}": {
+      "get": {
+        "tags": [
+          "Agreement"
+        ],
+        "summary": "Get agreement",
+        "parameters": [
+          {
+            "name": "agreement_id",
+            "in": "path",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/agreement_template"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/sign_agreement/{agreement_id}/{consumer_id}": {
+      "get": {
+        "tags": [
+          "Agreement"
+        ],
+        "summary": "Sign agreement",
+        "parameters": [
+          {
+            "name": "agreement_id",
+            "in": "path",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "consumer_id",
+            "in": "path",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/sign_msg"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -186,143 +227,29 @@
   },
   "components": {
     "schemas": {
-      "update_body": {
-        "required": [
-          "agreement"
-        ],
+      "sign_msg": {
         "type": "object",
         "properties": {
-          "agreement": {
-            "type": "object"
-          }
-        }
-      },
-      "create_body": {
-        "required": [
-          "proposal"
-        ],
-        "type": "object",
-        "properties": {
-          "proposal": {
-            "type": "object"
-          }
-        }
-      },
-      "query_body": {
-        "required": [
-          "args",
-          "query"
-        ],
-        "type": "object",
-        "properties": {
-          "query": {
+          "msg": {
             "type": "string"
-          },
-          "args": {
-            "$ref": "#/components/schemas/query_args"
           }
         }
       },
-      "query_args": {
+      "update_msg": {
         "type": "object",
         "properties": {
-          "filter": {
-            "$ref": "#/components/schemas/partial_agreement"
-          },
-          "fields": {
-            "type": "array",
-            "example": [
-              "id",
-              "dataSetId",
-              "consumer",
-              "type"
-            ],
-            "items": {
-              "type": "string",
-              "enum": [
-                "id",
-                "dataSetId",
-                "consumer",
-                "provider",
-                "type",
-                "status"
-              ]
-            }
-          }
-        }
-      },
-      "query_response": {
-        "type": "object",
-        "properties": {
-          "agreements": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/partial_agreement"
-            }
-          }
-        },
-        "required": [
-          "agreements"
-        ]
-      },
-      "agreement": {
-        "$ref": "#/components/schemas/partial_agreement",
-        "required": [
-          "id",
-          "dataSetId",
-          "consumer",
-          "provider",
-          "type",
-          "status"
-        ]
-      },
-      "partial_agreement": {
-        "type": "object",
-        "example": {
-          "provider": "did:ethr:0xb9c5714089478a327f09197987f16f9e5d936e8a",
-          "status": "active"
-        },
-        "properties": {
-          "id": {
+          "msg": {
             "type": "string"
-          },
-          "dataSetId": {
-            "type": "string"
-          },
-          "consumer": {
-            "$ref": "#/components/schemas/did"
-          },
-          "provider": {
-            "$ref": "#/components/schemas/did"
-          },
-          "type": {
-            "$ref": "#/components/schemas/agreement_type"
-          },
-          "status": {
-            "$ref": "#/components/schemas/agreement_status"
           }
         }
       },
-      "agreement_type": {
-        "type": "string",
-        "enum": [
-          "A",
-          "B",
-          "C"
-        ]
-      },
-      "agreement_status": {
-        "type": "string",
-        "enum": [
-          "active",
-          "pause",
-          "violated",
-          "terminated"
-        ]
-      },
-      "did": {
-        "type": "string",
-        "example": "did:ethr:0xb9c5714089478a327f09197987f16f9e5d936e8a"
+      "agreement_id": {
+        "type": "object",
+        "properties": {
+          "agreement_id": {
+            "type": "string"
+          }
+        }
       },
       "template": {
         "type": "object",
@@ -346,7 +273,7 @@
                 "type": "string"
               },
               "isActive": {
-                "type": "boolean"
+                "type": "string"
               }
             }
           },
@@ -395,7 +322,7 @@
                 "type": "object",
                 "properties": {
                   "qualityofData": {
-                    "type": "integer"
+                    "type": "string"
                   },
                   "characteristics": {
                     "type": "array",
@@ -404,7 +331,7 @@
                     }
                   },
                   "dataAvailability": {
-                    "type": "boolean"
+                    "type": "string"
                   }
                 }
               }
@@ -436,13 +363,13 @@
                 "type": "object",
                 "properties": {
                   "processData": {
-                    "type": "boolean"
+                    "type": "string"
                   },
                   "shareDataWithThirdParty": {
-                    "type": "boolean"
+                    "type": "string"
                   },
                   "editData": {
-                    "type": "boolean"
+                    "type": "string"
                   }
                 }
               }
@@ -455,23 +382,121 @@
                 "type": "object",
                 "properties": {
                   "copyData": {
-                    "type": "boolean"
+                    "type": "string"
                   },
                   "transferable": {
-                    "type": "boolean"
+                    "type": "string"
                   },
                   "exclusiveness": {
-                    "type": "boolean"
+                    "type": "string"
                   },
                   "revocable": {
-                    "type": "boolean"
+                    "type": "string"
                   }
                 }
               }
             }
           },
           "DataStream": {
+            "type": "string"
+          }
+        }
+      },
+      "agreement_template": {
+        "type": "object",
+        "properties": {
+          "dataOfferingId": {
+            "type": "integer"
+          },
+          "purpose": {
+            "type": "string"
+          },
+          "state": {
+            "type": "integer"
+          },
+          "providerId": {
+            "type": "string"
+          },
+          "consumerId": {
+            "type": "string"
+          },
+          "agreementDates": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          },
+          "descriptionOfData": {
+            "type": "object",
+            "properties": {
+              "dataType": {
+                "type": "string"
+              },
+              "dataFormat": {
+                "type": "string"
+              },
+              "dataSource": {
+                "type": "string"
+              }
+            }
+          },
+          "intendedUse": {
+            "type": "object",
+            "properties": {
+              "processData": {
+                "type": "boolean"
+              },
+              "editData": {
+                "type": "boolean"
+              }
+            }
+          },
+          "licenseGrant": {
+            "type": "object",
+            "properties": {
+              "copydata": {
+                "type": "boolean"
+              },
+              "transferable": {
+                "type": "boolean"
+              },
+              "exclusiveness": {
+                "type": "boolean"
+              },
+              "revocable": {
+                "type": "boolean"
+              }
+            }
+          },
+          "dataStream": {
             "type": "boolean"
+          },
+          "signed": {
+            "type": "boolean"
+          },
+          "violation": {
+            "type": "array",
+            "items": {
+              "oneOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "violationType": {
+                      "type": "integer"
+                    },
+                    "issuerId": {
+                      "type": "string"
+                    }
+                  }
+                }
+              ]
+            }
           }
         }
       }

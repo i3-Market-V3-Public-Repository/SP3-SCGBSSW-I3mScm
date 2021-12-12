@@ -1,9 +1,9 @@
 'use strict'
-import express from 'express'
-import http from 'http'
-import swaggerUI from "swagger-ui-express";
-import YAML from "yamljs";
-import path from 'path'
+import express = require('express');
+import * as http from 'http'
+import * as swaggerUI from "swagger-ui-express";
+import * as YAML from "yamljs";
+import * as path from 'path'
 
 //Load environment variables
 const dotenv = require('dotenv').config({ path: path.resolve(__dirname, '../.env') })
@@ -11,6 +11,7 @@ const dotenv = require('dotenv').config({ path: path.resolve(__dirname, '../.env
 import routesPromise from './routes/routes'
 
 const main = async function (): Promise<void> {
+
   const app = express()
   
   const port = Number(process.env.PORT) ?? 3333
