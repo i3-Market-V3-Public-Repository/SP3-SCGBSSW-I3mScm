@@ -1,6 +1,7 @@
 import { StaticParametersTemplate } from "./staticParametersTemplate";
 import { Template } from "./template";
 import { ethers } from 'ethers';
+import _fetch = require('isomorphic-fetch')
 
 /* ============= Common Functions ==========*/
 
@@ -22,9 +23,10 @@ export function getTemplate(jsonTemplate:Template, staticTemplate:StaticParamete
     return jsonTemplate
 }
 
-export async function createAgreements(contract:ethers.Contract, dataOfferingId:Number, purpose:string, consumerId:string, providerId:string, dates:Array<Number>, descriptionOfData:Array<string>, intendedUse:Array<Boolean>, licenseGrant:Array<Boolean>, stream:Boolean) {
+export async function createAgreements(contract:ethers.Contract, dataOfferingId:string, purpose:string, consumerId:string, providerId:string, dates:Array<Number>, descriptionOfData:Array<string>, intendedUse:Array<Boolean>, licenseGrant:Array<Boolean>, stream:Boolean) {
 
-    const createAgreementTx = await contract.createAgreement(dataOfferingId, purpose, consumerId, providerId, dates, descriptionOfData,intendedUse, licenseGrant, stream)
+    const gasLimit = 12500000;
+    const createAgreementTx = await contract.createAgreement(dataOfferingId, purpose, consumerId, providerId, dates, descriptionOfData,intendedUse, licenseGrant, stream, {gasLimit: gasLimit})
     await createAgreementTx.wait();
 
     const agreementLength = await contract.getAgreementsLength();
@@ -49,7 +51,7 @@ function stringToBoolean(input:string) {
 export function processTemplate (template:Template) {
 
     // process template data
-    const dataOfferingId = Number(template.DataOfferingDescription.dataOfferingId)
+    const dataOfferingId = template.DataOfferingDescription.dataOfferingId
     const purpose = template.Purpose
     const providerId = template.hasParties.Parties.dataProvider
     const consumerId = template.hasParties.Parties.dataConsumer
@@ -130,4 +132,55 @@ export function formatAgreement(agreement:any) {
         ]
     }
 
+}
+
+export async function notify (origin: string, predefined: boolean, type: string, receiver_id: string, message: Object, status: string) {
+
+    const notification = {
+        origin: origin,
+        predefined: predefined,
+        type: type,
+        receiver_id: receiver_id,
+        message: message,
+        status: status
+    }
+
+    let notification_send = await _fetch(`${process.env.BACKPLANE_URL}/notification-manager-oas/api/v1/notification`, {
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(notification),
+    })
+}
+
+export function checkState(state:number) {
+
+    let response
+
+    switch(state){
+        case 0 : {
+            response = {state: "created"}
+            break
+        }
+        case 1 : {
+            response = {state: "active"}
+            break
+        }
+        case 2: {
+            response = {state: "violated"}
+            break
+        }
+        case 3: {
+            response = {state: "terminated"}
+            break
+        }
+        default: {
+            response = {state: "undefined"}
+            break
+        }
+    }
+
+    return response
 }

@@ -7,28 +7,30 @@ info:
     url: http://www.apache.org/licenses/LICENSE-2.0.html
   version: 1.0.0
 servers:
-- url: /
+  - url: /
+  - url: http://95.211.3.249:3333
+    variables: {}
 security:
-- bearerAuth: []
+  - bearerAuth: []
 tags:
-- name: Agreement
-  description: Contractual Agreement between Provider and Consumer.
+  - name: Agreement
+    description: Contractual Agreement between Provider and Consumer.
 paths:
-  /template/{template_id}:
+  /template/{offering_id}:
     get:
       tags:
-      - Agreement
+        - Agreement
       summary: Request template with static and dynamic parameters
       parameters:
-      - name: template_id
-        in: path
-        required: true
-        style: simple
-        explode: false
-        schema:
-          type: string
+        - name: offering_id
+          in: path
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
       responses:
-        "200":
+        '200':
           description: OK
           content:
             application/json:
@@ -37,7 +39,7 @@ paths:
   /create_agreement:
     post:
       tags:
-      - Agreement
+        - Agreement
       summary: Create agreement
       requestBody:
         content:
@@ -46,27 +48,27 @@ paths:
               $ref: '#/components/schemas/template'
         required: true
       responses:
-        "200":
+        '200':
           description: OK
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/agreement_id'
       security:
-      - bearerAuth: []
+        - bearerAuth: []
   /update_agreement/{agreement_id}:
     post:
       tags:
-      - Agreement
+        - Agreement
       summary: Update agreement
       parameters:
-      - name: agreement_id
-        in: path
-        required: true
-        style: simple
-        explode: false
-        schema:
-          type: string
+        - name: agreement_id
+          in: path
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
       requestBody:
         content:
           application/json:
@@ -74,85 +76,174 @@ paths:
               $ref: '#/components/schemas/template'
         required: true
       responses:
-        "200":
+        '200':
           description: OK
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/update_msg'
       security:
-      - bearerAuth: []
+        - bearerAuth: []
   /get_agreement/{agreement_id}:
     get:
       tags:
-      - Agreement
+        - Agreement
       summary: Get agreement
       parameters:
-      - name: agreement_id
-        in: path
-        required: true
-        style: simple
-        explode: false
-        schema:
-          type: string
+        - name: agreement_id
+          in: path
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
       responses:
-        "200":
+        '200':
           description: OK
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/agreement_template'
       security:
-      - bearerAuth: []
-  /sign_agreement/{agreement_id}/{consumer_id}:
+        - bearerAuth: []
+  /sign_agreement/{agreement_id}/{consumer_id}/{provider_id}:
     get:
       tags:
-      - Agreement
+        - Agreement
       summary: Sign agreement
       parameters:
-      - name: agreement_id
-        in: path
-        required: true
-        style: simple
-        explode: false
-        schema:
-          type: string
-      - name: consumer_id
-        in: path
-        required: true
-        style: simple
-        explode: false
-        schema:
-          type: string
+        - name: agreement_id
+          in: path
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+        - name: consumer_id
+          in: path
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+        - name: provider_id
+          in: path
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
       responses:
-        "200":
+        '200':
           description: OK
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/sign_msg'
       security:
-      - bearerAuth: []
+        - bearerAuth: []
+  /check_active_agreements:
+    get:
+      tags:
+        - Agreement
+      summary: Check active agreements
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/active_agreements'
+      security:
+        - bearerAuth: []
+  /check_agreements_by_consumer/{consumer_id}:
+    get:
+      tags:
+        - Agreement
+      summary: Check active agreements
+      parameters:
+        - name: consumer_id
+          in: path
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/active_agreements'
+      security:
+        - bearerAuth: []
+  /check_agreements_by_provider/{provider_id}:
+    get:
+      tags:
+        - Agreement
+      summary: Check active agreements
+      parameters:
+        - name: provider_id
+          in: path
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/active_agreements'
+      security:
+        - bearerAuth: []
+  /state/{agreement_id}:
+    get:
+      tags:
+        - Agreement
+      summary: Check active agreements
+      parameters:
+        - name: agreement_id
+          in: path
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/state'
+      security:
+        - bearerAuth: []
 components:
   schemas:
+    state:
+      type: object
+      properties:
+        state:
+          type: string
     sign_msg:
       type: object
       properties:
         msg:
           type: string
-
     update_msg:
       type: object
       properties:
         msg:
           type: string
-          
     agreement_id:
       type: object
       properties:
         agreement_id:
           type: string
-          
     template:
       type: object
       properties:
@@ -249,7 +340,6 @@ components:
                   type: string
         DataStream:
           type: string
-    
     agreement_template:
       type: object
       properties:
@@ -302,14 +392,18 @@ components:
           type: array
           items:
             oneOf:
-            - type: integer
-            - type: string
-            - type: object
-              properties:
-                violationType:
-                  type: integer
-                issuerId:
-                  type: string
+              - type: integer
+              - type: string
+              - type: object
+                properties:
+                  violationType:
+                    type: integer
+                  issuerId:
+                    type: string
+    active_agreements:
+      type: array
+      items:
+        $ref: '#/components/schemas/agreement_template'
   securitySchemes:
     bearerAuth:
       type: http

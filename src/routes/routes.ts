@@ -4,7 +4,7 @@ import * as fs from 'fs';
 import _fetch = require('isomorphic-fetch')
 import { ConvertToTemplate, Template } from "../template";
 import { ConvertToStaticParametersTemplate, StaticParametersTemplate } from "../staticParametersTemplate";
-import { getTemplate, createAgreements, processTemplate, formatAgreement } from "../common";
+import { getTemplate, createAgreements, processTemplate, formatAgreement, notify, checkState } from "../common";
 import { ethers } from 'ethers';
 import * as path from 'path';
 
@@ -23,6 +23,8 @@ const contractABI = contractObj.abi;
 const provider = new ethers.providers.JsonRpcProvider(providerAddress);
 const signer = new ethers.Wallet(privateKey, provider);
 const contract = new ethers.Contract(contractAddress, contractABI, signer);
+
+const gasLimit = 12500000;
 
 const jsonTemplateFile = require('../../template.json');
 
@@ -88,8 +90,17 @@ export default async (): Promise<typeof router> => {
             const intendedUse = processedTemplate.intendedUse
             const licenseGrant = processedTemplate.licenseGrant
             const dataStream = processedTemplate.dataStream
+            console.log(dataOfferingId)
+            const agreementId = await createAgreements(contract, dataOfferingId, purpose, providerId, consumerId, dates, descriptionOfData, intendedUse, licenseGrant, dataStream)
 
-            const agreementId = await createAgreements(contract, dataOfferingId, purpose, consumerId, providerId, dates, descriptionOfData, intendedUse, licenseGrant, dataStream)
+            const origin = "scm"
+            const predefined = true
+            const type = "agreement.pending"
+            const message = {msg: "Agreement created"}
+            const status = "pending"
+
+            await notify(origin, predefined, type, `${consumerId}`, message, status)
+            await notify(origin, predefined, type, `${providerId}`, message, status)
 
             res.status(200).send({agreement_id: `${agreementId}`})
 
@@ -137,7 +148,16 @@ export default async (): Promise<typeof router> => {
             const licenseGrant = processedTemplate.licenseGrant
             const dataStream = processedTemplate.dataStream
 
-            const update = await contract.updateAgreement(agreementId ,dataOfferingId, purpose, consumerId, providerId, dates, descriptionOfData, intendedUse, licenseGrant, dataStream)
+            const update = await contract.updateAgreement(agreementId ,dataOfferingId, purpose, providerId, consumerId, dates, descriptionOfData, intendedUse, licenseGrant, dataStream)
+
+            const origin = "scm"
+            const predefined = true
+            const type = "agreement.update"
+            const message = {msg: "Agreement updated"}
+            const status = "update"
+
+            await notify(origin, predefined, type, `${consumerId}`, message, status)
+            await notify(origin, predefined, type, `${providerId}`, message, status)
 
             res.status(200).send({msg: `Agreement with id ${agreementId} was updated`})
 
@@ -150,14 +170,24 @@ export default async (): Promise<typeof router> => {
 
       })
 
-      router.get('/sign_agreement/:agreement_id/:consumer_id', async(req,res) => {
+      router.get('/sign_agreement/:agreement_id/:consumer_id/:provider_id', async(req,res) => {
 
         try {
             const agreementId = req.params.agreement_id
             const consumerId = req.params.consumer_id
-    
-            const signAgreement = await contract.signAgreement(agreementId, consumerId);
-    
+            const providerId = req.params.provider_id
+
+            const signAgreement = await contract.signAgreement(agreementId, consumerId, {gasLimit: gasLimit});
+            
+            const origin = "scm"
+            const predefined = true
+            const type = "agreement.accepted"
+            const message = {msg: "Agreement signed"}
+            const status = "accepted"
+
+            await notify(origin, predefined, type, `${consumerId}`, message, status)
+            await notify(origin, predefined, type, `${providerId}`, message, status)
+
             res.status(200).send({msg: `Agreement with id ${agreementId} was signed`})
         } catch (error) {
             if(error instanceof Error){
@@ -167,6 +197,99 @@ export default async (): Promise<typeof router> => {
         }
       })
 
+      router.get('/check_active_agreements', async(req,res) => {
+
+        try {
+            const formatedAgreements = []
+            const activeAgreements = await contract.checkActiveAgreements();
+        
+            activeAgreements.forEach(agreement => {
+            
+            const formatedAgreement = formatAgreement(agreement)
+            formatedAgreements.push(formatedAgreement)
+        })
+
+            console.log("Number of active agreements: " + formatedAgreements.length)
+
+            res.status(200).send(formatedAgreements)
+
+        } catch (error) {
+            if(error instanceof Error){
+                console.log(`${error.message}`)
+                res.status(500).send({name: `${error.name}`, message: `${error.message}`})
+            }
+        }
+      })
+
+      router.get('/check_agreements_by_consumer/:consumer_id', async(req,res) => {
+
+        try {
+
+            const consumer_id = req.params.consumer_id
+            const formatedAgreements = []
+            const activeAgreements = await contract.checkAgreementsByConsumer(consumer_id);
+        
+            activeAgreements.forEach(agreement => {
+            
+            const formatedAgreement = formatAgreement(agreement)
+            formatedAgreements.push(formatedAgreement)
+        })
+
+            console.log("Number of active agreements by Consumer: " + formatedAgreements.length)
+
+            res.status(200).send(formatedAgreements)
+            
+        } catch (error) {
+            if(error instanceof Error){
+                console.log(`${error.message}`)
+                res.status(500).send({name: `${error.name}`, message: `${error.message}`})
+            }
+        }
+      })
+
+      router.get('/check_agreements_by_provider/:provider_id', async(req,res) => {
+
+        try {
+
+            const provider_id = req.params.provider_id
+            const formatedAgreements = []
+            const activeAgreements = await contract.checkAgreementsByProvider(provider_id);
+        
+            activeAgreements.forEach(agreement => {
+            
+            const formatedAgreement = formatAgreement(agreement)
+            formatedAgreements.push(formatedAgreement)
+        })
+
+            console.log("Number of active agreements by Provider: " + formatedAgreements.length)
+
+            res.status(200).send(formatedAgreements)
+            
+        } catch (error) {
+            if(error instanceof Error){
+                console.log(`${error.message}`)
+                res.status(500).send({name: `${error.name}`, message: `${error.message}`})
+            }
+        }
+      })
+
+      router.get('/state/:agreement_id', async(req,res) => {
+
+        try {
+
+            const agreement_id = req.params.agreement_id
+            const agreementState = await contract.getState(agreement_id);
+            const response = checkState(agreementState)
+
+            res.status(200).send(response)
+            
+        } catch (error) {
+            if(error instanceof Error){
+                console.log(`${error.message}`)
+                res.status(500).send({name: `${error.name}`, message: `${error.message}`})
+            }
+        }
+      })
     return router;
 }
 

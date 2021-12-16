@@ -3,6 +3,7 @@ FROM node:14-slim
 COPY ./scripts/dependencies.sh ./dependencies.sh
 COPY ./template.json ./template.json
 COPY ./staticParametersTemplate.json ./staticParametersTemplate.json
+COPY ./DataSharingAgreement.json ./DataSharingAgreement.json
 
 ADD ./src /src
 
