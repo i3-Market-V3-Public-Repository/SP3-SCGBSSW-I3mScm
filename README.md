@@ -21,28 +21,37 @@ docker run -p 3333:3333 -e PRIVATE_KEY=smartContractUserPrivateKey -e PRIVATE_AD
 # 3. Smart Contract Manager endpoints
 
 * Retrieve the json template that is filled with static parameters:
-    ==GET /template/{offering_id}==
+  
+    <mark>GET /template/{offering_id}</mark>
 
 * Copy the json template with the dynamic parameters and create an agreement:
-    ==POST /create_agreement==
+  
+    <mark>POST /create_agreement</mark>
 
-* Using the json template that was used to create the agreement update the agreement:
-    ==POST /update_agreement/{agreement_id}==
+* Using the json template that was used to create the agreement update the agreement.
+  
+    <mark>POST /update_agreement/{agreement_id}<mark>
 
 * Retrieve the agreement with the id received from creating the agreement:
-    ==GET /get_agreement/{agreement_id}==
+
+    <mark>GET /get_agreement/{agreement_id}<mark>
 
 * Sign the agreement:
-    ==GET /sign_agreement/{agreement_id}/{consumer_id}/{provider_id}==
+
+    <mark>GET /sign_agreement/{agreement_id}/{consumer_id}/{provider_id}<mark>
 
 * Check active agreements. The agreements become active after they were signed:
-    ==GET /check_active_agreements==
+
+    <mark>GET /check_active_agreements<mark>
 
 * Check active agreements using the consumer id:
-    ==GET /check_agreements_by_consumer/{consumer_id}==
+
+    <mark>GET /check_agreements_by_consumer/{consumer_id}<mark>
 
 * Check active agreements using the provider id:
-    ==GET /check_agreements_by_provider/{provider_id}==
+
+    <mark>GET /check_agreements_by_provider/{provider_id}<mark>
 
 * Check the agreement state if: created, active, violated, terminated:
-    ==GET /state/{agreement_id}==
+
+    <mark>GET /state/{agreement_id}<mark>
