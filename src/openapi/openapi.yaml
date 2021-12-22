@@ -8,7 +8,10 @@ info:
   version: 1.0.0
 servers:
   - url: /
+  - url: http://95.211.3.244:3333
   - url: http://95.211.3.249:3333
+  - url: http://95.211.3.250:3333
+  - url: http://95.211.3.251:3333
     variables: {}
 security:
   - bearerAuth: []
