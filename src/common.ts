@@ -98,7 +98,7 @@ export function processTemplate (template:Template) {
 export function formatAgreement(agreement:any) {
     
     return {
-        dataOfferingId: parseInt(agreement.dataOfferingId),
+        dataOfferingId: agreement.dataOfferingId,
         purpose: agreement.purpose,
         state: agreement.state,
         providerId: agreement.providerId,

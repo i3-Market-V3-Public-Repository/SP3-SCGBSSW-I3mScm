@@ -90,7 +90,7 @@ export default async (): Promise<typeof router> => {
             const intendedUse = processedTemplate.intendedUse
             const licenseGrant = processedTemplate.licenseGrant
             const dataStream = processedTemplate.dataStream
-            console.log(dataOfferingId)
+
             const agreementId = await createAgreements(contract, dataOfferingId, purpose, providerId, consumerId, dates, descriptionOfData, intendedUse, licenseGrant, dataStream)
 
             const origin = "scm"
