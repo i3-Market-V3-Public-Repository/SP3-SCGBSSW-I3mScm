@@ -39,54 +39,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/template'
-  /create_agreement:
-    post:
-      tags:
-        - Agreement
-      summary: Create agreement
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/template'
-        required: true
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/agreement_id'
-      security:
-        - bearerAuth: []
-  /update_agreement/{agreement_id}:
-    post:
-      tags:
-        - Agreement
-      summary: Update agreement
-      parameters:
-        - name: agreement_id
-          in: path
-          required: true
-          style: simple
-          explode: false
-          schema:
-            type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/template'
-        required: true
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/update_msg'
-      security:
-        - bearerAuth: []
   /get_agreement/{agreement_id}:
     get:
       tags:
@@ -109,42 +61,6 @@ paths:
                 $ref: '#/components/schemas/agreement_template'
       security:
         - bearerAuth: []
-  /sign_agreement/{agreement_id}/{consumer_id}/{provider_id}:
-    get:
-      tags:
-        - Agreement
-      summary: Sign agreement
-      parameters:
-        - name: agreement_id
-          in: path
-          required: true
-          style: simple
-          explode: false
-          schema:
-            type: string
-        - name: consumer_id
-          in: path
-          required: true
-          style: simple
-          explode: false
-          schema:
-            type: string
-        - name: provider_id
-          in: path
-          required: true
-          style: simple
-          explode: false
-          schema:
-            type: string
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/sign_msg'
-      security:
-        - bearerAuth: []
   /check_active_agreements:
     get:
       tags:
@@ -163,7 +79,7 @@ paths:
     get:
       tags:
         - Agreement
-      summary: Check active agreements
+      summary: Check agreements by consumer
       parameters:
         - name: consumer_id
           in: path
@@ -185,7 +101,7 @@ paths:
     get:
       tags:
         - Agreement
-      summary: Check active agreements
+      summary: Check agreements by provider
       parameters:
         - name: provider_id
           in: path
@@ -225,6 +141,140 @@ paths:
                 $ref: '#/components/schemas/state'
       security:
         - bearerAuth: []
+  /create_agreement_raw_transaction/{sender_address}:
+    post:
+      tags:
+        - Agreement
+      summary: Create agreement
+      parameters:
+        - name: sender_address
+          in: path
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/template' 
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/raw_transaction_template'
+              example:
+                nonce: 6
+                to: "0x527F9771A4805E7E539436368D09ed5032bf8f57"
+                from: "0xce02fe0c65285ac850d2e9b6494446e59f0b48e6"
+                gasLimit: 12500000
+                gasPrice: 10000000000
+                chainId: 1337
+                data: "0x89a8348c00000000000000000000000000000000000000000000000000000000000001c"
+      security:
+        - bearerAuth: []
+  /update_agreement_raw_transaction/{agreement_id}/{sender_address}:
+    put:
+      tags:
+        - Agreement
+      summary: Update agreement 
+      parameters:
+        - name: agreement_id
+          in: path
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+        - name: sender_address
+          in: path
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/template'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/raw_transaction_template'
+      security:
+        - bearerAuth: []
+  /sign_agreement_raw_transaction/{agreement_id}/{consumer_id}/{provider_id}/{sender_address}:
+    put:
+      tags:
+        - Agreement
+      summary: Sign agreement 
+      parameters:
+        - name: agreement_id
+          in: path
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+        - name: consumer_id
+          in: path
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+        - name: provider_id
+          in: path
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+        - name: sender_address
+          in: path
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/raw_transaction_template'
+      security:
+        - bearerAuth: []
+  /deploy_signed_transaction:
+    post:
+      tags:
+        - Deploy signed Transaction
+      summary: Deploy signed transaction
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/signed_transaction'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/transaction_object'
+      security:
+        - bearerAuth: []
 components:
   schemas:
     state:
@@ -246,6 +296,55 @@ components:
       type: object
       properties:
         agreement_id:
+          type: string
+    raw_transaction_template:
+      type: object
+      properties:
+        nonce:
+          type: integer
+        to:
+          type: string
+        from:
+          type: string
+        gasLimit:
+          type: integer
+        gasPrice:
+          type: integer
+        chainId:
+          type: integer
+        data:
+          type: string
+    transaction_object:
+        type: object
+        properties:
+        transactionHash:
+          type: string
+        transactionIndex:
+          type: string,
+        blockHash:
+          type: string,
+        contractAddress:
+          type: string,
+        cumulativeGasUsed:
+          type: integer,
+        to:
+          type: string
+        from:
+          type: string
+        gasUsed:
+          type: integer
+        logsBloom:
+          type: string
+        logs:
+          type: array
+        confirmation:
+          type: integer
+        status:
+          type: integer     
+    signed_transaction:
+      type: object
+      properties:
+        signed_transaction:
           type: string
     template:
       type: object
@@ -374,6 +473,8 @@ components:
           properties:
             processData:
               type: boolean
+            shareDataWithThirdParty:
+              type: boolean
             editData:
               type: boolean
         licenseGrant:
@@ -412,3 +513,220 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
+
+
+ # /create_agreement:
+  #   post:
+  #     tags:
+  #       - Agreement
+  #     summary: Create agreement
+  #     requestBody:
+  #       content:
+  #         application/json:
+  #           schema:
+  #             $ref: '#/components/schemas/template'
+  #       required: true
+  #     responses:
+  #       '200':
+  #         description: OK
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: '#/components/schemas/agreement_id'
+  #     security:
+  #       - bearerAuth: []
+  # /update_agreement/{agreement_id}:
+  #   post:
+  #     tags:
+  #       - Agreement
+  #     summary: Update agreement 
+  #     parameters:
+  #       - name: agreement_id
+  #         in: path
+  #         required: true
+  #         style: simple
+  #         explode: false
+  #         schema:
+  #           type: string
+  #     requestBody:
+  #       content:
+  #         application/json:
+  #           schema:
+  #             $ref: '#/components/schemas/template'
+  #       required: true
+  #     responses:
+  #       '200':
+  #         description: OK
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: '#/components/schemas/update_msg'
+  #     security:
+  #       - bearerAuth: []
+  # /sign_agreement/{agreement_id}/{consumer_id}/{provider_id}:
+  #   get:
+  #     tags:
+  #       - Agreement
+  #     summary: Sign agreement
+  #     parameters:
+  #       - name: agreement_id
+  #         in: path
+  #         required: true
+  #         style: simple
+  #         explode: false
+  #         schema:
+  #           type: string
+  #       - name: consumer_id
+  #         in: path
+  #         required: true
+  #         style: simple
+  #         explode: false
+  #         schema:
+  #           type: string
+  #       - name: provider_id
+  #         in: path
+  #         required: true
+  #         style: simple
+  #         explode: false
+  #         schema:
+  #           type: string
+  #     responses:
+  #       '200':
+  #         description: OK
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: '#/components/schemas/sign_msg'
+  #     security:
+  #       - bearerAuth: []
+#   --------------------------------------------------------openapi.json
+#    "/create_agreement": {
+#       "post": {
+#         "tags": [
+#           "Agreement"
+#         ],
+#         "summary": "Create agreement",
+#         "requestBody": {
+#           "content": {
+#             "application/json": {
+#               "schema": {
+#                 "$ref": "#/components/schemas/template"
+#               }
+#             }
+#           },
+#           "required": true
+#         },
+#         "responses": {
+#           "200": {
+#             "description": "OK",
+#             "content": {
+#               "application/json": {
+#                 "schema": {
+#                   "$ref": "#/components/schemas/agreement_id"
+#                 }
+#               }
+#             }
+#           }
+#         },
+#         "security": [
+#           {
+#             "bearerAuth": []
+#           }
+#         ]
+#       }
+#     },
+#  "/update_agreement/{agreement_id}": {
+#       "post": {
+#         "tags": [
+#           "Agreement"
+#         ],
+#         "summary": "Update agreement",
+#         "parameters": [
+#           {
+#             "name": "agreement_id",
+#             "in": "path",
+#             "required": true,
+#             "style": "simple",
+#             "explode": false,
+#             "schema": {
+#               "type": "string"
+#             }
+#           }
+#         ],
+#         "requestBody": {
+#           "content": {
+#             "application/json": {
+#               "schema": {
+#                 "$ref": "#/components/schemas/template"
+#               }
+#             }
+#           },
+#           "required": true
+#         },
+#         "responses": {
+#           "200": {
+#             "description": "OK",
+#             "content": {
+#               "application/json": {
+#                 "schema": {
+#                   "$ref": "#/components/schemas/update_msg"
+#                 }
+#               }
+#             }
+#           }
+#         },
+#         "security": [
+#           {
+#             "bearerAuth": []
+#           }
+#         ]
+#       }
+#     },
+# ,
+#     "/sign_agreement/{agreement_id}/{consumer_id}": {
+#       "get": {
+#         "tags": [
+#           "Agreement"
+#         ],
+#         "summary": "Sign agreement",
+#         "parameters": [
+#           {
+#             "name": "agreement_id",
+#             "in": "path",
+#             "required": true,
+#             "style": "simple",
+#             "explode": false,
+#             "schema": {
+#               "type": "string"
+#             }
+#           },
+#           {
+#             "name": "consumer_id",
+#             "in": "path",
+#             "required": true,
+#             "style": "simple",
+#             "explode": false,
+#             "schema": {
+#               "type": "string"
+#             }
+#           }
+#         ],
+#         "responses": {
+#           "200": {
+#             "description": "OK",
+#             "content": {
+#               "application/json": {
+#                 "schema": {
+#                   "$ref": "#/components/schemas/sign_msg"
+#                 }
+#               }
+#             }
+#           }
+#         },
+#         "security": [
+#           {
+#             "bearerAuth": []
+#           }
+#         ]
+#       }
+#     }

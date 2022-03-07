@@ -23,19 +23,19 @@ export function getTemplate(jsonTemplate:Template, staticTemplate:StaticParamete
     return jsonTemplate
 }
 
-export async function createAgreements(contract:ethers.Contract, dataOfferingId:string, purpose:string, consumerId:string, providerId:string, dates:Array<Number>, descriptionOfData:Array<string>, intendedUse:Array<Boolean>, licenseGrant:Array<Boolean>, stream:Boolean) {
+// export async function createAgreements(contract:ethers.Contract, dataOfferingId:string, purpose:string, consumerId:string, providerId:string, dates:Array<Number>, descriptionOfData:Array<string>, intendedUse:Array<Boolean>, licenseGrant:Array<Boolean>, stream:Boolean) {
 
-    const gasLimit = 12500000;
-    const createAgreementTx = await contract.createAgreement(dataOfferingId, purpose, consumerId, providerId, dates, descriptionOfData,intendedUse, licenseGrant, stream, {gasLimit: gasLimit})
-    await createAgreementTx.wait();
+//     const gasLimit = 12500000;
+//     const createAgreementTx = await contract.createAgreement(dataOfferingId, purpose, consumerId, providerId, dates, descriptionOfData,intendedUse, licenseGrant, stream, {gasLimit: gasLimit})
+//     await createAgreementTx.wait();
 
-    const agreementLength = await contract.getAgreementsLength();
-    const agreementId = parseInt(agreementLength) - 1
+//     const agreementLength = await contract.getAgreementsLength();
+//     const agreementId = parseInt(agreementLength) - 1
 
-    console.log("Agreement ID is " + agreementId)
+//     console.log("Agreement ID is " + agreementId)
 
-    return agreementId
-  } 
+//     return agreementId
+//   } 
 
 function stringToBoolean(input:string) {
 
@@ -85,8 +85,8 @@ export function processTemplate (template:Template) {
     return {
         dataOfferingId: dataOfferingId,
         purpose: purpose,
-        consumerId: consumerId,
         providerId: providerId,
+        consumerId: consumerId,
         dates: dates,
         descriptionOfData: descriptionOfData,
         intendedUse: intendedUse,
@@ -134,6 +134,36 @@ export function formatAgreement(agreement:any) {
 
 }
 
+export function formatTransaction(transaction:any) {
+    return {
+        nonce: transaction.nonce,
+        to: transaction.to,
+        from: transaction.from,
+        gasLimit: parseInt(transaction.gasLimit),
+        gasPrice: parseInt(transaction.gasPrice),
+        chainId: parseInt(transaction.chainId),
+        data: transaction.data
+      }
+}
+
+export function formatTransactionReceipt(transaction:any) {
+    return {
+        transactionHash: transaction.transactionHash,
+        transactionIndex: transaction.transactionIndex,
+        blockHash: transaction.blockHash,
+        blockNumber: transaction.blockNumber,
+        contractAddress: transaction.contractAddress,
+        cumulativeGasUsed: parseInt(transaction.cumulativeGasUsed),
+        to: transaction.to,
+        from: transaction.from,
+        gasUsed: parseInt(transaction.gasUsed),
+        logsBloom: transaction.logsBloom,
+        logs: transaction.logs,
+        confirmations: transaction.confirmations,
+        status: transaction.status,
+      }
+}
+
 export async function notify (origin: string, predefined: boolean, type: string, receiver_id: string, message: Object, status: string) {
 
     const notification = {
@@ -144,8 +174,15 @@ export async function notify (origin: string, predefined: boolean, type: string,
         message: message,
         status: status
     }
-
-    let notification_send = await _fetch(`${process.env.BACKPLANE_URL}/notification-manager-oas/api/v1/notification`, {
+    // let notification_send = await _fetch(`${process.env.BACKPLANE_URL}/notification-manager-oas/api/v1/notification`, {
+    //     method: 'POST',
+    //     headers: {
+    //         'Accept': 'application/json',
+    //         'Content-Type': 'application/json'
+    //     },
+    //     body: JSON.stringify(notification),
+    // })
+    let notification_send = await _fetch(`${process.env.NOTIFICATION_MANAGER_URL}/api/v1/notification`, {
         method: 'POST',
         headers: {
             'Accept': 'application/json',
@@ -184,3 +221,13 @@ export function checkState(state:number) {
 
     return response
 }
+
+export function parseHex (a: string, prefix0x: boolean = false): string {
+    const hexMatch = a.match(/^(0x)?([\da-fA-F]+)$/)
+    if (hexMatch == null) {
+      throw new Error('input must be a hexadecimal string, e.g. \'0x124fe3a\' or \'0214f1b2\'')
+    }
+    const hex = hexMatch[2].toLocaleLowerCase()
+    return (prefix0x) ? '0x' + hex : hex
+  }
+  
