@@ -162,7 +162,7 @@
         ]
       }
     },
-    "/sign_agreement_raw_transaction/{agreement_id}/{consumer_id}/{provider_id}/sender_address": {
+    "/sign_agreement_raw_transaction/{agreement_id}/{consumer_id}/sender_address": {
       "put": {
         "tags": [
           "Agreement"
@@ -181,16 +181,6 @@
           },
           {
             "name": "consumer_id",
-            "in": "path",
-            "required": true,
-            "style": "simple",
-            "explode": false,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "provider_id",
             "in": "path",
             "required": true,
             "style": "simple",
@@ -425,7 +415,7 @@
                 "type": "string"
               },
               "isActive": {
-                "type": "string"
+                "type": "boolean"
               }
             }
           },
@@ -483,7 +473,7 @@
                     }
                   },
                   "dataAvailability": {
-                    "type": "string"
+                    "type": "boolean"
                   }
                 }
               }
@@ -515,13 +505,13 @@
                 "type": "object",
                 "properties": {
                   "processData": {
-                    "type": "string"
+                    "type": "boolean"
                   },
                   "shareDataWithThirdParty": {
-                    "type": "string"
+                    "type": "boolean"
                   },
                   "editData": {
-                    "type": "string"
+                    "type": "boolean"
                   }
                 }
               }
@@ -534,23 +524,23 @@
                 "type": "object",
                 "properties": {
                   "copyData": {
-                    "type": "string"
+                    "type": "boolean"
                   },
                   "transferable": {
-                    "type": "string"
+                    "type": "boolean"
                   },
                   "exclusiveness": {
-                    "type": "string"
+                    "type": "boolean"
                   },
                   "revocable": {
-                    "type": "string"
+                    "type": "boolean"
                   }
                 }
               }
             }
           },
           "DataStream": {
-            "type": "string"
+            "type": "boolean"
           }
         }
       },
@@ -596,6 +586,9 @@
             "type": "object",
             "properties": {
               "processData": {
+                "type": "boolean"
+              },
+              "shareDataWithThirdParty": {
                 "type": "boolean"
               },
               "editData": {

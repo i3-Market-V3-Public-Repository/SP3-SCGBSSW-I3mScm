@@ -7,18 +7,18 @@ import _fetch = require('isomorphic-fetch')
 
 export function getTemplate(jsonTemplate:Template, staticTemplate:StaticParametersTemplate){
     
-    jsonTemplate.DataOfferingDescription.dataOfferingId = staticTemplate.dataOfferingId
+    jsonTemplate.DataOfferingDescription.dataOfferingId = staticTemplate.offeringId
     jsonTemplate.DataOfferingDescription.provider = staticTemplate.provider
     jsonTemplate.DataOfferingDescription.category = staticTemplate.category
-    jsonTemplate.Purpose = staticTemplate.contractParameters[0].purpose
+    jsonTemplate.Purpose = staticTemplate.contractParameters.purpose
     jsonTemplate.hasParties.Parties.dataProvider = staticTemplate.provider
-    jsonTemplate.hasIntendedUse.IntendedUse.processData = staticTemplate.contractParameters[0].hasIntendedUse[0].processData
-    jsonTemplate.hasIntendedUse.IntendedUse.shareDataWithThirdParty = staticTemplate.contractParameters[0].hasIntendedUse[0].shareDataWithThirdParty
-    jsonTemplate.hasIntendedUse.IntendedUse.editData = staticTemplate.contractParameters[0].hasIntendedUse[0].editData
-    jsonTemplate.hasLicenseGrant.LicenseGrant.copyData = staticTemplate.contractParameters[0].hasLicenseGrant[0].copyData
-    jsonTemplate.hasLicenseGrant.LicenseGrant.transferable = staticTemplate.contractParameters[0].hasLicenseGrant[0].transferable
-    jsonTemplate.hasLicenseGrant.LicenseGrant.exclusiveness = staticTemplate.contractParameters[0].hasLicenseGrant[0].exclusiveness
-    jsonTemplate.hasLicenseGrant.LicenseGrant.revocable = staticTemplate.contractParameters[0].hasLicenseGrant[0].revocable
+    jsonTemplate.hasIntendedUse.IntendedUse.processData = staticTemplate.contractParameters.hasIntendedUse.processData
+    jsonTemplate.hasIntendedUse.IntendedUse.shareDataWithThirdParty = staticTemplate.contractParameters.hasIntendedUse.shareDataWithThirdParty
+    jsonTemplate.hasIntendedUse.IntendedUse.editData = staticTemplate.contractParameters.hasIntendedUse.editData
+    jsonTemplate.hasLicenseGrant.LicenseGrant.copyData = staticTemplate.contractParameters.hasLicenseGrant.copyData
+    jsonTemplate.hasLicenseGrant.LicenseGrant.transferable = staticTemplate.contractParameters.hasLicenseGrant.transferable
+    jsonTemplate.hasLicenseGrant.LicenseGrant.exclusiveness = staticTemplate.contractParameters.hasLicenseGrant.exclusiveness
+    jsonTemplate.hasLicenseGrant.LicenseGrant.revocable = staticTemplate.contractParameters.hasLicenseGrant.revocable
 
     return jsonTemplate
 }
@@ -65,18 +65,18 @@ export function processTemplate (template:Template) {
     const dataSource = template.hasDescriptionOfData.DescriptionOfData.dataSource
     const descriptionOfData = [dataType, dataFormat, dataSource]
 
-    const processData = stringToBoolean(template.hasIntendedUse.IntendedUse.processData)
-    const shareDataWithThirdParty = stringToBoolean(template.hasIntendedUse.IntendedUse.shareDataWithThirdParty)
-    const editData = stringToBoolean(template.hasIntendedUse.IntendedUse.editData)
+    const processData = template.hasIntendedUse.IntendedUse.processData
+    const shareDataWithThirdParty = template.hasIntendedUse.IntendedUse.shareDataWithThirdParty
+    const editData = template.hasIntendedUse.IntendedUse.editData
     const intendedUse = [processData, shareDataWithThirdParty, editData]
 
-    const copyData = stringToBoolean(template.hasLicenseGrant.LicenseGrant.copyData)
-    const transferable = stringToBoolean(template.hasLicenseGrant.LicenseGrant.transferable)
-    const exclusiveness = stringToBoolean(template.hasLicenseGrant.LicenseGrant.revocable)
-    const revocable = stringToBoolean(template.hasLicenseGrant.LicenseGrant.revocable)
+    const copyData = template.hasLicenseGrant.LicenseGrant.copyData
+    const transferable = template.hasLicenseGrant.LicenseGrant.transferable
+    const exclusiveness = template.hasLicenseGrant.LicenseGrant.revocable
+    const revocable = template.hasLicenseGrant.LicenseGrant.revocable
     const licenseGrant = [copyData, transferable, exclusiveness, revocable]
 
-    const dataStream = stringToBoolean(template.DataStream)
+    const dataStream = template.DataStream
 
     console.log("dataofferingId => "+dataOfferingId+" purpose => "+purpose+" consumerId => "+consumerId+" providerId => "+providerId+
     " dates => ["+startDate+","+endDate+"] descriptionOfDate => ["+dataType+","+dataFormat+","+dataSource+"] intendedUse => ["
@@ -174,15 +174,7 @@ export async function notify (origin: string, predefined: boolean, type: string,
         message: message,
         status: status
     }
-    // let notification_send = await _fetch(`${process.env.BACKPLANE_URL}/notification-manager-oas/api/v1/notification`, {
-    //     method: 'POST',
-    //     headers: {
-    //         'Accept': 'application/json',
-    //         'Content-Type': 'application/json'
-    //     },
-    //     body: JSON.stringify(notification),
-    // })
-    let notification_send = await _fetch(`${process.env.NOTIFICATION_MANAGER_URL}/api/v1/notification`, {
+    let notification_send = await _fetch(`${process.env.BACKPLANE_URL}/notification-manager-oas/api/v1/notification`, {
         method: 'POST',
         headers: {
             'Accept': 'application/json',
@@ -190,6 +182,14 @@ export async function notify (origin: string, predefined: boolean, type: string,
         },
         body: JSON.stringify(notification),
     })
+    // let notification_send = await _fetch(`${process.env.NOTIFICATION_MANAGER_URL}/api/v1/notification`, {
+    //     method: 'POST',
+    //     headers: {
+    //         'Accept': 'application/json',
+    //         'Content-Type': 'application/json'
+    //     },
+    //     body: JSON.stringify(notification),
+    // })
 }
 
 export function checkState(state:number) {

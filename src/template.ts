@@ -16,7 +16,7 @@ export interface Template {
     hasDescriptionOfData:    HasDescriptionOfData;
     hasIntendedUse:          HasIntendedUse;
     hasLicenseGrant:         HasLicenseGrant;
-    DataStream:              string;
+    DataStream:              boolean;
 }
 
 export interface DataOfferingDescription {
@@ -25,7 +25,7 @@ export interface DataOfferingDescription {
     description:    string;
     title:          string;
     category:       string;
-    isActive:       string;
+    isActive:       boolean;
 }
 
 export interface HasDescriptionOfData {
@@ -55,7 +55,7 @@ export interface HasDutiesObligations {
 export interface DutiesObligations {
     qualityOfData:    string;
     characteristics:  string;
-    dataAvailability: string;
+    dataAvailability: boolean;
 }
 
 export interface HasIntendedUse {
@@ -63,9 +63,9 @@ export interface HasIntendedUse {
 }
 
 export interface IntendedUse {
-    processData:             string;
-    shareDataWithThirdParty: string;
-    editData:                string;
+    processData:             boolean;
+    shareDataWithThirdParty: boolean;
+    editData:                boolean;
 }
 
 export interface HasLicenseGrant {
@@ -73,10 +73,10 @@ export interface HasLicenseGrant {
 }
 
 export interface LicenseGrant {
-    copyData:      string;
-    transferable:  string;
-    exclusiveness: string;
-    revocable:     string;
+    copyData:      boolean;
+    transferable:  boolean;
+    exclusiveness: boolean;
+    revocable:     boolean;
 }
 
 export interface HasParties {
@@ -242,7 +242,7 @@ const typeMap: any = {
         { json: "hasDescriptionOfData", js: "hasDescriptionOfData", typ: r("HasDescriptionOfData") },
         { json: "hasIntendedUse", js: "hasIntendedUse", typ: r("HasIntendedUse") },
         { json: "hasLicenseGrant", js: "hasLicenseGrant", typ: r("HasLicenseGrant") },
-        { json: "DataStream", js: "DataStream", typ: "" },
+        { json: "DataStream", js: "DataStream", typ: true },
     ], false),
     "DataOfferingDescription": o([
         { json: "dataOfferingId", js: "dataOfferingId", typ: "" },
@@ -250,7 +250,7 @@ const typeMap: any = {
         { json: "description", js: "description", typ: "" },
         { json: "title", js: "title", typ: "" },
         { json: "category", js: "category", typ: "" },
-        { json: "isActive", js: "isActive", typ: "" },
+        { json: "isActive", js: "isActive", typ: true },
     ], false),
     "HasDescriptionOfData": o([
         { json: "DescriptionOfData", js: "DescriptionOfData", typ: r("DescriptionOfData") },
@@ -274,24 +274,24 @@ const typeMap: any = {
     "DutiesObligations": o([
         { json: "qualityOfData", js: "qualityOfData", typ: "" },
         { json: "characteristics", js: "characteristics", typ: "" },
-        { json: "dataAvailability", js: "dataAvailability", typ: "" },
+        { json: "dataAvailability", js: "dataAvailability", typ: true },
     ], false),
     "HasIntendedUse": o([
         { json: "IntendedUse", js: "IntendedUse", typ: r("IntendedUse") },
     ], false),
     "IntendedUse": o([
-        { json: "processData", js: "processData", typ: "" },
-        { json: "shareDataWithThirdParty", js: "shareDataWithThirdParty", typ: "" },
-        { json: "editData", js: "editData", typ: "" },
+        { json: "processData", js: "processData", typ: true },
+        { json: "shareDataWithThirdParty", js: "shareDataWithThirdParty", typ: true },
+        { json: "editData", js: "editData", typ: true },
     ], false),
     "HasLicenseGrant": o([
         { json: "LicenseGrant", js: "LicenseGrant", typ: r("LicenseGrant") },
     ], false),
     "LicenseGrant": o([
-        { json: "copyData", js: "copyData", typ: "" },
-        { json: "transferable", js: "transferable", typ: "" },
-        { json: "exclusiveness", js: "exclusiveness", typ: "" },
-        { json: "revocable", js: "revocable", typ: "" },
+        { json: "copyData", js: "copyData", typ: true },
+        { json: "transferable", js: "transferable", typ: true },
+        { json: "exclusiveness", js: "exclusiveness", typ: true },
+        { json: "revocable", js: "revocable", typ: true },
     ], false),
     "HasParties": o([
         { json: "Parties", js: "Parties", typ: r("Parties") },

@@ -36,7 +36,7 @@ export default async (): Promise<typeof router> => {
     })
 
     router.get('/template/:template_id', async (req, res) => {
-        // Get static parameters
+        
         let staticParameters: any = await _fetch(`${process.env.BACKPLANE_URL}/semantic-engine/api/registration/contract-parameter/${req.params.template_id}/offeringId`, {
             method: 'GET',
             headers: {
@@ -51,15 +51,14 @@ export default async (): Promise<typeof router> => {
 
         let parsedToJson = JSON.parse(JSON.stringify(staticParametersJson))
 
-        if (parsedToJson[0] != undefined) {
+        if (parsedToJson != undefined) {
 
             try {
                 // Add static parameters to JSON template
-                const staticTemplate: StaticParametersTemplate = ConvertToStaticParametersTemplate.toStaticParametersTemplate(JSON.stringify(parsedToJson[0]))
+                const staticTemplate: StaticParametersTemplate = ConvertToStaticParametersTemplate.toStaticParametersTemplate(JSON.stringify(parsedToJson))
                 const jsonTemplate: Template = ConvertToTemplate.toTemplate(JSON.stringify(jsonTemplateFile))
 
                 const template: Template = getTemplate(jsonTemplate, staticTemplate)
-                console.log(template)
 
                 const response = JSON.parse(JSON.stringify(template))
 
@@ -424,12 +423,11 @@ router.put('/update_agreement_raw_transaction/:agreement_id/:sender_address', as
 
 })
 
-router.put('/sign_agreement_raw_transaction/:agreement_id/:consumer_id/:provider_id/:sender_address', async (req, res) => {
+router.put('/sign_agreement_raw_transaction/:agreement_id/:consumer_id/:sender_address', async (req, res) => {
 
     try {
         const agreementId = req.params.agreement_id
         const consumerId = req.params.consumer_id
-        const providerId = req.params.provider_id
         const senderAdress = req.params.sender_address
 
 

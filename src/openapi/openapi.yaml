@@ -39,6 +39,113 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/template'
+  /create_agreement_raw_transaction/{sender_address}:
+    post:
+      tags:
+        - Agreement
+      summary: Create agreement
+      parameters:
+        - name: sender_address
+          in: path
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/template' 
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/raw_transaction_template'
+              example:
+                nonce: 6
+                to: "0x527F9771A4805E7E539436368D09ed5032bf8f57"
+                from: "0xce02fe0c65285ac850d2e9b6494446e59f0b48e6"
+                gasLimit: 12500000
+                gasPrice: 10000000000
+                chainId: 1337
+                data: "0x89a8348c00000000000000000000000000000000000000000000000000000000000001c"
+      security:
+        - bearerAuth: []
+  /sign_agreement_raw_transaction/{agreement_id}/{consumer_id}/{sender_address}:
+    put:
+      tags:
+        - Agreement
+      summary: Sign agreement 
+      parameters:
+        - name: agreement_id
+          in: path
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+        - name: consumer_id
+          in: path
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+        - name: sender_address
+          in: path
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/raw_transaction_template'
+      security:
+        - bearerAuth: []
+  /update_agreement_raw_transaction/{agreement_id}/{sender_address}:
+    put:
+      tags:
+        - Agreement
+      summary: Update agreement 
+      parameters:
+        - name: agreement_id
+          in: path
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+        - name: sender_address
+          in: path
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/template'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/raw_transaction_template'
+      security:
+        - bearerAuth: []      
   /get_agreement/{agreement_id}:
     get:
       tags:
@@ -139,120 +246,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/state'
-      security:
-        - bearerAuth: []
-  /create_agreement_raw_transaction/{sender_address}:
-    post:
-      tags:
-        - Agreement
-      summary: Create agreement
-      parameters:
-        - name: sender_address
-          in: path
-          required: true
-          style: simple
-          explode: false
-          schema:
-            type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/template' 
-        required: true
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/raw_transaction_template'
-              example:
-                nonce: 6
-                to: "0x527F9771A4805E7E539436368D09ed5032bf8f57"
-                from: "0xce02fe0c65285ac850d2e9b6494446e59f0b48e6"
-                gasLimit: 12500000
-                gasPrice: 10000000000
-                chainId: 1337
-                data: "0x89a8348c00000000000000000000000000000000000000000000000000000000000001c"
-      security:
-        - bearerAuth: []
-  /update_agreement_raw_transaction/{agreement_id}/{sender_address}:
-    put:
-      tags:
-        - Agreement
-      summary: Update agreement 
-      parameters:
-        - name: agreement_id
-          in: path
-          required: true
-          style: simple
-          explode: false
-          schema:
-            type: string
-        - name: sender_address
-          in: path
-          required: true
-          style: simple
-          explode: false
-          schema:
-            type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/template'
-        required: true
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/raw_transaction_template'
-      security:
-        - bearerAuth: []
-  /sign_agreement_raw_transaction/{agreement_id}/{consumer_id}/{provider_id}/{sender_address}:
-    put:
-      tags:
-        - Agreement
-      summary: Sign agreement 
-      parameters:
-        - name: agreement_id
-          in: path
-          required: true
-          style: simple
-          explode: false
-          schema:
-            type: string
-        - name: consumer_id
-          in: path
-          required: true
-          style: simple
-          explode: false
-          schema:
-            type: string
-        - name: provider_id
-          in: path
-          required: true
-          style: simple
-          explode: false
-          schema:
-            type: string
-        - name: sender_address
-          in: path
-          required: true
-          style: simple
-          explode: false
-          schema:
-            type: string
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/raw_transaction_template'
       security:
         - bearerAuth: []
   /deploy_signed_transaction:
@@ -363,7 +356,7 @@ components:
             category:
               type: string
             isActive:
-              type: string
+              type: boolean
         Purpose:
           type: string
         hasParties:
@@ -401,7 +394,7 @@ components:
                   items:
                     type: string
                 dataAvailability:
-                  type: string
+                  type: boolean
         hasDescriptionOfData:
           type: object
           properties:
@@ -418,14 +411,14 @@ components:
           type: object
           properties:
             IntendedUse:
-              type: object
+              type: boolean
               properties:
                 processData:
-                  type: string
+                  type: boolean
                 shareDataWithThirdParty:
-                  type: string
+                  type: boolean
                 editData:
-                  type: string
+                  type: boolean
         hasLicenseGrant:
           type: object
           properties:
@@ -433,15 +426,15 @@ components:
               type: object
               properties:
                 copyData:
-                  type: string
+                  type: boolean
                 transferable:
-                  type: string
+                  type: boolean
                 exclusiveness:
-                  type: string
+                  type: boolean
                 revocable:
-                  type: string
+                  type: boolean
         DataStream:
-          type: string
+          type: boolean
     agreement_template:
       type: object
       properties:

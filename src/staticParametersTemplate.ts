@@ -8,36 +8,33 @@
 // match the expected interface, even if the JSON is valid.
 
 export interface StaticParametersTemplate {
-    dataOfferingId:     string;
+    offeringId:         string;
     provider:           string;
     category:           string;
-    contractParameters: ContractParameter[];
+    contractParameters: ContractParameters;
 }
 
-export interface ContractParameter {
-    contractParametersId:     string;
+export interface ContractParameters {
     interestOfProvider:       string;
     interestDescription:      string;
     hasGoverningJurisdiction: string;
     purpose:                  string;
     purposeDescription:       string;
-    hasIntendedUse:           HasIntendedUse[];
-    hasLicenseGrant:          HasLicenseGrant[];
+    hasIntendedUse:           HasIntendedUse;
+    hasLicenseGrant:          HasLicenseGrant;
 }
 
 export interface HasIntendedUse {
-    intendedUseId:           string;
-    processData:             string;
-    shareDataWithThirdParty: string;
-    editData:                string;
+    processData:             boolean;
+    shareDataWithThirdParty: boolean;
+    editData:                boolean;
 }
 
 export interface HasLicenseGrant {
-    licenseGrantId: string;
-    copyData:       string;
-    transferable:   string;
-    exclusiveness:  string;
-    revocable:      string;
+    copyData:      boolean;
+    transferable:  boolean;
+    exclusiveness: boolean;
+    revocable:     boolean;
 }
 
 // Converts JSON strings to/from your types
@@ -186,32 +183,29 @@ function r(name: string) {
 
 const typeMap: any = {
     "StaticParametersTemplate": o([
-        { json: "dataOfferingId", js: "dataOfferingId", typ: "" },
+        { json: "offeringId", js: "offeringId", typ: "" },
         { json: "provider", js: "provider", typ: "" },
         { json: "category", js: "category", typ: "" },
-        { json: "contractParameters", js: "contractParameters", typ: a(r("ContractParameter")) },
+        { json: "contractParameters", js: "contractParameters", typ: r("ContractParameters") },
     ], false),
-    "ContractParameter": o([
-        { json: "contractParametersId", js: "contractParametersId", typ: "" },
+    "ContractParameters": o([
         { json: "interestOfProvider", js: "interestOfProvider", typ: "" },
         { json: "interestDescription", js: "interestDescription", typ: "" },
         { json: "hasGoverningJurisdiction", js: "hasGoverningJurisdiction", typ: "" },
         { json: "purpose", js: "purpose", typ: "" },
         { json: "purposeDescription", js: "purposeDescription", typ: "" },
-        { json: "hasIntendedUse", js: "hasIntendedUse", typ: a(r("HasIntendedUse")) },
-        { json: "hasLicenseGrant", js: "hasLicenseGrant", typ: a(r("HasLicenseGrant")) },
+        { json: "hasIntendedUse", js: "hasIntendedUse", typ: r("HasIntendedUse") },
+        { json: "hasLicenseGrant", js: "hasLicenseGrant", typ: r("HasLicenseGrant") },
     ], false),
     "HasIntendedUse": o([
-        { json: "intendedUseId", js: "intendedUseId", typ: "" },
-        { json: "processData", js: "processData", typ: "" },
-        { json: "shareDataWithThirdParty", js: "shareDataWithThirdParty", typ: "" },
-        { json: "editData", js: "editData", typ: "" },
+        { json: "processData", js: "processData", typ: true },
+        { json: "shareDataWithThirdParty", js: "shareDataWithThirdParty", typ: true },
+        { json: "editData", js: "editData", typ: true },
     ], false),
     "HasLicenseGrant": o([
-        { json: "licenseGrantId", js: "licenseGrantId", typ: "" },
-        { json: "copyData", js: "copyData", typ: "" },
-        { json: "transferable", js: "transferable", typ: "" },
-        { json: "exclusiveness", js: "exclusiveness", typ: "" },
-        { json: "revocable", js: "revocable", typ: "" },
+        { json: "copyData", js: "copyData", typ: true },
+        { json: "transferable", js: "transferable", typ: true },
+        { json: "exclusiveness", js: "exclusiveness", typ: true },
+        { json: "revocable", js: "revocable", typ: true },
     ], false),
 };
