@@ -1,11 +1,11 @@
-{	
+{
 	"DataOfferingDescription": {
 		"dataOfferingId": "string",
 		"provider": "string",
 		"description": "string",
 		"title": "string",
 		"category": "string",
-		"isActive": "boolean"
+		"isActive": true
 	},
 	"Purpose": "string",
 	"hasParties": {
@@ -16,16 +16,16 @@
 	},
 	"hasDuration": {
 		"Duration": {
-		"creationDate": "date",
-		"startDate": "date",
-		"endDate": "date"
+			"creationDate": "date",
+			"startDate": "date",
+			"endDate": "date"
 		}
 	},
 	"hasDuties/Obligations": {
 		"Duties/Obligations": {
 			"qualityOfData": "integer",
 			"characteristics": "enum",
-			"dataAvailability": "boolean"
+			"dataAvailability": true
 		}
 	},
 	"hasDescriptionOfData": {
@@ -37,18 +37,18 @@
 	},
 	"hasIntendedUse": {
 		"IntendedUse": {
-			"processData": "boolean",
-			"shareDataWithThirdParty": "boolean",
-			"editData": "boolean"
+			"processData": true,
+			"shareDataWithThirdParty": true,
+			"editData": false
 		}
 	},
 	"hasLicenseGrant": {
-		"LicenseGrant":{
-			"copyData": "boolean",
-			"transferable": "boolean",
-			"exclusiveness": "boolean",
-			"revocable": "boolean"
+		"LicenseGrant": {
+			"copyData": true,
+			"transferable": false,
+			"exclusiveness": false,
+			"revocable": true
 		}
 	},
-	"DataStream": "boolean"
+	"DataStream": true
 }
