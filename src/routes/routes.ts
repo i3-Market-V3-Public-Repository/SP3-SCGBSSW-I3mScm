@@ -8,6 +8,10 @@ import { getTemplate, /*createAgreements,*/ processTemplate, formatAgreement, no
 import { ethers } from 'ethers';
 import * as path from 'path';
 
+import * as nonRepudiationLibrary from '@i3m/non-repudiation-library'
+import { DisputeRequestPayload } from '@i3m/non-repudiation-library';
+
+
 const dotenv = require('dotenv').config({ path: path.resolve(__dirname, '../../.env') })
 
 const router = express.Router()
@@ -382,9 +386,7 @@ export default async (): Promise<typeof router> => {
         }
     })
 
-    return router;
-}
-
+ 
 router.put('/update_agreement_raw_transaction/:agreement_id/:sender_address', async (req, res) => {
 
     try {
@@ -458,5 +460,49 @@ router.put('/sign_agreement_raw_transaction/:agreement_id/:consumer_id/:sender_a
     }
 })
 
+router.post('/provide_signed_resolution', async (req, res, next) => {
+    try {
+
+        const signedResolution =req.body
+        console.log(signedResolution)
+        const resolutionPayload = await nonRepudiationLibrary.ConflictResolution.verifyResolution(signedResolution)
+        
+        //const resolutionPayload = await nonRepudiationLibrary.ConflictResolution.verifyResolution<DisputeResolution>(signedResolution)
+
+        // proofType: 'resolution'
+        // type: 'dispute'
+        // resolution: 'accepted' | 'denied' // resolution is 'denied' if the cipherblock can be properly decrypted; otherwise is 'accepted'
+        // dataExchangeId: string // the unique id of this data exchange
+        // iat: number // unix timestamp stating when it was resolved
+        // iss: string // the public key of the CRS in JWK
+        // sub: string // the public key (JWK) of the entity that requested a resolution
+
+        //  // We will receive a signed resolution. Let us assume that is in variable disputeResolution
+        // const resolutionPayload = await nonRepudiationLibrary.ConflictResolution.verifyResolution<DisputeResolution>(disputeResolution)
+        // if (resolutionPayload.resolution === 'accepted') {
+        //     // We were right about our claim: the cipherblock cannot be decrypted and we can't be invoiced for it.
+        // } else { // resolutionPayload.resolution === 'denied'
+        // // The cipherblock can be decrypted with the published secret, so either we had a malicious intention or we have an issue with our software.
+        // }
+
+        const prooftype = signedResolution.prooftype
+        const type = signedResolution.type
+        const resolution = signedResolution.resolution
+        const dataExchangeId = signedResolution.dataExchangeId
+        const iat = signedResolution.iat
+        const iss = signedResolution.iss
+        const sub = signedResolution.sub
+
+        res.status(200).send(signedResolution)
+
+    } catch (error) {
+        if (error instanceof Error) {
+            console.log(`${error.message}`)
+            res.status(500).send({ name: `${error.name}`, message: `${error.message}` })
+        }
+    }
+})
+return router;
+}
 
 

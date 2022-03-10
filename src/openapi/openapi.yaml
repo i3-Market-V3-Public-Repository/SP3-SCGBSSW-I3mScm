@@ -268,6 +268,26 @@ paths:
                 $ref: '#/components/schemas/transaction_object'
       security:
         - bearerAuth: []
+  /provide_signed_resolution:
+    post:
+      tags:
+        - Conflict Resolutionn
+      summary: Verify a signed resolution
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/signed_resolution'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/transaction_object'
+      security:
+        - bearerAuth: []
 components:
   schemas:
     state:
@@ -497,6 +517,23 @@ components:
                     type: integer
                   issuerId:
                     type: string
+    signed_resolution:
+      type: object
+      properties:
+        proofType:
+          type: string
+        type:
+          type: string
+        resolution:
+          type: string
+        dataExchangeId:
+          type: string
+        iat:
+          type: integer
+        iss:
+          type: string
+        sub:
+          type: string
     active_agreements:
       type: array
       items:
