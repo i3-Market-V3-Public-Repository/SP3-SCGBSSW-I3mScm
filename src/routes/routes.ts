@@ -1,7 +1,7 @@
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
 import * as fs from 'fs';
-import _fetch = require('isomorphic-fetch')
+import _fetch from 'isomorphic-fetch'
 import { ConvertToTemplate, Template } from "../template";
 import { ConvertToStaticParametersTemplate, StaticParametersTemplate } from "../staticParametersTemplate";
 import { getTemplate, /*createAgreements,*/ processTemplate, formatAgreement, notify, checkState, formatTransaction, formatTransactionReceipt, parseHex } from "../common";
@@ -204,7 +204,7 @@ export default async (): Promise<typeof router> => {
     router.get('/check_active_agreements', async (req, res) => {
 
         try {
-            const formatedAgreements = []
+            const formatedAgreements: ReturnType<typeof formatAgreement>[] = []
             const activeAgreements = await contract.checkActiveAgreements();
 
             activeAgreements.forEach(agreement => {
@@ -230,7 +230,7 @@ export default async (): Promise<typeof router> => {
         try {
 
             const consumer_id = req.params.consumer_id
-            const formatedAgreements = []
+            const formatedAgreements: ReturnType<typeof formatAgreement>[] = []
             const activeAgreements = await contract.checkAgreementsByConsumer(consumer_id);
 
             activeAgreements.forEach(agreement => {
@@ -256,7 +256,7 @@ export default async (): Promise<typeof router> => {
         try {
 
             const provider_id = req.params.provider_id
-            const formatedAgreements = []
+            const formatedAgreements: ReturnType<typeof formatAgreement>[] = []
             const activeAgreements = await contract.checkAgreementsByProvider(provider_id);
 
             activeAgreements.forEach(agreement => {
@@ -350,7 +350,9 @@ export default async (): Promise<typeof router> => {
             // console.log(eventName)
             // console.log(event.args.consumerId+" " + event.args.consumerId + " " + parseInt(event.args.id))
 
-            let type: string, message: Object, status: string
+            let type: string = 'unrecognizedEvent'
+            let message: Object = {}
+            let status: string = 'unrecognizedEvent'
             const agreementId = event.args.id
 
             if (eventName === "AgreementCreated") {
@@ -462,10 +464,9 @@ router.put('/sign_agreement_raw_transaction/:agreement_id/:consumer_id/:sender_a
 
 router.post('/provide_signed_resolution', async (req, res, next) => {
     try {
-
-        const signedResolution =req.body
+        const signedResolution = req.body.proof
         console.log(signedResolution)
-        const resolutionPayload = await nonRepudiationLibrary.ConflictResolution.verifyResolution(signedResolution)
+        const decodedResolution = await nonRepudiationLibrary.ConflictResolution.verifyResolution(signedResolution)
         
         //const resolutionPayload = await nonRepudiationLibrary.ConflictResolution.verifyResolution<DisputeResolution>(signedResolution)
 
@@ -484,16 +485,22 @@ router.post('/provide_signed_resolution', async (req, res, next) => {
         // } else { // resolutionPayload.resolution === 'denied'
         // // The cipherblock can be decrypted with the published secret, so either we had a malicious intention or we have an issue with our software.
         // }
+        
+        const trustedIssuers = [
+            '{"alg":"ES256","crv":"P-256","d":"ugSiI9ILGgMc5Nc0nAa3qFN3AN0oGba33IAakHqdvmg","kty":"EC","x":"L6WfVXGbH0io6Jpm94S1lpdi6yGtT1OmZ65A_kS_hk8","y":"6YE0oPOpWBqC75D_jtJUfy5lsXlGjO5g6QXivDwMDKc"}'
+        ]
+        const proofType = decodedResolution.payload.proofType
+        const type = decodedResolution.payload.type
+        const resolution = decodedResolution.payload.resolution
+        const dataExchangeId = decodedResolution.payload.dataExchangeId
+        const iat = decodedResolution.payload.iat
+        const iss = decodedResolution.payload.iss
+        if (!trustedIssuers.includes(iss)) {
+            throw new Error('untrusted issuer')
+        }
+        const sub = decodedResolution.payload.sub
 
-        const prooftype = signedResolution.prooftype
-        const type = signedResolution.type
-        const resolution = signedResolution.resolution
-        const dataExchangeId = signedResolution.dataExchangeId
-        const iat = signedResolution.iat
-        const iss = signedResolution.iss
-        const sub = signedResolution.sub
-
-        res.status(200).send(signedResolution)
+        res.status(200).send(decodedResolution.payload)
 
     } catch (error) {
         if (error instanceof Error) {
