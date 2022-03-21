@@ -226,11 +226,11 @@ paths:
                 $ref: '#/components/schemas/active_agreements'
       security:
         - bearerAuth: []
-  /state/{agreement_id}:
+  /get_state/{agreement_id}:
     get:
       tags:
         - Agreement
-      summary: Check active agreements
+      summary: Get the state of the agreement
       parameters:
         - name: agreement_id
           in: path
@@ -350,6 +350,8 @@ components:
             type: string
           logs:
             type: array
+            items: 
+              type: object
           confirmation:
             type: integer
           status:

@@ -12,6 +12,19 @@
   "servers": [
     {
       "url": "/"
+    },
+    {
+      "url": "http://95.211.3.244:3333"
+    },
+    {
+      "url": "http://95.211.3.249:3333"
+    },
+    {
+      "url": "http://95.211.3.250:3333"
+    },
+    {
+      "url": "http://95.211.3.251:3333",
+      "variables": {}
     }
   ],
   "security": [
@@ -26,7 +39,7 @@
     }
   ],
   "paths": {
-    "/template/{template_id}": {
+    "/template/{offering_id}": {
       "get": {
         "tags": [
           "Agreement"
@@ -34,7 +47,7 @@
         "summary": "Request template with static and dynamic parameters",
         "parameters": [
           {
-            "name": "template_id",
+            "name": "offering_id",
             "in": "path",
             "required": true,
             "style": "simple",
@@ -86,6 +99,72 @@
           },
           "required": true
         },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/raw_transaction_template"
+                },
+                "example": {
+                  "nonce": 6,
+                  "to": "0x527F9771A4805E7E539436368D09ed5032bf8f57",
+                  "from": "0xce02fe0c65285ac850d2e9b6494446e59f0b48e6",
+                  "gasLimit": 12500000,
+                  "gasPrice": 10000000000,
+                  "chainId": 1337,
+                  "data": "0x89a8348c00000000000000000000000000000000000000000000000000000000000001c"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/sign_agreement_raw_transaction/{agreement_id}/{consumer_id}/{sender_address}": {
+      "put": {
+        "tags": [
+          "Agreement"
+        ],
+        "summary": "Sign agreement",
+        "parameters": [
+          {
+            "name": "agreement_id",
+            "in": "path",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "consumer_id",
+            "in": "path",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sender_address",
+            "in": "path",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -162,35 +241,15 @@
         ]
       }
     },
-    "/sign_agreement_raw_transaction/{agreement_id}/{consumer_id}/sender_address": {
-      "put": {
+    "/get_agreement/{agreement_id}": {
+      "get": {
         "tags": [
           "Agreement"
         ],
-        "summary": "Sign agreement",
+        "summary": "Get agreement",
         "parameters": [
           {
             "name": "agreement_id",
-            "in": "path",
-            "required": true,
-            "style": "simple",
-            "explode": false,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "consumer_id",
-            "in": "path",
-            "required": true,
-            "style": "simple",
-            "explode": false,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "sender_address",
             "in": "path",
             "required": true,
             "style": "simple",
@@ -206,7 +265,143 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/sign_msg"
+                  "$ref": "#/components/schemas/agreement_template"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/check_active_agreements": {
+      "get": {
+        "tags": [
+          "Agreement"
+        ],
+        "summary": "Check active agreements",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/active_agreements"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/check_agreements_by_consumer/{consumer_id}": {
+      "get": {
+        "tags": [
+          "Agreement"
+        ],
+        "summary": "Check agreements by consumer",
+        "parameters": [
+          {
+            "name": "consumer_id",
+            "in": "path",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/active_agreements"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/check_agreements_by_provider/{provider_id}": {
+      "get": {
+        "tags": [
+          "Agreement"
+        ],
+        "summary": "Check agreements by provider",
+        "parameters": [
+          {
+            "name": "provider_id",
+            "in": "path",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/active_agreements"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/get_state/{agreement_id}": {
+      "get": {
+        "tags": [
+          "Agreement"
+        ],
+        "summary": "Get the state of the agreement",
+        "parameters": [
+          {
+            "name": "agreement_id",
+            "in": "path",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/state"
                 }
               }
             }
@@ -254,31 +449,29 @@
         ]
       }
     },
-    "/get_agreement/{agreement_id}": {
-      "get": {
+    "/provide_signed_resolution": {
+      "post": {
         "tags": [
-          "Agreement"
+          "Conflict Resolutionn"
         ],
-        "summary": "Get agreement",
-        "parameters": [
-          {
-            "name": "agreement_id",
-            "in": "path",
-            "required": true,
-            "style": "simple",
-            "explode": false,
-            "schema": {
-              "type": "string"
+        "summary": "Verify a signed resolution",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/signed_resolution"
+              }
             }
-          }
-        ],
+          },
+          "required": true
+        },
         "responses": {
           "200": {
             "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/agreement_template"
+                  "$ref": "#/components/schemas/transaction_object"
                 }
               }
             }
@@ -294,6 +487,14 @@
   },
   "components": {
     "schemas": {
+      "state": {
+        "type": "object",
+        "properties": {
+          "state": {
+            "type": "string"
+          }
+        }
+      },
       "sign_msg": {
         "type": "object",
         "properties": {
@@ -337,17 +538,9 @@
             "type": "integer"
           },
           "chainId": {
-            "type": "string"
+            "type": "integer"
           },
           "data": {
-            "type": "string"
-          }
-        }
-      },
-      "signed_transaction": {
-        "type": "object",
-        "properties": {
-          "signed_transaction": {
             "type": "string"
           }
         }
@@ -383,13 +576,24 @@
             "type": "string"
           },
           "logs": {
-            "type": "array"
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
           },
-          "confirmations": {
+          "confirmation": {
             "type": "integer"
           },
           "status": {
             "type": "integer"
+          }
+        }
+      },
+      "signed_transaction": {
+        "type": "object",
+        "properties": {
+          "signed_transaction": {
+            "type": "string"
           }
         }
       },
@@ -502,7 +706,7 @@
             "type": "object",
             "properties": {
               "IntendedUse": {
-                "type": "object",
+                "type": "boolean",
                 "properties": {
                   "processData": {
                     "type": "boolean"
@@ -643,6 +847,23 @@
               ]
             }
           }
+        }
+      },
+      "signed_resolution": {
+        "type": "object",
+        "properties": {
+          "proof": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "proof": "eyJhbGciOiJFUzI1NiJ9.eyJwcm9vZlR5cGUiOiJyZXNvbHV0aW9uIiwiZGF0YUV4Y2hhbmdlSWQiOiJTTmg5eUtYYjJlaGxWSFJZQkllay16Z1pVaDJtU1NvMWpwbGg3SWEtNHlRIiwiaWF0IjoxNjQ2OTUxNjM1LCJpc3MiOiJ7XCJhbGdcIjpcIkVTMjU2XCIsXCJjcnZcIjpcIlAtMjU2XCIsXCJkXCI6XCJ1Z1NpSTlJTEdnTWM1TmMwbkFhM3FGTjNBTjBvR2JhMzNJQWFrSHFkdm1nXCIsXCJrdHlcIjpcIkVDXCIsXCJ4XCI6XCJMNldmVlhHYkgwaW82SnBtOTRTMWxwZGk2eUd0VDFPbVo2NUFfa1NfaGs4XCIsXCJ5XCI6XCI2WUUwb1BPcFdCcUM3NURfanRKVWZ5NWxzWGxHak81ZzZRWGl2RHdNREtjXCJ9Iiwic3ViIjoie1wiYWxnXCI6XCJFUzI1NlwiLFwiY3J2XCI6XCJQLTI1NlwiLFwia3R5XCI6XCJFQ1wiLFwieFwiOlwiVlhzQnVPWndWamhvZkpWNGtBaGJhNnduMUVZRHdVSWtnWGIyZlZuTDh4Y1wiLFwieVwiOlwiaDRmTDVRdjRFWXQ3WGRLcWRJeTFaSnM0X1FXWURrWTF6VXpTb0k2MU43WVwifSIsInJlc29sdXRpb24iOiJkZW5pZWQiLCJ0eXBlIjoiZGlzcHV0ZSJ9.TtxUm3E6LfmwEI74cr6RO4-nw-xcFaeARYOZ4z1dBVlc_JU0mCv0Ftr9tCDhggfLiJqb4RIPiNfIytFZMUbx-g"
+        }
+      },
+      "active_agreements": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/agreement_template"
         }
       }
     },

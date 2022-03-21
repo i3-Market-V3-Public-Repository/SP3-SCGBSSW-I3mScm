@@ -1,10 +1,10 @@
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
 import * as fs from 'fs';
-import _fetch from 'isomorphic-fetch'
+import * as _fetch from 'isomorphic-fetch'
 import { ConvertToTemplate, Template } from "../template";
 import { ConvertToStaticParametersTemplate, StaticParametersTemplate } from "../staticParametersTemplate";
-import { getTemplate, /*createAgreements,*/ processTemplate, formatAgreement, notify, checkState, formatTransaction, formatTransactionReceipt, parseHex } from "../common";
+import { getTemplate, /*createAgreements,*/ processTemplate, formatAgreement, notify, getState, formatTransaction, formatTransactionReceipt, parseHex } from "../common";
 import { ethers } from 'ethers';
 import * as path from 'path';
 
@@ -278,13 +278,13 @@ export default async (): Promise<typeof router> => {
         }
     })
 
-    router.get('/state/:agreement_id', async (req, res) => {
+    router.get('/get_state/:agreement_id', async (req, res) => {
 
         try {
 
             const agreement_id = req.params.agreement_id
             const agreementState = await contract.getState(agreement_id);
-            const response = checkState(agreementState)
+            const response = getState(agreementState)
 
             res.status(200).send(response)
 
@@ -441,15 +441,6 @@ router.put('/sign_agreement_raw_transaction/:agreement_id/:consumer_id/:sender_a
         unsignedSignAgreementTx.gasPrice = (await provider.getGasPrice())._hex
         unsignedSignAgreementTx.chainId = (await provider.getNetwork()).chainId
         unsignedSignAgreementTx.from = parseHex(senderAdress, true)
-
-        // const origin = "scm"
-        // const predefined = true
-        // const type = "agreement.accepted"
-        // const message = {msg: `Agreement with id: ${agreementId} was signed`}
-        // const status = "accepted"
-
-        // await notify(origin, predefined, type, `${consumerId}`, message, status)
-        // await notify(origin, predefined, type, `${providerId}`, message, status)
 
         const formatedRawTransaction = formatTransaction(unsignedSignAgreementTx)
         res.status(200).send(formatedRawTransaction)

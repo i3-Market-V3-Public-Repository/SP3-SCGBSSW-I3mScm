@@ -192,7 +192,7 @@ export async function notify (origin: string, predefined: boolean, type: string,
     // })
 }
 
-export function checkState(state:number) {
+export function getState(state:number) {
 
     let response
 
@@ -206,10 +206,14 @@ export function checkState(state:number) {
             break
         }
         case 2: {
-            response = {state: "violated"}
+            response = {state: "updated"}
             break
         }
         case 3: {
+            response = {state: "violated"}
+            break
+        }
+        case 4: {
             response = {state: "terminated"}
             break
         }
