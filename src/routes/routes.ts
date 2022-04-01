@@ -4,12 +4,10 @@ import * as fs from 'fs';
 import * as _fetch from 'isomorphic-fetch'
 import { ConvertToTemplate, Template } from "../template";
 import { ConvertToStaticParametersTemplate, StaticParametersTemplate } from "../staticParametersTemplate";
-import { getTemplate, /*createAgreements,*/ processTemplate, formatAgreement, notify, getState, formatTransaction, formatTransactionReceipt, parseHex } from "../common";
+import { getTemplate,  processTemplate, formatAgreement, notify, getState, formatTransaction, formatTransactionReceipt, parseHex } from "../common";
 import { ethers } from 'ethers';
 import * as path from 'path';
 
-import * as nonRepudiationLibrary from '@i3m/non-repudiation-library'
-import { DisputeRequestPayload } from '@i3m/non-repudiation-library';
 
 
 const dotenv = require('dotenv').config({ path: path.resolve(__dirname, '../../.env') })
@@ -78,110 +76,7 @@ export default async (): Promise<typeof router> => {
         }
     })
 
-    // router.post('/create_agreement', async (req ,res, next) => {
-    //     try {
-    //         const template = ConvertToTemplate.toTemplate(JSON.stringify(req.body))
-    //         const processedTemplate = processTemplate(template)
-
-    //         // process input data
-    //         const dataOfferingId = processedTemplate.dataOfferingId
-    //         const purpose = processedTemplate.purpose
-    //         const providerId = processedTemplate.providerId
-    //         const consumerId = processedTemplate.consumerId
-    //         const dates = processedTemplate.dates
-    //         const descriptionOfData = processedTemplate.descriptionOfData
-    //         const intendedUse = processedTemplate.intendedUse
-    //         const licenseGrant = processedTemplate.licenseGrant
-    //         const dataStream = processedTemplate.dataStream
-
-    //         const agreementId = await createAgreements(contract, dataOfferingId, purpose, providerId, consumerId, dates, descriptionOfData, intendedUse, licenseGrant, dataStream)
-
-    //         const origin = "scm"
-    //         const predefined = true
-    //         const type = "agreement.pending"
-    //         const message = {msg: "Agreement created"}
-    //         const status = "pending"
-
-    //         await notify(origin, predefined, type, `${consumerId}`, message, status)
-    //         await notify(origin, predefined, type, `${providerId}`, message, status)
-
-    //         res.status(200).send({agreement_id: `${agreementId}`})
-
-    //     } catch (error) {
-    //         if (error instanceof Error) {
-    //              console.log(`${error.message}`)
-    //              res.status(500).send({name: `${error.name}`, message: `${error.message}`})
-    //         }
-    //     }
-    //   })
-
-    //   router.post('/update_agreement/:agreement_id', async(req,res) => {
-
-    //     try {
-    //         const agreementId = req.params.agreement_id
-    //         const template = ConvertToTemplate.toTemplate(JSON.stringify(req.body))
-    //         const processedTemplate = processTemplate(template)
-
-    //         // process input data
-    //         const dataOfferingId = processedTemplate.dataOfferingId
-    //         const purpose = processedTemplate.purpose
-    //         const providerId = processedTemplate.providerId
-    //         const consumerId = processedTemplate.consumerId
-    //         const dates = processedTemplate.dates
-    //         const descriptionOfData = processedTemplate.descriptionOfData
-    //         const intendedUse = processedTemplate.intendedUse
-    //         const licenseGrant = processedTemplate.licenseGrant
-    //         const dataStream = processedTemplate.dataStream
-
-    //         const update = await contract.updateAgreement(agreementId ,dataOfferingId, purpose, providerId, consumerId, dates, descriptionOfData, intendedUse, licenseGrant, dataStream)
-
-    //         const origin = "scm"
-    //         const predefined = true
-    //         const type = "agreement.update"
-    //         const message = {msg: "Agreement updated"}
-    //         const status = "update"
-
-    //         await notify(origin, predefined, type, `${consumerId}`, message, status)
-    //         await notify(origin, predefined, type, `${providerId}`, message, status)
-
-    //         res.status(200).send({msg: `Agreement with id ${agreementId} was updated`})
-
-    //     } catch (error) {
-    //         if (error instanceof Error) {
-    //             console.log(`${error.message}`)
-    //             res.status(500).send({name: `${error.name}`, message: `${error.message}`})
-    //        } 
-    //     }
-
-    //   })
-
-    //   router.get('/sign_agreement/:agreement_id/:consumer_id/:provider_id', async(req,res) => {
-
-    //     try {
-    //         const agreementId = req.params.agreement_id
-    //         const consumerId = req.params.consumer_id
-    //         const providerId = req.params.provider_id
-
-    //         const signAgreement = await contract.signAgreement(agreementId, consumerId, {gasLimit: gasLimit});
-
-    //         const origin = "scm"
-    //         const predefined = true
-    //         const type = "agreement.accepted"
-    //         const message = {msg: "Agreement signed"}
-    //         const status = "accepted"
-
-    //         await notify(origin, predefined, type, `${consumerId}`, message, status)
-    //         await notify(origin, predefined, type, `${providerId}`, message, status)
-
-    //         res.status(200).send({msg: `Agreement with id ${agreementId} was signed`})
-    //     } catch (error) {
-    //         if(error instanceof Error){
-    //             console.log(`${error.message}`)
-    //             res.status(500).send({name: `${error.name}`, message: `${error.message}`})
-    //         }
-    //     }
-    //   })
-
+    
     router.get('/get_agreement/:agreement_id', async (req, res) => {
 
         try {
@@ -453,53 +348,6 @@ router.put('/sign_agreement_raw_transaction/:agreement_id/:consumer_id/:sender_a
     }
 })
 
-router.post('/provide_signed_resolution', async (req, res, next) => {
-    try {
-        const signedResolution = req.body.proof
-        console.log(signedResolution)
-        const decodedResolution = await nonRepudiationLibrary.ConflictResolution.verifyResolution(signedResolution)
-        
-        //const resolutionPayload = await nonRepudiationLibrary.ConflictResolution.verifyResolution<DisputeResolution>(signedResolution)
-
-        // proofType: 'resolution'
-        // type: 'dispute'
-        // resolution: 'accepted' | 'denied' // resolution is 'denied' if the cipherblock can be properly decrypted; otherwise is 'accepted'
-        // dataExchangeId: string // the unique id of this data exchange
-        // iat: number // unix timestamp stating when it was resolved
-        // iss: string // the public key of the CRS in JWK
-        // sub: string // the public key (JWK) of the entity that requested a resolution
-
-        //  // We will receive a signed resolution. Let us assume that is in variable disputeResolution
-        // const resolutionPayload = await nonRepudiationLibrary.ConflictResolution.verifyResolution<DisputeResolution>(disputeResolution)
-        // if (resolutionPayload.resolution === 'accepted') {
-        //     // We were right about our claim: the cipherblock cannot be decrypted and we can't be invoiced for it.
-        // } else { // resolutionPayload.resolution === 'denied'
-        // // The cipherblock can be decrypted with the published secret, so either we had a malicious intention or we have an issue with our software.
-        // }
-        
-        const trustedIssuers = [
-            '{"alg":"ES256","crv":"P-256","d":"ugSiI9ILGgMc5Nc0nAa3qFN3AN0oGba33IAakHqdvmg","kty":"EC","x":"L6WfVXGbH0io6Jpm94S1lpdi6yGtT1OmZ65A_kS_hk8","y":"6YE0oPOpWBqC75D_jtJUfy5lsXlGjO5g6QXivDwMDKc"}'
-        ]
-        const proofType = decodedResolution.payload.proofType
-        const type = decodedResolution.payload.type
-        const resolution = decodedResolution.payload.resolution
-        const dataExchangeId = decodedResolution.payload.dataExchangeId
-        const iat = decodedResolution.payload.iat
-        const iss = decodedResolution.payload.iss
-        if (!trustedIssuers.includes(iss)) {
-            throw new Error('untrusted issuer')
-        }
-        const sub = decodedResolution.payload.sub
-
-        res.status(200).send(decodedResolution.payload)
-
-    } catch (error) {
-        if (error instanceof Error) {
-            console.log(`${error.message}`)
-            res.status(500).send({ name: `${error.name}`, message: `${error.message}` })
-        }
-    }
-})
 return router;
 }
 
