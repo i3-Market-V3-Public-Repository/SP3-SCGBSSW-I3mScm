@@ -17,6 +17,20 @@ export interface Template {
     hasIntendedUse:          HasIntendedUse;
     hasLicenseGrant:         HasLicenseGrant;
     DataStream:              boolean;
+    DataExchangeAgreement:   DataExchangeAgreement;
+}
+
+export interface DataExchangeAgreement {
+    orig:                  string;
+    dest:                  string;
+    encAlg:                string;
+    "signingAlg;":         string;
+    hashAlg:               string;
+    ledgerContractAddress: string;
+    ledgerSignerAddress:   string;
+    pooToPorDelay:         number;
+    pooToPopDelay:         number;
+    pooToSecretDelay:      number;
 }
 
 export interface DataOfferingDescription {
@@ -43,9 +57,9 @@ export interface HasDuration {
 }
 
 export interface Duration {
-    creationDate: string;
-    startDate:    string;
-    endDate:      string;
+    creationDate: number;
+    startDate:    number;
+    endDate:      number;
 }
 
 export interface HasDutiesObligations {
@@ -243,6 +257,19 @@ const typeMap: any = {
         { json: "hasIntendedUse", js: "hasIntendedUse", typ: r("HasIntendedUse") },
         { json: "hasLicenseGrant", js: "hasLicenseGrant", typ: r("HasLicenseGrant") },
         { json: "DataStream", js: "DataStream", typ: true },
+        { json: "DataExchangeAgreement", js: "DataExchangeAgreement", typ: r("DataExchangeAgreement") },
+    ], false),
+    "DataExchangeAgreement": o([
+        { json: "orig", js: "orig", typ: "" },
+        { json: "dest", js: "dest", typ: "" },
+        { json: "encAlg", js: "encAlg", typ: "" },
+        { json: "signingAlg;", js: "signingAlg;", typ: "" },
+        { json: "hashAlg", js: "hashAlg", typ: "" },
+        { json: "ledgerContractAddress", js: "ledgerContractAddress", typ: "" },
+        { json: "ledgerSignerAddress", js: "ledgerSignerAddress", typ: "" },
+        { json: "pooToPorDelay", js: "pooToPorDelay", typ: 0 },
+        { json: "pooToPopDelay", js: "pooToPopDelay", typ: 0 },
+        { json: "pooToSecretDelay", js: "pooToSecretDelay", typ: 0 },
     ], false),
     "DataOfferingDescription": o([
         { json: "dataOfferingId", js: "dataOfferingId", typ: "" },
@@ -264,9 +291,9 @@ const typeMap: any = {
         { json: "Duration", js: "Duration", typ: r("Duration") },
     ], false),
     "Duration": o([
-        { json: "creationDate", js: "creationDate", typ: "" },
-        { json: "startDate", js: "startDate", typ: "" },
-        { json: "endDate", js: "endDate", typ: "" },
+        { json: "creationDate", js: "creationDate", typ: 0 },
+        { json: "startDate", js: "startDate", typ: 0 },
+        { json: "endDate", js: "endDate", typ: 0 },
     ], false),
     "HasDutiesObligations": o([
         { json: "Duties/Obligations", js: "Duties/Obligations", typ: r("DutiesObligations") },

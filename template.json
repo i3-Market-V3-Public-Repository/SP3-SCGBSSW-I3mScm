@@ -16,9 +16,9 @@
 	},
 	"hasDuration": {
 		"Duration": {
-			"creationDate": "date",
-			"startDate": "date",
-			"endDate": "date"
+			"creationDate": 0,
+			"startDate": 0,
+			"endDate": 0
 		}
 	},
 	"hasDuties/Obligations": {
@@ -50,5 +50,17 @@
 			"revocable": true
 		}
 	},
-	"DataStream": true
+	"DataStream": true,
+	"DataExchangeAgreement": {
+		"orig": "string",
+		"dest": "string",
+		"encAlg": "string",
+		"signingAlg;": "string",
+		"hashAlg": "string",
+		"ledgerContractAddress": "string",
+		"ledgerSignerAddress": "string",
+		"pooToPorDelay": 0,
+        "pooToPopDelay": 0,
+       	"pooToSecretDelay": 0
+	}	
 }

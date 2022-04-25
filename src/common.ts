@@ -51,13 +51,15 @@ function stringToBoolean(input:string) {
 export function processTemplate (template:Template) {
 
     // process template data
+    const providerPublicKey = template.DataExchangeAgreement.orig
+    const consumerPublicKey = template.DataExchangeAgreement.dest
     const dataOfferingId = template.DataOfferingDescription.dataOfferingId
     const purpose = template.Purpose
     const providerId = template.hasParties.Parties.dataProvider
     const consumerId = template.hasParties.Parties.dataConsumer
 
-    const startDate = Number(template.hasDuration.Duration.startDate)
-    const endDate = Number(template.hasDuration.Duration.endDate)
+    const startDate = template.hasDuration.Duration.startDate
+    const endDate = template.hasDuration.Duration.endDate
     const dates = [startDate, endDate]
 
     const dataType = template.hasDescriptionOfData.DescriptionOfData.dataType
@@ -83,6 +85,8 @@ export function processTemplate (template:Template) {
     +processData+","+shareDataWithThirdParty+","+editData+"] licenseGrant => ["+copyData+","+transferable+","+exclusiveness+","+revocable+"] dataStream => "+dataStream)
 
     return {
+        providerPublicKey: providerPublicKey,
+        consumerPublicKey: consumerPublicKey,
         dataOfferingId: dataOfferingId,
         purpose: purpose,
         providerId: providerId,

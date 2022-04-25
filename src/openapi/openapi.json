@@ -141,7 +141,7 @@
             "style": "simple",
             "explode": false,
             "schema": {
-              "type": "string"
+              "type": "integer"
             }
           },
           {
@@ -198,7 +198,7 @@
             "style": "simple",
             "explode": false,
             "schema": {
-              "type": "string"
+              "type": "integer"
             }
           },
           {
@@ -241,6 +241,41 @@
         ]
       }
     },
+    "/deploy_signed_transaction": {
+      "post": {
+        "tags": [
+          "Agreement"
+        ],
+        "summary": "Deploy signed transaction",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/signed_transaction"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/transaction_object"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
     "/get_agreement/{agreement_id}": {
       "get": {
         "tags": [
@@ -255,7 +290,7 @@
             "style": "simple",
             "explode": false,
             "schema": {
-              "type": "string"
+              "type": "integer"
             }
           }
         ],
@@ -391,7 +426,7 @@
             "style": "simple",
             "explode": false,
             "schema": {
-              "type": "string"
+              "type": "integer"
             }
           }
         ],
@@ -414,17 +449,89 @@
         ]
       }
     },
-    "/deploy_signed_transaction": {
-      "post": {
+    "/retrieve_agreements/{consumer_public_key}": {
+      "get": {
         "tags": [
-          "Deploy signed Transaction"
+          "Agreement"
         ],
-        "summary": "Deploy signed transaction",
+        "summary": "Retrieve the agreement based on consumer public key",
+        "parameters": [
+          {
+            "name": "consumer_public_key",
+            "in": "path",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/agreement_template"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/map_data_exchange_to_agreement": {
+      "put": {
+        "tags": [
+          "Agreement"
+        ],
+        "summary": "Record the data exchange id based on the agreement id",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/signed_transaction"
+                "$ref": "#/components/schemas/data_exchange_to_agreement_id"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/evaluate_signed_resolution": {
+      "post": {
+        "tags": [
+          "Conflict Resolution"
+        ],
+        "summary": "Verify a signed resolution",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/signed_resolution"
               }
             }
           },
@@ -449,12 +556,12 @@
         ]
       }
     },
-    "/provide_signed_resolution": {
-      "post": {
+    "/terminate": {
+      "put": {
         "tags": [
-          "Conflict Resolutionn"
+          "Angreement"
         ],
-        "summary": "Verify a signed resolution",
+        "summary": "Terminate Agreement",
         "requestBody": {
           "content": {
             "application/json": {
@@ -515,7 +622,7 @@
         "type": "object",
         "properties": {
           "agreement_id": {
-            "type": "string"
+            "type": "integer"
           }
         }
       },
@@ -649,13 +756,13 @@
                 "type": "object",
                 "properties": {
                   "creationDate": {
-                    "type": "string"
+                    "type": "number"
                   },
                   "startDate": {
-                    "type": "string"
+                    "type": "number"
                   },
                   "endDate": {
-                    "type": "string"
+                    "type": "number"
                   }
                 }
               }
@@ -745,14 +852,58 @@
           },
           "DataStream": {
             "type": "boolean"
+          },
+          "DataExchangeAgreement": {
+            "type": "object",
+            "properties": {
+              "orig": {
+                "type": "string"
+              },
+              "dest": {
+                "type": "string"
+              },
+              "encAlg": {
+                "type": "string"
+              },
+              "signingAlg": {
+                "type": "string"
+              },
+              "hashAlg": {
+                "type": "string"
+              },
+              "ledgerContractAddress": {
+                "type": "string"
+              },
+              "ledgerSignerAddress": {
+                "type": "string"
+              },
+              "pooToPorDelay": {
+                "type": "integer"
+              },
+              "pooToPopDelay": {
+                "type": "integer"
+              },
+              "pooToSecretDelay": {
+                "type": "integer"
+              }
+            }
           }
         }
       },
       "agreement_template": {
         "type": "object",
         "properties": {
+          "providerPublicKey": {
+            "type": "string"
+          },
+          "consumerPublicKey": {
+            "type": "string"
+          },
+          "dataExchangeAgreementHash": {
+            "type": "string"
+          },
           "dataOfferingId": {
-            "type": "integer"
+            "type": "string"
           },
           "purpose": {
             "type": "string"
@@ -864,6 +1015,17 @@
         "type": "array",
         "items": {
           "$ref": "#/components/schemas/agreement_template"
+        }
+      },
+      "data_exchange_to_agreement_id": {
+        "type": "object",
+        "properties": {
+          "data_exchange_id": {
+            "type": "string"
+          },
+          "agreement_id": {
+            "type": "integer"
+          }
         }
       }
     },

@@ -7,6 +7,7 @@ import { ConvertToStaticParametersTemplate, StaticParametersTemplate } from "../
 import { getTemplate, /*createAgreements,*/ processTemplate, formatAgreement, notify, getState, formatTransaction, formatTransactionReceipt, parseHex } from "../common";
 import { ethers } from 'ethers';
 import * as path from 'path';
+import * as objectSha from 'object-sha'
 
 import * as nonRepudiationLibrary from '@i3m/non-repudiation-library'
 import { DisputeRequestPayload } from '@i3m/non-repudiation-library';
@@ -187,10 +188,15 @@ export default async (): Promise<typeof router> => {
         try {
 
             const agreementId = req.params.agreement_id
-            const agreement = await contract.getAgreement(agreementId)
-            const response = JSON.parse(JSON.stringify(formatAgreement(agreement)))
-
-            res.status(200).send(response)
+            const agreement_length = await contract.getAgreementsLength()
+            if(agreementId<agreement_length){
+                const agreement = await contract.getAgreement(agreementId)
+                const response = JSON.parse(JSON.stringify(formatAgreement(agreement)))
+                res.status(200).send(response)
+            }
+            else{ 
+                res.status(400).send('Invalid agreement id.')
+        }
 
         } catch (error) {
             if (error instanceof Error) {
@@ -303,6 +309,8 @@ export default async (): Promise<typeof router> => {
             const processedTemplate = processTemplate(template)
 
             // process input data
+            const providerPublicKey = processedTemplate.providerPublicKey
+            const consumerPublicKey = processedTemplate.consumerPublicKey
             const dataOfferingId = processedTemplate.dataOfferingId
             const purpose = processedTemplate.purpose
             const providerId = processedTemplate.providerId
@@ -312,6 +320,9 @@ export default async (): Promise<typeof router> => {
             const intendedUse = processedTemplate.intendedUse
             const licenseGrant = processedTemplate.licenseGrant
             const dataStream = processedTemplate.dataStream
+
+            // add pulic keys + add to format agreement
+            console.log(providerPublicKey+" "+consumerPublicKey)
 
             const unsignedCreateAgreementTx = await contract.populateTransaction.createAgreement(dataOfferingId, purpose, providerId, consumerId, dates, descriptionOfData, intendedUse, licenseGrant, dataStream, { gasLimit: gasLimit }) as any
             unsignedCreateAgreementTx.nonce = await provider.getTransactionCount(sender_address)
@@ -337,6 +348,7 @@ export default async (): Promise<typeof router> => {
 
             const agreementTx = await provider.sendTransaction(signedTx)
 
+            console.log(agreementTx)
             const hash = agreementTx.hash
 
             await provider.waitForTransaction(hash)
@@ -344,8 +356,8 @@ export default async (): Promise<typeof router> => {
 
             const formatedTransactionReceipt = formatTransactionReceipt(receipt)
 
-            let event = new ethers.utils.Interface(contractABI).parseLog(receipt.logs[0])
-            const eventName = event.eventFragment.name
+            let logs = new ethers.utils.Interface(contractABI).parseLog(receipt.logs[0])
+            const eventName = logs.eventFragment.name
 
             // console.log(eventName)
             // console.log(event.args.consumerId+" " + event.args.consumerId + " " + parseInt(event.args.id))
@@ -353,7 +365,7 @@ export default async (): Promise<typeof router> => {
             let type: string = 'unrecognizedEvent'
             let message: Object = {}
             let status: string = 'unrecognizedEvent'
-            const agreementId = event.args.id
+            const agreementId = logs.args.id
 
             if (eventName === "AgreementCreated") {
                 type = "agreement.pending"
@@ -373,8 +385,8 @@ export default async (): Promise<typeof router> => {
 
             const origin = "scm"
             const predefined = true
-            await notify(origin, predefined, type, `${event.args.providerId}`, message, status)
-            await notify(origin, predefined, type, `${event.args.consumerId}`, message, status)
+            await notify(origin, predefined, type, `${logs.args.providerId}`, message, status)
+            await notify(origin, predefined, type, `${logs.args.consumerId}`, message, status)
             
 
 
@@ -453,7 +465,63 @@ router.put('/sign_agreement_raw_transaction/:agreement_id/:consumer_id/:sender_a
     }
 })
 
-router.post('/provide_signed_resolution', async (req, res, next) => {
+router.get('/retrieve_agreements/:consumer_public_key', async (req, res) => {
+    try {
+
+        const consumer_pulic_key = req.params.consumer_public_key
+        console.log(consumer_pulic_key)
+        const formatedAgreements: ReturnType<typeof formatAgreement>[] = []
+        //const agreements = await contract.retrieveAgreements(consumer_public_key);
+
+        // agreements.forEach(agreement => {
+
+        //     const formatedAgreement = formatAgreement(agreement)
+        //     formatedAgreements.push(formatedAgreement)
+        // })
+
+        res.status(200).send(formatedAgreements)
+
+    } catch (error) {
+        if (error instanceof Error) {
+            console.log(`${error.message}`)
+            res.status(500).send({ name: `${error.name}`, message: `${error.message}` })
+        }
+    }
+})
+
+router.put('/map_data_exchange_to_agreement/', async (req, res) => {
+
+    try {
+        const dataExchangeId = req.body.data_exchange_id
+        const agreementId = req.body.agreement_id
+        console.log(dataExchangeId+" "+agreementId)
+
+
+        const obj1 = { src: 'A', dst: 'B', msg: { hello: 'goodbye!', arr: [2, 9, { b: 5, a: 7 }] } }
+        const obj2 = { dst: 'B', src: 'A', msg: { arr: [2, 9, { a: 7, b: 5 }], hello: 'goodbye!' } }
+
+        console.log(objectSha.hashable(obj1)) // [["dst","B"],["msg",[["arr",[2,9,[["a",7],["b",5]]]],["hello","goodbye!"]]],["src","A"]]
+        console.log(objectSha.hashable(obj2)) // [["dst","B"],["msg",[["arr",[2,9,[["a",7],["b",5]]]],["hello","goodbye!"]]],["src","A"]]
+
+        objectSha.digest(obj1).then(console.log) // 6269af73d25f886a50879942cdf5c40500371c6f4d510cec0a67b2992b0a9549
+        objectSha.digest(obj2).then(console.log) // 6269af73d25f886a50879942cdf5c40500371c6f4d510cec0a67b2992b0a9549
+
+        objectSha.digest(obj1, 'SHA-512').then(console.log) // f3325ec4c42cc0154c6a9c78446ce3915196c6ae62d077838b699ca83faa2bd2c0639dd6ca43561afb28bfeb2ffd7481b45c07eaebb7098e1c62ef3c0d441b0b
+        objectSha.digest(obj2, 'SHA-512').then(console.log) 
+        
+
+
+        res.status(200).send("transaction successful")
+
+    } catch (error) {
+        if (error instanceof Error) {
+            console.log(`${error.message}`)
+            res.status(500).send({ name: `${error.name}`, message: `${error.message}` })
+        }
+    }
+})
+
+router.post('/evaluate_signed_resolution', async (req, res, next) => {
     try {
         const signedResolution = req.body.proof
         console.log(signedResolution)
@@ -500,6 +568,7 @@ router.post('/provide_signed_resolution', async (req, res, next) => {
         }
     }
 })
+
 return router;
 }
 
