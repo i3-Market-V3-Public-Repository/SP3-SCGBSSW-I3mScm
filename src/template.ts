@@ -13,7 +13,6 @@ export interface Template {
     hasParties:              HasParties;
     hasDuration:             HasDuration;
     "hasDuties/Obligations": HasDutiesObligations;
-    hasDescriptionOfData:    HasDescriptionOfData;
     hasIntendedUse:          HasIntendedUse;
     hasLicenseGrant:         HasLicenseGrant;
     DataStream:              boolean;
@@ -40,16 +39,6 @@ export interface DataOfferingDescription {
     title:          string;
     category:       string;
     isActive:       boolean;
-}
-
-export interface HasDescriptionOfData {
-    DescriptionOfData: DescriptionOfData;
-}
-
-export interface DescriptionOfData {
-    dataType:   string;
-    dataFormat: string;
-    dataSource: string;
 }
 
 export interface HasDuration {
@@ -253,7 +242,6 @@ const typeMap: any = {
         { json: "hasParties", js: "hasParties", typ: r("HasParties") },
         { json: "hasDuration", js: "hasDuration", typ: r("HasDuration") },
         { json: "hasDuties/Obligations", js: "hasDuties/Obligations", typ: r("HasDutiesObligations") },
-        { json: "hasDescriptionOfData", js: "hasDescriptionOfData", typ: r("HasDescriptionOfData") },
         { json: "hasIntendedUse", js: "hasIntendedUse", typ: r("HasIntendedUse") },
         { json: "hasLicenseGrant", js: "hasLicenseGrant", typ: r("HasLicenseGrant") },
         { json: "DataStream", js: "DataStream", typ: true },
@@ -278,14 +266,6 @@ const typeMap: any = {
         { json: "title", js: "title", typ: "" },
         { json: "category", js: "category", typ: "" },
         { json: "isActive", js: "isActive", typ: true },
-    ], false),
-    "HasDescriptionOfData": o([
-        { json: "DescriptionOfData", js: "DescriptionOfData", typ: r("DescriptionOfData") },
-    ], false),
-    "DescriptionOfData": o([
-        { json: "dataType", js: "dataType", typ: "" },
-        { json: "dataFormat", js: "dataFormat", typ: "" },
-        { json: "dataSource", js: "dataSource", typ: "" },
     ], false),
     "HasDuration": o([
         { json: "Duration", js: "Duration", typ: r("Duration") },

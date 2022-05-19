@@ -79,14 +79,15 @@ export function processTemplate (template:Template) {
     const providerId = template.hasParties.Parties.dataProvider
     const consumerId = template.hasParties.Parties.dataConsumer
 
+    const creationDate = template.hasDuration.Duration.creationDate
     const startDate = template.hasDuration.Duration.startDate
     const endDate = template.hasDuration.Duration.endDate
-    const dates = [startDate, endDate]
+    const dates = [creationDate, startDate, endDate]
 
-    const dataType = template.hasDescriptionOfData.DescriptionOfData.dataType
-    const dataFormat = template.hasDescriptionOfData.DescriptionOfData.dataFormat
-    const dataSource = template.hasDescriptionOfData.DescriptionOfData.dataSource
-    const descriptionOfData = [dataType, dataFormat, dataSource]
+    // const dataType = template.hasDescriptionOfData.DescriptionOfData.dataType
+    // const dataFormat = template.hasDescriptionOfData.DescriptionOfData.dataFormat
+    // const dataSource = template.hasDescriptionOfData.DescriptionOfData.dataSource
+    // const descriptionOfData = [dataType, dataFormat, dataSource]
 
     const processData = template.hasIntendedUse.IntendedUse.processData
     const shareDataWithThirdParty = template.hasIntendedUse.IntendedUse.shareDataWithThirdParty
@@ -102,7 +103,7 @@ export function processTemplate (template:Template) {
     const dataStream = template.DataStream
 
     console.log("dataofferingId => "+dataOfferingId+" purpose => "+purpose+" consumerId => "+consumerId+" providerId => "+providerId+
-    " dates => ["+startDate+","+endDate+"] descriptionOfDate => ["+dataType+","+dataFormat+","+dataSource+"] intendedUse => ["
+    " dates => ["+startDate+","+endDate+"]"+" intendedUse => ["
     +processData+","+shareDataWithThirdParty+","+editData+"] licenseGrant => ["+copyData+","+transferable+","+exclusiveness+","+revocable+"] dataStream => "+dataStream)
 
     return {
@@ -114,7 +115,7 @@ export function processTemplate (template:Template) {
         providerId: providerId,
         consumerId: consumerId,
         dates: dates,
-        descriptionOfData: descriptionOfData,
+       // descriptionOfData: descriptionOfData,
         intendedUse: intendedUse,
         licenseGrant: licenseGrant,
         dataStream: dataStream

@@ -443,11 +443,11 @@ components:
               type: object
               properties:
                 creationDate:
-                  type: number
+                  type: integer
                 startDate:
-                  type: number
+                  type: integer
                 endDate:
-                  type: number
+                  type: integer
         hasDuties/Obligations:
           type: object
           properties:
@@ -460,23 +460,11 @@ components:
                     type: string
                 dataAvailability:
                   type: boolean
-        hasDescriptionOfData:
-          type: object
-          properties:
-            DescriptionOfData:
-              type: object
-              properties:
-                dataType:
-                  type: string
-                dataFormat:
-                  type: string
-                dataSource:
-                  type: string
         hasIntendedUse:
           type: object
           properties:
             IntendedUse:
-              type: boolean
+              type: object
               properties:
                 processData:
                   type: boolean

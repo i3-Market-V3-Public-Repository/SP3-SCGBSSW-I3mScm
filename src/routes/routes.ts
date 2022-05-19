@@ -320,7 +320,7 @@ export default async (): Promise<typeof router> => {
             const providerId = processedTemplate.providerId
             const consumerId = processedTemplate.consumerId
             const dates = processedTemplate.dates
-            const descriptionOfData = processedTemplate.descriptionOfData
+            //const descriptionOfData = processedTemplate.descriptionOfData
             const intendedUse = processedTemplate.intendedUse
             const licenseGrant = processedTemplate.licenseGrant
             const dataStream = processedTemplate.dataStream
@@ -419,12 +419,12 @@ router.put('/update_agreement_raw_transaction/:agreement_id/:sender_address', as
         const providerId = processedTemplate.providerId
         const consumerId = processedTemplate.consumerId
         const dates = processedTemplate.dates
-        const descriptionOfData = processedTemplate.descriptionOfData
+        //const descriptionOfData = processedTemplate.descriptionOfData
         const intendedUse = processedTemplate.intendedUse
         const licenseGrant = processedTemplate.licenseGrant
         const dataStream = processedTemplate.dataStream
 
-        const unsignedUpdateAgreementTx = await contract.populateTransaction.updateAgreement(agreementId, dataOfferingId, purpose, providerId, consumerId, dates, descriptionOfData, intendedUse, licenseGrant, dataStream) as any
+        const unsignedUpdateAgreementTx = await contract.populateTransaction.updateAgreement(agreementId, dataOfferingId, purpose, providerId, consumerId, dates, intendedUse, licenseGrant, dataStream) as any
         unsignedUpdateAgreementTx.nonce = await provider.getTransactionCount(sender_address)
         unsignedUpdateAgreementTx.gasLimit = gasLimit
         unsignedUpdateAgreementTx.gasPrice = (await provider.getGasPrice())._hex

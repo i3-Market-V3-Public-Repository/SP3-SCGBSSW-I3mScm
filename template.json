@@ -28,13 +28,6 @@
 			"dataAvailability": true
 		}
 	},
-	"hasDescriptionOfData": {
-		"DescriptionOfData": {
-			"dataType": "string",
-			"dataFormat": "string",
-			"dataSource": "string"
-		}
-	},
 	"hasIntendedUse": {
 		"IntendedUse": {
 			"processData": true,

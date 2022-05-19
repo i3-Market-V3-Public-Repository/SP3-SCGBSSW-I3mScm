@@ -632,25 +632,6 @@
               }
             }
           },
-          "hasDescriptionOfData": {
-            "type": "object",
-            "properties": {
-              "DescriptionOfData": {
-                "type": "object",
-                "properties": {
-                  "dataType": {
-                    "type": "string"
-                  },
-                  "dataFormat": {
-                    "type": "string"
-                  },
-                  "dataSource": {
-                    "type": "string"
-                  }
-                }
-              }
-            }
-          },
           "hasIntendedUse": {
             "type": "object",
             "properties": {
