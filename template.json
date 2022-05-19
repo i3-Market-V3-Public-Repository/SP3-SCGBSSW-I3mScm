@@ -55,7 +55,7 @@
 		"orig": "string",
 		"dest": "string",
 		"encAlg": "string",
-		"signingAlg;": "string",
+		"signingAlg": "string",
 		"hashAlg": "string",
 		"ledgerContractAddress": "string",
 		"ledgerSignerAddress": "string",

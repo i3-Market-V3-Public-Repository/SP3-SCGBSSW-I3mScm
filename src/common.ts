@@ -2,6 +2,7 @@ import { StaticParametersTemplate } from "./staticParametersTemplate";
 import { Template } from "./template";
 import { ethers } from 'ethers';
 import _fetch = require('isomorphic-fetch')
+import * as objectSha from 'object-sha'
 
 /* ============= Common Functions ==========*/
 
@@ -51,8 +52,28 @@ function stringToBoolean(input:string) {
 export function processTemplate (template:Template) {
 
     // process template data
+
     const providerPublicKey = template.DataExchangeAgreement.orig
     const consumerPublicKey = template.DataExchangeAgreement.dest
+    const dataExchangeAgreement = template.DataExchangeAgreement    
+    const obj = { src: 'A', dst: 'B', msg: { dataExchangeAgreement } }
+    console.log(objectSha.hashable(obj))
+    //objectSha.digest(obj).then(console.log)
+    const dataExchangeAgreementHash =  objectSha.digest(obj) ///algorithm
+    console.log(dataExchangeAgreementHash)
+
+        // const obj1 = { src: 'A', dst: 'B', msg: { hello: 'goodbye!', arr: [2, 9, { b: 5, a: 7 }] } }
+        // const obj2 = { dst: 'B', src: 'A', msg: { arr: [2, 9, { a: 7, b: 5 }], hello: 'goodbye!' } }
+
+        // console.log(objectSha.hashable(obj1)) // [["dst","B"],["msg",[["arr",[2,9,[["a",7],["b",5]]]],["hello","goodbye!"]]],["src","A"]]
+        // console.log(objectSha.hashable(obj2)) // [["dst","B"],["msg",[["arr",[2,9,[["a",7],["b",5]]]],["hello","goodbye!"]]],["src","A"]]
+
+        // objectSha.digest(obj1).then(console.log) // 6269af73d25f886a50879942cdf5c40500371c6f4d510cec0a67b2992b0a9549
+        // objectSha.digest(obj2).then(console.log) // 6269af73d25f886a50879942cdf5c40500371c6f4d510cec0a67b2992b0a9549
+
+        // objectSha.digest(obj1, 'SHA-512').then(console.log) // f3325ec4c42cc0154c6a9c78446ce3915196c6ae62d077838b699ca83faa2bd2c0639dd6ca43561afb28bfeb2ffd7481b45c07eaebb7098e1c62ef3c0d441b0b
+        // objectSha.digest(obj2, 'SHA-512').then(console.log) 
+
     const dataOfferingId = template.DataOfferingDescription.dataOfferingId
     const purpose = template.Purpose
     const providerId = template.hasParties.Parties.dataProvider
@@ -87,6 +108,7 @@ export function processTemplate (template:Template) {
     return {
         providerPublicKey: providerPublicKey,
         consumerPublicKey: consumerPublicKey,
+        dataExchangeAgreementHash: dataExchangeAgreementHash,
         dataOfferingId: dataOfferingId,
         purpose: purpose,
         providerId: providerId,
@@ -102,20 +124,22 @@ export function processTemplate (template:Template) {
 export function formatAgreement(agreement:any) {
     
     return {
-        dataOfferingId: agreement.dataOfferingId,
+        agreementId: parseInt(agreement.agreementId),
+        providerPublicKey: agreement.providerPublicKey,
+        consumerPublicKey: agreement.consumerPublicKey,
+        dataExchangeAgreementHash: agreement.dataExchangeAgreementHash,
+        dataOffering: {
+            dataOfferingId: agreement.dataOffering.dataOfferingId,
+            dataOfferingVersion: agreement.dataOffering.dataOfferingVersion
+        },
         purpose: agreement.purpose,
         state: agreement.state,
         providerId: agreement.providerId,
         consumerId: agreement.consumerId,
         agreementDates: [parseInt(agreement.agreementDates[0]), parseInt(agreement.agreementDates[1]), parseInt(agreement.agreementDates[2])],
-        descriptionOfData: { 
-            dataType: agreement.descriptionOfData.dataType,
-            dataFormat: agreement.descriptionOfData.dataFormat,
-            dataSource: agreement.descriptionOfData.dataSource
-        },
         intendedUse: {
             processData: agreement.intendedUse.processData,
-            sharedDataWithThirdParty: agreement.intendedUse.sharedDataWithThirdParty,
+            shareDataWithThirdParty: agreement.intendedUse.shareDataWithThirdParty,
             editData: agreement.intendedUse.editData
         },
         licenseGrant: {
@@ -125,15 +149,15 @@ export function formatAgreement(agreement:any) {
             revocable: agreement.licenseGrant.revocable
         },
         dataStream: agreement.dataStream,
-        signed: agreement.signed,
-        violation: [
-            agreement.violation[0],
-            agreement.violation[1],
-            {
-                violationType: agreement.violation.violationType,
-                issuerId: agreement.violation.issuerId
-            }
-        ]
+        // signed: agreement.signed,
+        // violation: [
+        //     agreement.violation[0],
+        //     agreement.violation[1],
+        //     {
+        //         violationType: agreement.violation.violationType,
+        //         issuerId: agreement.violation.issuerId
+        //     }
+        // ]
     }
 
 }

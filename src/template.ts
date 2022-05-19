@@ -24,7 +24,7 @@ export interface DataExchangeAgreement {
     orig:                  string;
     dest:                  string;
     encAlg:                string;
-    "signingAlg;":         string;
+    signingAlg:            string;
     hashAlg:               string;
     ledgerContractAddress: string;
     ledgerSignerAddress:   string;
@@ -263,7 +263,7 @@ const typeMap: any = {
         { json: "orig", js: "orig", typ: "" },
         { json: "dest", js: "dest", typ: "" },
         { json: "encAlg", js: "encAlg", typ: "" },
-        { json: "signingAlg;", js: "signingAlg;", typ: "" },
+        { json: "signingAlg", js: "signingAlg", typ: "" },
         { json: "hashAlg", js: "hashAlg", typ: "" },
         { json: "ledgerContractAddress", js: "ledgerContractAddress", typ: "" },
         { json: "ledgerSignerAddress", js: "ledgerSignerAddress", typ: "" },

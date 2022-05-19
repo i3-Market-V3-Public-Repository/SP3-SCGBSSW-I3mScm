@@ -8,10 +8,7 @@ info:
   version: 1.0.0
 servers:
   - url: /
-  - url: http://95.211.3.244:3333
   - url: http://95.211.3.249:3333
-  - url: http://95.211.3.250:3333
-  - url: http://95.211.3.251:3333
     variables: {}
 security:
   - bearerAuth: []
@@ -39,6 +36,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/template'
+      security:
+        - bearerAuth: []
   /create_agreement_raw_transaction/{sender_address}:
     post:
       tags:
@@ -75,33 +74,17 @@ paths:
                 data: "0x89a8348c00000000000000000000000000000000000000000000000000000000000001c"
       security:
         - bearerAuth: []
-  /sign_agreement_raw_transaction/{agreement_id}/{consumer_id}/{sender_address}:
+  /sign_agreement_raw_transaction:
     put:
       tags:
         - Agreement
       summary: Sign agreement 
-      parameters:
-        - name: agreement_id
-          in: path
-          required: true
-          style: simple
-          explode: false
-          schema:
-            type: integer
-        - name: consumer_id
-          in: path
-          required: true
-          style: simple
-          explode: false
-          schema:
-            type: string
-        - name: sender_address
-          in: path
-          required: true
-          style: simple
-          explode: false
-          schema:
-            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/sign_agreement'
+        required: true
       responses:
         '200':
           description: OK
@@ -145,7 +128,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/raw_transaction_template'
       security:
-        - bearerAuth: []  
+        - bearerAuth: [] 
   /deploy_signed_transaction:
     post:
       tags:
@@ -287,69 +270,69 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/agreement_template'
+                $ref: '#/components/schemas/active_agreements'
       security:
         - bearerAuth: []
-  /map_data_exchange_to_agreement:
-    put:
-      tags:
-        - Agreement
-      summary: Record the data exchange id based on the agreement id
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/data_exchange_to_agreement_id'
-        required: true
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas'
-      security:
-        - bearerAuth: []  
-  /evaluate_signed_resolution:
-    post:
-      tags:
-        - Conflict Resolution
-      summary: Verify a signed resolution
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/signed_resolution'
-        required: true
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/transaction_object'
-      security:
-        - bearerAuth: []
-  /terminate:
-    put:
-      tags:
-        - Angreement
-      summary: Terminate Agreement
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/signed_resolution'
-        required: true
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/transaction_object'
-      security:
-        - bearerAuth: []
+  # /map_data_exchange_to_agreement:
+  #   put:
+  #     tags:
+  #       - Agreement
+  #     summary: Record the data exchange id based on the agreement id
+  #     requestBody:
+  #       content:
+  #         application/json:
+  #           schema:
+  #             $ref: '#/components/schemas/data_exchange_to_agreement_id'
+  #       required: true
+  #     responses:
+  #       '200':
+  #         description: OK
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: '#/components/schemas'
+  #     security:
+  #       - bearerAuth: [] 
+  # /evaluate_signed_resolution:
+  #   post:
+  #     tags:
+  #       - Agreement
+  #     summary: Verify a signed resolution
+  #     requestBody:
+  #       content:
+  #         application/json:
+  #           schema:
+  #             $ref: '#/components/schemas/signed_resolution'
+  #       required: true
+  #     responses:
+  #       '200':
+  #         description: OK
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: '#/components/schemas/transaction_object'
+  #     security:
+  #       - bearerAuth: []
+  # /terminate:
+  #   put:
+  #     tags:
+  #       - Agreement
+  #     summary: Terminate Agreement
+  #     requestBody:
+  #       content:
+  #         application/json:
+  #           schema:
+  #             $ref: '#/components/schemas/signed_resolution'
+  #       required: true
+  #     responses:
+  #       '200':
+  #         description: OK
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: '#/components/schemas/transaction_object'
+  #     security:
+  #       - bearerAuth: []
 components:
   schemas:
     state:
@@ -474,8 +457,6 @@ components:
                 qualityofData:
                   type: string
                 characteristics:
-                  type: array
-                  items:
                     type: string
                 dataAvailability:
                   type: boolean
@@ -545,14 +526,21 @@ components:
     agreement_template:
       type: object
       properties:
+        agreementId: 
+          type: integer
         providerPublicKey:
           type: string
         consumerPublicKey:
           type: string
         dataExchangeAgreementHash:
           type: string
-        dataOfferingId:
-          type: string
+        dataOffering:
+          type: object
+          properties:
+            dataOfferingId:
+              type: string
+            dataOfferingVersion:
+              type: string
         purpose:
           type: string
         state:
@@ -565,15 +553,6 @@ components:
           type: array
           items:
             type: integer
-        descriptionOfData:
-          type: object
-          properties:
-            dataType:
-              type: string
-            dataFormat:
-              type: string
-            dataSource:
-              type: string
         intendedUse:
           type: object
           properties:
@@ -617,6 +596,17 @@ components:
           type: string
       example:
         proof: 'eyJhbGciOiJFUzI1NiJ9.eyJwcm9vZlR5cGUiOiJyZXNvbHV0aW9uIiwiZGF0YUV4Y2hhbmdlSWQiOiJTTmg5eUtYYjJlaGxWSFJZQkllay16Z1pVaDJtU1NvMWpwbGg3SWEtNHlRIiwiaWF0IjoxNjQ2OTUxNjM1LCJpc3MiOiJ7XCJhbGdcIjpcIkVTMjU2XCIsXCJjcnZcIjpcIlAtMjU2XCIsXCJkXCI6XCJ1Z1NpSTlJTEdnTWM1TmMwbkFhM3FGTjNBTjBvR2JhMzNJQWFrSHFkdm1nXCIsXCJrdHlcIjpcIkVDXCIsXCJ4XCI6XCJMNldmVlhHYkgwaW82SnBtOTRTMWxwZGk2eUd0VDFPbVo2NUFfa1NfaGs4XCIsXCJ5XCI6XCI2WUUwb1BPcFdCcUM3NURfanRKVWZ5NWxzWGxHak81ZzZRWGl2RHdNREtjXCJ9Iiwic3ViIjoie1wiYWxnXCI6XCJFUzI1NlwiLFwiY3J2XCI6XCJQLTI1NlwiLFwia3R5XCI6XCJFQ1wiLFwieFwiOlwiVlhzQnVPWndWamhvZkpWNGtBaGJhNnduMUVZRHdVSWtnWGIyZlZuTDh4Y1wiLFwieVwiOlwiaDRmTDVRdjRFWXQ3WGRLcWRJeTFaSnM0X1FXWURrWTF6VXpTb0k2MU43WVwifSIsInJlc29sdXRpb24iOiJkZW5pZWQiLCJ0eXBlIjoiZGlzcHV0ZSJ9.TtxUm3E6LfmwEI74cr6RO4-nw-xcFaeARYOZ4z1dBVlc_JU0mCv0Ftr9tCDhggfLiJqb4RIPiNfIytFZMUbx-g'
+    sign_agreement:
+      type: object
+      properties:
+        agreement_id:
+          type: integer
+        consumer_id:
+          type: string
+        consumer_public_key:
+          type: string
+        consumer_ethereum_address:
+          type: string
     active_agreements:
       type: array
       items:
@@ -635,218 +625,3 @@ components:
       bearerFormat: JWT
 
 
- # /create_agreement:
-  #   post:
-  #     tags:
-  #       - Agreement
-  #     summary: Create agreement
-  #     requestBody:
-  #       content:
-  #         application/json:
-  #           schema:
-  #             $ref: '#/components/schemas/template'
-  #       required: true
-  #     responses:
-  #       '200':
-  #         description: OK
-  #         content:
-  #           application/json:
-  #             schema:
-  #               $ref: '#/components/schemas/agreement_id'
-  #     security:
-  #       - bearerAuth: []
-  # /update_agreement/{agreement_id}:
-  #   post:
-  #     tags:
-  #       - Agreement
-  #     summary: Update agreement 
-  #     parameters:
-  #       - name: agreement_id
-  #         in: path
-  #         required: true
-  #         style: simple
-  #         explode: false
-  #         schema:
-  #           type: string
-  #     requestBody:
-  #       content:
-  #         application/json:
-  #           schema:
-  #             $ref: '#/components/schemas/template'
-  #       required: true
-  #     responses:
-  #       '200':
-  #         description: OK
-  #         content:
-  #           application/json:
-  #             schema:
-  #               $ref: '#/components/schemas/update_msg'
-  #     security:
-  #       - bearerAuth: []
-  # /sign_agreement/{agreement_id}/{consumer_id}/{provider_id}:
-  #   get:
-  #     tags:
-  #       - Agreement
-  #     summary: Sign agreement
-  #     parameters:
-  #       - name: agreement_id
-  #         in: path
-  #         required: true
-  #         style: simple
-  #         explode: false
-  #         schema:
-  #           type: string
-  #       - name: consumer_id
-  #         in: path
-  #         required: true
-  #         style: simple
-  #         explode: false
-  #         schema:
-  #           type: string
-  #       - name: provider_id
-  #         in: path
-  #         required: true
-  #         style: simple
-  #         explode: false
-  #         schema:
-  #           type: string
-  #     responses:
-  #       '200':
-  #         description: OK
-  #         content:
-  #           application/json:
-  #             schema:
-  #               $ref: '#/components/schemas/sign_msg'
-  #     security:
-  #       - bearerAuth: []
-#   --------------------------------------------------------openapi.json
-#    "/create_agreement": {
-#       "post": {
-#         "tags": [
-#           "Agreement"
-#         ],
-#         "summary": "Create agreement",
-#         "requestBody": {
-#           "content": {
-#             "application/json": {
-#               "schema": {
-#                 "$ref": "#/components/schemas/template"
-#               }
-#             }
-#           },
-#           "required": true
-#         },
-#         "responses": {
-#           "200": {
-#             "description": "OK",
-#             "content": {
-#               "application/json": {
-#                 "schema": {
-#                   "$ref": "#/components/schemas/agreement_id"
-#                 }
-#               }
-#             }
-#           }
-#         },
-#         "security": [
-#           {
-#             "bearerAuth": []
-#           }
-#         ]
-#       }
-#     },
-#  "/update_agreement/{agreement_id}": {
-#       "post": {
-#         "tags": [
-#           "Agreement"
-#         ],
-#         "summary": "Update agreement",
-#         "parameters": [
-#           {
-#             "name": "agreement_id",
-#             "in": "path",
-#             "required": true,
-#             "style": "simple",
-#             "explode": false,
-#             "schema": {
-#               "type": "string"
-#             }
-#           }
-#         ],
-#         "requestBody": {
-#           "content": {
-#             "application/json": {
-#               "schema": {
-#                 "$ref": "#/components/schemas/template"
-#               }
-#             }
-#           },
-#           "required": true
-#         },
-#         "responses": {
-#           "200": {
-#             "description": "OK",
-#             "content": {
-#               "application/json": {
-#                 "schema": {
-#                   "$ref": "#/components/schemas/update_msg"
-#                 }
-#               }
-#             }
-#           }
-#         },
-#         "security": [
-#           {
-#             "bearerAuth": []
-#           }
-#         ]
-#       }
-#     },
-# ,
-#     "/sign_agreement/{agreement_id}/{consumer_id}": {
-#       "get": {
-#         "tags": [
-#           "Agreement"
-#         ],
-#         "summary": "Sign agreement",
-#         "parameters": [
-#           {
-#             "name": "agreement_id",
-#             "in": "path",
-#             "required": true,
-#             "style": "simple",
-#             "explode": false,
-#             "schema": {
-#               "type": "string"
-#             }
-#           },
-#           {
-#             "name": "consumer_id",
-#             "in": "path",
-#             "required": true,
-#             "style": "simple",
-#             "explode": false,
-#             "schema": {
-#               "type": "string"
-#             }
-#           }
-#         ],
-#         "responses": {
-#           "200": {
-#             "description": "OK",
-#             "content": {
-#               "application/json": {
-#                 "schema": {
-#                   "$ref": "#/components/schemas/sign_msg"
-#                 }
-#               }
-#             }
-#           }
-#         },
-#         "security": [
-#           {
-#             "bearerAuth": []
-#           }
-#         ]
-#       }
-#     }

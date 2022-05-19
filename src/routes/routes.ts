@@ -1,7 +1,7 @@
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
 import * as fs from 'fs';
-import * as _fetch from 'isomorphic-fetch'
+import _fetch = require('isomorphic-fetch')
 import { ConvertToTemplate, Template } from "../template";
 import { ConvertToStaticParametersTemplate, StaticParametersTemplate } from "../staticParametersTemplate";
 import { getTemplate, /*createAgreements,*/ processTemplate, formatAgreement, notify, getState, formatTransaction, formatTransactionReceipt, parseHex } from "../common";
@@ -191,6 +191,7 @@ export default async (): Promise<typeof router> => {
             const agreement_length = await contract.getAgreementsLength()
             if(agreementId<agreement_length){
                 const agreement = await contract.getAgreement(agreementId)
+                console.log(agreement)
                 const response = JSON.parse(JSON.stringify(formatAgreement(agreement)))
                 res.status(200).send(response)
             }
@@ -216,6 +217,7 @@ export default async (): Promise<typeof router> => {
             activeAgreements.forEach(agreement => {
 
                 const formatedAgreement = formatAgreement(agreement)
+                console.log(formatedAgreement)
                 formatedAgreements.push(formatedAgreement)
             })
 
@@ -304,6 +306,7 @@ export default async (): Promise<typeof router> => {
 
     router.post('/create_agreement_raw_transaction/:sender_address', async (req, res, next) => {
         try {
+
             const sender_address = req.params.sender_address
             const template = ConvertToTemplate.toTemplate(JSON.stringify(req.body))
             const processedTemplate = processTemplate(template)
@@ -311,6 +314,7 @@ export default async (): Promise<typeof router> => {
             // process input data
             const providerPublicKey = processedTemplate.providerPublicKey
             const consumerPublicKey = processedTemplate.consumerPublicKey
+            const dataExchangeAgreementHash = processedTemplate.dataExchangeAgreementHash
             const dataOfferingId = processedTemplate.dataOfferingId
             const purpose = processedTemplate.purpose
             const providerId = processedTemplate.providerId
@@ -322,9 +326,9 @@ export default async (): Promise<typeof router> => {
             const dataStream = processedTemplate.dataStream
 
             // add pulic keys + add to format agreement
-            console.log(providerPublicKey+" "+consumerPublicKey)
+            console.log(providerPublicKey+" "+consumerPublicKey+" "+dataExchangeAgreementHash)
 
-            const unsignedCreateAgreementTx = await contract.populateTransaction.createAgreement(dataOfferingId, purpose, providerId, consumerId, dates, descriptionOfData, intendedUse, licenseGrant, dataStream, { gasLimit: gasLimit }) as any
+            const unsignedCreateAgreementTx = await contract.populateTransaction.createAgreement(providerPublicKey, consumerPublicKey, dataExchangeAgreementHash,[dataOfferingId, '0'], purpose, providerId, consumerId, dates, intendedUse, licenseGrant, dataStream, { gasLimit: gasLimit }) as any
             unsignedCreateAgreementTx.nonce = await provider.getTransactionCount(sender_address)
             unsignedCreateAgreementTx.gasLimit = unsignedCreateAgreementTx.gasLimit?._hex
             unsignedCreateAgreementTx.gasPrice = (await provider.getGasPrice())._hex
@@ -439,15 +443,16 @@ router.put('/update_agreement_raw_transaction/:agreement_id/:sender_address', as
 
 })
 
-router.put('/sign_agreement_raw_transaction/:agreement_id/:consumer_id/:sender_address', async (req, res) => {
+router.put('/sign_agreement_raw_transaction', async (req, res) => {
 
     try {
-        const agreementId = req.params.agreement_id
-        const consumerId = req.params.consumer_id
-        const senderAdress = req.params.sender_address
+        const agreementId = req.body.agreement_id
+        const consumerId = req.body.consumer_id
+        const consumerPublicKey = req.body.consumer_public_key
+        const senderAdress = req.body.consumer_ethereum_address
 
 
-        const unsignedSignAgreementTx = await contract.populateTransaction.signAgreement(agreementId, consumerId, { gasLimit: gasLimit }) as any
+        const unsignedSignAgreementTx = await contract.populateTransaction.signAgreement(agreementId, consumerId, consumerPublicKey, { gasLimit: gasLimit }) as any
         unsignedSignAgreementTx.nonce = await provider.getTransactionCount(senderAdress)
         unsignedSignAgreementTx.gasLimit = gasLimit
         unsignedSignAgreementTx.gasPrice = (await provider.getGasPrice())._hex
@@ -468,50 +473,20 @@ router.put('/sign_agreement_raw_transaction/:agreement_id/:consumer_id/:sender_a
 router.get('/retrieve_agreements/:consumer_public_key', async (req, res) => {
     try {
 
-        const consumer_pulic_key = req.params.consumer_public_key
-        console.log(consumer_pulic_key)
+        const consumer_public_key = req.params.consumer_public_key
         const formatedAgreements: ReturnType<typeof formatAgreement>[] = []
-        //const agreements = await contract.retrieveAgreements(consumer_public_key);
+        const activeAgreements = await contract.retrieveAgreements(consumer_public_key);
 
-        // agreements.forEach(agreement => {
+        activeAgreements.forEach(agreement => {
 
-        //     const formatedAgreement = formatAgreement(agreement)
-        //     formatedAgreements.push(formatedAgreement)
-        // })
+            const formatedAgreement = formatAgreement(agreement)
+            formatedAgreements.push(formatedAgreement)
+        })
+
+        console.log("Number of active agreements by Consumer Public key: " + formatedAgreements.length)
 
         res.status(200).send(formatedAgreements)
 
-    } catch (error) {
-        if (error instanceof Error) {
-            console.log(`${error.message}`)
-            res.status(500).send({ name: `${error.name}`, message: `${error.message}` })
-        }
-    }
-})
-
-router.put('/map_data_exchange_to_agreement/', async (req, res) => {
-
-    try {
-        const dataExchangeId = req.body.data_exchange_id
-        const agreementId = req.body.agreement_id
-        console.log(dataExchangeId+" "+agreementId)
-
-
-        const obj1 = { src: 'A', dst: 'B', msg: { hello: 'goodbye!', arr: [2, 9, { b: 5, a: 7 }] } }
-        const obj2 = { dst: 'B', src: 'A', msg: { arr: [2, 9, { a: 7, b: 5 }], hello: 'goodbye!' } }
-
-        console.log(objectSha.hashable(obj1)) // [["dst","B"],["msg",[["arr",[2,9,[["a",7],["b",5]]]],["hello","goodbye!"]]],["src","A"]]
-        console.log(objectSha.hashable(obj2)) // [["dst","B"],["msg",[["arr",[2,9,[["a",7],["b",5]]]],["hello","goodbye!"]]],["src","A"]]
-
-        objectSha.digest(obj1).then(console.log) // 6269af73d25f886a50879942cdf5c40500371c6f4d510cec0a67b2992b0a9549
-        objectSha.digest(obj2).then(console.log) // 6269af73d25f886a50879942cdf5c40500371c6f4d510cec0a67b2992b0a9549
-
-        objectSha.digest(obj1, 'SHA-512').then(console.log) // f3325ec4c42cc0154c6a9c78446ce3915196c6ae62d077838b699ca83faa2bd2c0639dd6ca43561afb28bfeb2ffd7481b45c07eaebb7098e1c62ef3c0d441b0b
-        objectSha.digest(obj2, 'SHA-512').then(console.log) 
-        
-
-
-        res.status(200).send("transaction successful")
 
     } catch (error) {
         if (error instanceof Error) {
@@ -521,53 +496,144 @@ router.put('/map_data_exchange_to_agreement/', async (req, res) => {
     }
 })
 
-router.post('/evaluate_signed_resolution', async (req, res, next) => {
-    try {
-        const signedResolution = req.body.proof
-        console.log(signedResolution)
-        const decodedResolution = await nonRepudiationLibrary.ConflictResolution.verifyResolution(signedResolution)
+// router.put('/map_data_exchange_to_agreement/', async (req, res) => {
+
+//     try {
+//         const dataExchangeId = req.body.data_exchange_id
+//         const agreementId = req.body.agreement_id
+//         console.log(dataExchangeId+" "+agreementId)
+
+//         //const signer = new ethers.Wallet(privateKey, provider);
+//         //const contract = new ethers.Contract(contractAddress, contractABI, signer);
+
+//         const agreement_length = await contract.getAgreementsLength()
+//         if(agreementId<agreement_length){
+//             const mapAgreementToDataExchangeTx = await contract.mapAgreementIdByExchangeId(dataExchangeId, agreementId)
+//             await mapAgreementToDataExchangeTx.wait();
+//             res.status(200).send(mapAgreementToDataExchangeTx)
+//         }
+//         else{ 
+//             res.status(400).send('Invalid agreement id.')
+//     }
+
+//     } catch (error) {
+//         if (error instanceof Error) {
+//             console.log(`${error.message}`)
+//             res.status(500).send({ name: `${error.name}`, message: `${error.message}` })
+//         }
+//     }
+// })
+
+// router.post('/evaluate_signed_resolution', async (req, res, next) => {
+//     try {
+//         const signedResolution = req.body.proof
+//         console.log(signedResolution)
+//         const decodedResolution = await nonRepudiationLibrary.ConflictResolution.verifyResolution(signedResolution)
         
-        //const resolutionPayload = await nonRepudiationLibrary.ConflictResolution.verifyResolution<DisputeResolution>(signedResolution)
+//         //const resolutionPayload = await nonRepudiationLibrary.ConflictResolution.verifyResolution<DisputeResolution>(signedResolution)
 
-        // proofType: 'resolution'
-        // type: 'dispute'
-        // resolution: 'accepted' | 'denied' // resolution is 'denied' if the cipherblock can be properly decrypted; otherwise is 'accepted'
-        // dataExchangeId: string // the unique id of this data exchange
-        // iat: number // unix timestamp stating when it was resolved
-        // iss: string // the public key of the CRS in JWK
-        // sub: string // the public key (JWK) of the entity that requested a resolution
+//         // proofType: 'resolution'
+//         // type: 'dispute'
+//         // resolution: 'accepted' | 'denied' // resolution is 'denied' if the cipherblock can be properly decrypted; otherwise is 'accepted'
+//         // dataExchangeId: string // the unique id of this data exchange
+//         // iat: number // unix timestamp stating when it was resolved
+//         // iss: string // the public key of the CRS in JWK
+//         // sub: string // the public key (JWK) of the entity that requested a resolution
 
-        //  // We will receive a signed resolution. Let us assume that is in variable disputeResolution
-        // const resolutionPayload = await nonRepudiationLibrary.ConflictResolution.verifyResolution<DisputeResolution>(disputeResolution)
-        // if (resolutionPayload.resolution === 'accepted') {
-        //     // We were right about our claim: the cipherblock cannot be decrypted and we can't be invoiced for it.
-        // } else { // resolutionPayload.resolution === 'denied'
-        // // The cipherblock can be decrypted with the published secret, so either we had a malicious intention or we have an issue with our software.
-        // }
+//         //  // We will receive a signed resolution. Let us assume that is in variable disputeResolution
+//         // const resolutionPayload = await nonRepudiationLibrary.ConflictResolution.verifyResolution<DisputeResolution>(disputeResolution)
+//         // if (resolutionPayload.resolution === 'accepted') {
+//         //     // We were right about our claim: the cipherblock cannot be decrypted and we can't be invoiced for it.
+//         // } else { // resolutionPayload.resolution === 'denied'
+//         // // The cipherblock can be decrypted with the published secret, so either we had a malicious intention or we have an issue with our software.
+//         // }
         
-        const trustedIssuers = [
-            '{"alg":"ES256","crv":"P-256","d":"ugSiI9ILGgMc5Nc0nAa3qFN3AN0oGba33IAakHqdvmg","kty":"EC","x":"L6WfVXGbH0io6Jpm94S1lpdi6yGtT1OmZ65A_kS_hk8","y":"6YE0oPOpWBqC75D_jtJUfy5lsXlGjO5g6QXivDwMDKc"}'
-        ]
-        const proofType = decodedResolution.payload.proofType
-        const type = decodedResolution.payload.type
-        const resolution = decodedResolution.payload.resolution
-        const dataExchangeId = decodedResolution.payload.dataExchangeId
-        const iat = decodedResolution.payload.iat
-        const iss = decodedResolution.payload.iss
-        if (!trustedIssuers.includes(iss)) {
-            throw new Error('untrusted issuer')
-        }
-        const sub = decodedResolution.payload.sub
+//         const trustedIssuers = [
+//             '{"alg":"ES256","crv":"P-256","d":"ugSiI9ILGgMc5Nc0nAa3qFN3AN0oGba33IAakHqdvmg","kty":"EC","x":"L6WfVXGbH0io6Jpm94S1lpdi6yGtT1OmZ65A_kS_hk8","y":"6YE0oPOpWBqC75D_jtJUfy5lsXlGjO5g6QXivDwMDKc"}'
+//         ]
+//         const proofType = decodedResolution.payload.proofType
+//         const type = decodedResolution.payload.type
+//         const resolution = decodedResolution.payload.resolution
+//         const dataExchangeId = decodedResolution.payload.dataExchangeId
+//         const iat = decodedResolution.payload.iat
+//         const iss = decodedResolution.payload.iss
+//         if (!trustedIssuers.includes(iss)) {
+//             throw new Error('untrusted issuer')
+//         }
+//         const sub = decodedResolution.payload.sub
 
-        res.status(200).send(decodedResolution.payload)
+//         //smart contract
+//         //evaluateSignedResolution(string memory _proofType, string memory _type, string memory _resolution,string memory _dataExchangeId, uint256 _iat, string memory _iss, string memory _sub)
+//         //presentPenaltyChoicesForAgreement(string memory _dataExchangeId)
+//         //get list of penalties + agreement id
 
-    } catch (error) {
-        if (error instanceof Error) {
-            console.log(`${error.message}`)
-            res.status(500).send({ name: `${error.name}`, message: `${error.message}` })
-        }
-    }
-})
+//         res.status(200).send(decodedResolution.payload)
+
+//     } catch (error) {
+//         if (error instanceof Error) {
+//             console.log(`${error.message}`)
+//             res.status(500).send({ name: `${error.name}`, message: `${error.message}` })
+//         }
+//     }
+// })
+
+// router.put('/terminate', async (req, res, next) => {
+//     try {
+//         const signedResolution = req.body.proof
+//         console.log(signedResolution)
+//         const decodedResolution = await nonRepudiationLibrary.ConflictResolution.verifyResolution(signedResolution)
+        
+//         //const resolutionPayload = await nonRepudiationLibrary.ConflictResolution.verifyResolution<DisputeResolution>(signedResolution)
+
+//         // proofType: 'resolution'
+//         // type: 'dispute'
+//         // resolution: 'accepted' | 'denied' // resolution is 'denied' if the cipherblock can be properly decrypted; otherwise is 'accepted'
+//         // dataExchangeId: string // the unique id of this data exchange
+//         // iat: number // unix timestamp stating when it was resolved
+//         // iss: string // the public key of the CRS in JWK
+//         // sub: string // the public key (JWK) of the entity that requested a resolution
+
+//         //  // We will receive a signed resolution. Let us assume that is in variable disputeResolution
+//         // const resolutionPayload = await nonRepudiationLibrary.ConflictResolution.verifyResolution<DisputeResolution>(disputeResolution)
+//         // if (resolutionPayload.resolution === 'accepted') {
+//         //     // We were right about our claim: the cipherblock cannot be decrypted and we can't be invoiced for it.
+//         // } else { // resolutionPayload.resolution === 'denied'
+//         // // The cipherblock can be decrypted with the published secret, so either we had a malicious intention or we have an issue with our software.
+//         // }
+        
+//         const trustedIssuers = [
+//             '{"alg":"ES256","crv":"P-256","d":"ugSiI9ILGgMc5Nc0nAa3qFN3AN0oGba33IAakHqdvmg","kty":"EC","x":"L6WfVXGbH0io6Jpm94S1lpdi6yGtT1OmZ65A_kS_hk8","y":"6YE0oPOpWBqC75D_jtJUfy5lsXlGjO5g6QXivDwMDKc"}'
+//         ]
+//         const proofType = decodedResolution.payload.proofType
+//         const type = decodedResolution.payload.type
+//         const resolution = decodedResolution.payload.resolution
+//         const dataExchangeId = decodedResolution.payload.dataExchangeId
+//         const iat = decodedResolution.payload.iat
+//         const iss = decodedResolution.payload.iss
+//         if (!trustedIssuers.includes(iss)) {
+//             throw new Error('untrusted issuer')
+//         }
+//         const sub = decodedResolution.payload.sub
+
+//         if(resolution === "completed" || resolution==="denied"){
+//             console.log("Call terminate function SC")
+//         }
+//         else console.log("Cannot terminate agreement")
+
+//         //smart contract
+//         //evaluateSignedResolution(string memory _proofType, string memory _type, string memory _resolution,string memory _dataExchangeId, uint256 _iat, string memory _iss, string memory _sub)
+//         //presentPenaltyChoicesForAgreement(string memory _dataExchangeId)
+//         //get list of penalties + agreement id
+
+//         res.status(200).send(decodedResolution.payload)
+
+//     } catch (error) {
+//         if (error instanceof Error) {
+//             console.log(`${error.message}`)
+//             res.status(500).send({ name: `${error.name}`, message: `${error.message}` })
+//         }
+//     }
+// })
 
 return router;
 }
