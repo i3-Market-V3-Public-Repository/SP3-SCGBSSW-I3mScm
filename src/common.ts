@@ -79,10 +79,9 @@ export function processTemplate (template:Template) {
     const providerId = template.hasParties.Parties.dataProvider
     const consumerId = template.hasParties.Parties.dataConsumer
 
-    const creationDate = template.hasDuration.Duration.creationDate
     const startDate = template.hasDuration.Duration.startDate
     const endDate = template.hasDuration.Duration.endDate
-    const dates = [creationDate, startDate, endDate]
+    const dates = [startDate, endDate]
 
     // const dataType = template.hasDescriptionOfData.DescriptionOfData.dataType
     // const dataFormat = template.hasDescriptionOfData.DescriptionOfData.dataFormat
