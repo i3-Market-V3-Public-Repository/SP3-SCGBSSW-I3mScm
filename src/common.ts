@@ -6,8 +6,8 @@ import * as objectSha from 'object-sha'
 
 /* ============= Common Functions ==========*/
 
-export function getTemplate(jsonTemplate:Template, staticTemplate:StaticParametersTemplate){
-    
+export function getTemplate(jsonTemplate: Template, staticTemplate: StaticParametersTemplate) {
+
     jsonTemplate.DataOfferingDescription.dataOfferingId = staticTemplate.offeringId
     jsonTemplate.DataOfferingDescription.provider = staticTemplate.provider
     jsonTemplate.DataOfferingDescription.category = staticTemplate.category
@@ -38,50 +38,39 @@ export function getTemplate(jsonTemplate:Template, staticTemplate:StaticParamete
 //     return agreementId
 //   } 
 
-function stringToBoolean(input:string) {
+function stringToBoolean(input: string) {
 
-    if(input === "true"){
+    if (input === "true") {
         return true
-    } else if (input === "false"){
+    } else if (input === "false") {
         return false
     } else {
         throw new Error('The inserted parameter is not true OR false')
     }
-  }
+}
 
-export function processTemplate (template:Template) {
+export function processTemplate(template: Template) {
 
     // process template data
 
     const providerPublicKey = template.DataExchangeAgreement.orig
     const consumerPublicKey = template.DataExchangeAgreement.dest
-    const dataExchangeAgreement = template.DataExchangeAgreement    
+    const dataExchangeAgreement = template.DataExchangeAgreement
     const obj = { src: 'A', dst: 'B', msg: { dataExchangeAgreement } }
     console.log(objectSha.hashable(obj))
-    //objectSha.digest(obj).then(console.log)
-    const dataExchangeAgreementHash =  objectSha.digest(obj) ///algorithm
-    console.log(dataExchangeAgreementHash)
 
-        // const obj1 = { src: 'A', dst: 'B', msg: { hello: 'goodbye!', arr: [2, 9, { b: 5, a: 7 }] } }
-        // const obj2 = { dst: 'B', src: 'A', msg: { arr: [2, 9, { a: 7, b: 5 }], hello: 'goodbye!' } }
-
-        // console.log(objectSha.hashable(obj1)) // [["dst","B"],["msg",[["arr",[2,9,[["a",7],["b",5]]]],["hello","goodbye!"]]],["src","A"]]
-        // console.log(objectSha.hashable(obj2)) // [["dst","B"],["msg",[["arr",[2,9,[["a",7],["b",5]]]],["hello","goodbye!"]]],["src","A"]]
-
-        // objectSha.digest(obj1).then(console.log) // 6269af73d25f886a50879942cdf5c40500371c6f4d510cec0a67b2992b0a9549
-        // objectSha.digest(obj2).then(console.log) // 6269af73d25f886a50879942cdf5c40500371c6f4d510cec0a67b2992b0a9549
-
-        // objectSha.digest(obj1, 'SHA-512').then(console.log) // f3325ec4c42cc0154c6a9c78446ce3915196c6ae62d077838b699ca83faa2bd2c0639dd6ca43561afb28bfeb2ffd7481b45c07eaebb7098e1c62ef3c0d441b0b
-        // objectSha.digest(obj2, 'SHA-512').then(console.log) 
+    const dataExchangeAgreementHash = objectSha.digest(obj, 'SHA-256') ///algorithm
 
     const dataOfferingId = template.DataOfferingDescription.dataOfferingId
     const purpose = template.Purpose
     const providerId = template.hasParties.Parties.dataProvider
     const consumerId = template.hasParties.Parties.dataConsumer
-
+    const date = new Date()
+    const creationDate = Math.floor(new Date(date.getFullYear(), date.getMonth(), date.getDate(),).getTime() / 1000)
+    //const creationDate = template.hasDuration.Duration.creationDate
     const startDate = template.hasDuration.Duration.startDate
     const endDate = template.hasDuration.Duration.endDate
-    const dates = [startDate, endDate]
+    const dates = [creationDate, startDate, endDate]
 
     // const dataType = template.hasDescriptionOfData.DescriptionOfData.dataType
     // const dataFormat = template.hasDescriptionOfData.DescriptionOfData.dataFormat
@@ -101,9 +90,9 @@ export function processTemplate (template:Template) {
 
     const dataStream = template.DataStream
 
-    console.log("dataofferingId => "+dataOfferingId+" purpose => "+purpose+" consumerId => "+consumerId+" providerId => "+providerId+
-    " dates => ["+startDate+","+endDate+"]"+" intendedUse => ["
-    +processData+","+shareDataWithThirdParty+","+editData+"] licenseGrant => ["+copyData+","+transferable+","+exclusiveness+","+revocable+"] dataStream => "+dataStream)
+    console.log("dataofferingId => " + dataOfferingId + " purpose => " + purpose + " consumerId => " + consumerId + " providerId => " + providerId +
+        " dates => [" + startDate + "," + endDate + "]" + " intendedUse => ["
+        + processData + "," + shareDataWithThirdParty + "," + editData + "] licenseGrant => [" + copyData + "," + transferable + "," + exclusiveness + "," + revocable + "] dataStream => " + dataStream)
 
     return {
         providerPublicKey: providerPublicKey,
@@ -114,15 +103,15 @@ export function processTemplate (template:Template) {
         providerId: providerId,
         consumerId: consumerId,
         dates: dates,
-       // descriptionOfData: descriptionOfData,
+        // descriptionOfData: descriptionOfData,
         intendedUse: intendedUse,
         licenseGrant: licenseGrant,
         dataStream: dataStream
     }
-  }
+}
 
-export function formatAgreement(agreement:any) {
-    
+export function formatAgreement(agreement: any) {
+
     return {
         agreementId: parseInt(agreement.agreementId),
         providerPublicKey: agreement.providerPublicKey,
@@ -130,7 +119,7 @@ export function formatAgreement(agreement:any) {
         dataExchangeAgreementHash: agreement.dataExchangeAgreementHash,
         dataOffering: {
             dataOfferingId: agreement.dataOffering.dataOfferingId,
-            dataOfferingVersion: agreement.dataOffering.dataOfferingVersion
+            dataOfferingVersion: parseInt(agreement.dataOffering.dataOfferingVersion)
         },
         purpose: agreement.purpose,
         state: agreement.state,
@@ -149,7 +138,7 @@ export function formatAgreement(agreement:any) {
             revocable: agreement.licenseGrant.revocable
         },
         dataStream: agreement.dataStream,
-        // signed: agreement.signed,
+        signed: agreement.signed,
         // violation: [
         //     agreement.violation[0],
         //     agreement.violation[1],
@@ -162,7 +151,7 @@ export function formatAgreement(agreement:any) {
 
 }
 
-export function formatTransaction(transaction:any) {
+export function formatTransaction(transaction: any) {
     return {
         nonce: transaction.nonce,
         to: transaction.to,
@@ -171,10 +160,10 @@ export function formatTransaction(transaction:any) {
         gasPrice: parseInt(transaction.gasPrice),
         chainId: parseInt(transaction.chainId),
         data: transaction.data
-      }
+    }
 }
 
-export function formatTransactionReceipt(transaction:any) {
+export function formatTransactionReceipt(transaction: any) {
     return {
         transactionHash: transaction.transactionHash,
         transactionIndex: transaction.transactionIndex,
@@ -189,10 +178,10 @@ export function formatTransactionReceipt(transaction:any) {
         logs: transaction.logs,
         confirmations: transaction.confirmations,
         status: transaction.status,
-      }
+    }
 }
 
-export async function notify (origin: string, predefined: boolean, type: string, receiver_id: string, message: Object, status: string) {
+export async function notify(origin: string, predefined: boolean, type: string, receiver_id: string, message: Object, status: string) {
 
     const notification = {
         origin: origin,
@@ -220,33 +209,33 @@ export async function notify (origin: string, predefined: boolean, type: string,
     // })
 }
 
-export function getState(state:number) {
+export function getState(state: number) {
 
     let response
 
-    switch(state){
-        case 0 : {
-            response = {state: "created"}
+    switch (state) {
+        case 0: {
+            response = { state: "created" }
             break
         }
-        case 1 : {
-            response = {state: "active"}
+        case 1: {
+            response = { state: "active" }
             break
         }
         case 2: {
-            response = {state: "updated"}
+            response = { state: "updated" }
             break
         }
         case 3: {
-            response = {state: "violated"}
+            response = { state: "violated" }
             break
         }
         case 4: {
-            response = {state: "terminated"}
+            response = { state: "terminated" }
             break
         }
         default: {
-            response = {state: "undefined"}
+            response = { state: "undefined" }
             break
         }
     }
@@ -254,12 +243,51 @@ export function getState(state:number) {
     return response
 }
 
-export function parseHex (a: string, prefix0x: boolean = false): string {
+export function parseHex(a: string, prefix0x: boolean = false): string {
     const hexMatch = a.match(/^(0x)?([\da-fA-F]+)$/)
     if (hexMatch == null) {
-      throw new Error('input must be a hexadecimal string, e.g. \'0x124fe3a\' or \'0214f1b2\'')
+        throw new Error('input must be a hexadecimal string, e.g. \'0x124fe3a\' or \'0214f1b2\'')
     }
     const hex = hexMatch[2].toLocaleLowerCase()
     return (prefix0x) ? '0x' + hex : hex
-  }
-  
+}
+
+export async function getAgreementId(exchangeId: string) {
+    try {
+        let agreementIdRequest: any = await _fetch(`${process.env.DATA_ACCESS_URL}/getAgreementId/${exchangeId}`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+        }).catch((error: any) => {
+            console.error('Error:', error)
+        })
+        const agreementIdJson = await agreementIdRequest.json();
+
+        const agreementId = agreementIdJson.agreement_id;
+
+        return agreementId;
+
+    } catch (error) {
+        if (error instanceof Error) {
+            console.log(`${error.message}`)
+
+        }
+
+    }
+}
+
+export async function createRawTransaction(provider: any, unsignedTx: any, sender_address: string) {
+
+    unsignedTx.nonce = await provider.getTransactionCount(sender_address)
+    unsignedTx.gasLimit = unsignedTx.gasLimit?._hex
+    unsignedTx.gasPrice = (await provider.getGasPrice())._hex
+    unsignedTx.chainId = (await provider.getNetwork()).chainId
+    unsignedTx.from = parseHex(sender_address, true)
+
+    return unsignedTx;
+}
+
+
+

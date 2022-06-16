@@ -56,7 +56,7 @@ export interface HasDutiesObligations {
 }
 
 export interface DutiesObligations {
-    qualityOfData:    string;
+    qualityOfData:    number;
     characteristics:  string;
     dataAvailability: boolean;
 }
@@ -279,7 +279,7 @@ const typeMap: any = {
         { json: "Duties/Obligations", js: "Duties/Obligations", typ: r("DutiesObligations") },
     ], false),
     "DutiesObligations": o([
-        { json: "qualityOfData", js: "qualityOfData", typ: "" },
+        { json: "qualityOfData", js: "qualityOfData", typ: 0 },
         { json: "characteristics", js: "characteristics", typ: "" },
         { json: "dataAvailability", js: "dataAvailability", typ: true },
     ], false),

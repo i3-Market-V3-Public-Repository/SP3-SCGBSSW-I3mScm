@@ -94,6 +94,26 @@ paths:
                 $ref: '#/components/schemas/raw_transaction_template'
       security:
         - bearerAuth: []
+  /set_agreement_active_raw_transaction:
+     put:
+      tags:
+        - Agreement
+      summary: Set agreement state to Active
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/set_agreement_active'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/raw_transaction_template'
+      security:
+        - bearerAuth: []
   /update_agreement_raw_transaction/{agreement_id}/{sender_address}:
     put:
       tags:
@@ -273,66 +293,68 @@ paths:
                 $ref: '#/components/schemas/active_agreements'
       security:
         - bearerAuth: []
-  # /map_data_exchange_to_agreement:
-  #   put:
-  #     tags:
-  #       - Agreement
-  #     summary: Record the data exchange id based on the agreement id
-  #     requestBody:
-  #       content:
-  #         application/json:
-  #           schema:
-  #             $ref: '#/components/schemas/data_exchange_to_agreement_id'
-  #       required: true
-  #     responses:
-  #       '200':
-  #         description: OK
-  #         content:
-  #           application/json:
-  #             schema:
-  #               $ref: '#/components/schemas'
-  #     security:
-  #       - bearerAuth: [] 
-  # /evaluate_signed_resolution:
-  #   post:
-  #     tags:
-  #       - Agreement
-  #     summary: Verify a signed resolution
-  #     requestBody:
-  #       content:
-  #         application/json:
-  #           schema:
-  #             $ref: '#/components/schemas/signed_resolution'
-  #       required: true
-  #     responses:
-  #       '200':
-  #         description: OK
-  #         content:
-  #           application/json:
-  #             schema:
-  #               $ref: '#/components/schemas/transaction_object'
-  #     security:
-  #       - bearerAuth: []
-  # /terminate:
-  #   put:
-  #     tags:
-  #       - Agreement
-  #     summary: Terminate Agreement
-  #     requestBody:
-  #       content:
-  #         application/json:
-  #           schema:
-  #             $ref: '#/components/schemas/signed_resolution'
-  #       required: true
-  #     responses:
-  #       '200':
-  #         description: OK
-  #         content:
-  #           application/json:
-  #             schema:
-  #               $ref: '#/components/schemas/transaction_object'
-  #     security:
-  #       - bearerAuth: []
+  /evaluate_signed_resolution:
+    post:
+      tags:
+        - Agreement
+      summary: Verify a signed resolution
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/signed_resolution'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/transaction_object'
+      security:
+        - bearerAuth: []
+  /present_penalty_choices/{agreement_id}:
+    get:
+      tags:
+        - Agreement
+      summary: Present penalty options
+      parameters:
+        - name: agreement_id
+          in: path
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/penalties'
+      security:
+        - bearerAuth: []
+  /terminate:
+    put:
+      tags:
+        - Agreement
+      summary: Terminate Agreement
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/signed_resolution'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/transaction_object'
+      security:
+        - bearerAuth: []
 components:
   schemas:
     state:
@@ -454,8 +476,8 @@ components:
             Duties/Obligations:
               type: object
               properties:
-                qualityofData:
-                  type: string
+                qualityOfData:
+                  type: integer
                 characteristics:
                     type: string
                 dataAvailability:
@@ -528,7 +550,7 @@ components:
             dataOfferingId:
               type: string
             dataOfferingVersion:
-              type: string
+              type: integer
         purpose:
           type: string
         state:
@@ -582,8 +604,11 @@ components:
       properties:
         proof:
           type: string
+        sender_address:
+          type: string
       example:
         proof: 'eyJhbGciOiJFUzI1NiJ9.eyJwcm9vZlR5cGUiOiJyZXNvbHV0aW9uIiwiZGF0YUV4Y2hhbmdlSWQiOiJTTmg5eUtYYjJlaGxWSFJZQkllay16Z1pVaDJtU1NvMWpwbGg3SWEtNHlRIiwiaWF0IjoxNjQ2OTUxNjM1LCJpc3MiOiJ7XCJhbGdcIjpcIkVTMjU2XCIsXCJjcnZcIjpcIlAtMjU2XCIsXCJkXCI6XCJ1Z1NpSTlJTEdnTWM1TmMwbkFhM3FGTjNBTjBvR2JhMzNJQWFrSHFkdm1nXCIsXCJrdHlcIjpcIkVDXCIsXCJ4XCI6XCJMNldmVlhHYkgwaW82SnBtOTRTMWxwZGk2eUd0VDFPbVo2NUFfa1NfaGs4XCIsXCJ5XCI6XCI2WUUwb1BPcFdCcUM3NURfanRKVWZ5NWxzWGxHak81ZzZRWGl2RHdNREtjXCJ9Iiwic3ViIjoie1wiYWxnXCI6XCJFUzI1NlwiLFwiY3J2XCI6XCJQLTI1NlwiLFwia3R5XCI6XCJFQ1wiLFwieFwiOlwiVlhzQnVPWndWamhvZkpWNGtBaGJhNnduMUVZRHdVSWtnWGIyZlZuTDh4Y1wiLFwieVwiOlwiaDRmTDVRdjRFWXQ3WGRLcWRJeTFaSnM0X1FXWURrWTF6VXpTb0k2MU43WVwifSIsInJlc29sdXRpb24iOiJkZW5pZWQiLCJ0eXBlIjoiZGlzcHV0ZSJ9.TtxUm3E6LfmwEI74cr6RO4-nw-xcFaeARYOZ4z1dBVlc_JU0mCv0Ftr9tCDhggfLiJqb4RIPiNfIytFZMUbx-g'
+        sender_address: '0x4d82Bd33baA4Fe5489C45bBdC206019403dcF829'
     sign_agreement:
       type: object
       properties:
@@ -591,14 +616,23 @@ components:
           type: integer
         consumer_id:
           type: string
-        consumer_public_key:
-          type: string
         consumer_ethereum_address:
+          type: string
+    set_agreement_active:
+      type: object
+      properties:
+        agreement_id:
+          type: integer
+        ethereum_address:
           type: string
     active_agreements:
       type: array
       items:
         $ref: '#/components/schemas/agreement_template'
+    penalties:
+      type: array
+      items:
+        type: string
     data_exchange_to_agreement_id:
       type: object
       properties:

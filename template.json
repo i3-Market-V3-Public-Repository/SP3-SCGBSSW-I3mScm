@@ -23,8 +23,8 @@
 	},
 	"hasDuties/Obligations": {
 		"Duties/Obligations": {
-			"qualityOfData": "integer",
-			"characteristics": "enum",
+			"qualityOfData": 0,
+			"characteristics": "string",
 			"dataAvailability": true
 		}
 	},
