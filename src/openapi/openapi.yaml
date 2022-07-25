@@ -94,26 +94,6 @@ paths:
                 $ref: '#/components/schemas/raw_transaction_template'
       security:
         - bearerAuth: []
-  /set_agreement_active_raw_transaction:
-     put:
-      tags:
-        - Agreement
-      summary: Set agreement state to Active
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/set_agreement_active'
-        required: true
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/raw_transaction_template'
-      security:
-        - bearerAuth: []
   /update_agreement_raw_transaction/{agreement_id}/{sender_address}:
     put:
       tags:
@@ -205,7 +185,7 @@ paths:
                 $ref: '#/components/schemas/active_agreements'
       security:
         - bearerAuth: []
-  /check_agreements_by_consumer/{consumer_id}:
+  /check_agreements_by_consumer/{consumer_id}/{active}:
     get:
       tags:
         - Agreement
@@ -218,6 +198,13 @@ paths:
           explode: false
           schema:
             type: string
+        - name: active
+          in: path
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: boolean
       responses:
         '200':
           description: OK
@@ -227,13 +214,42 @@ paths:
                 $ref: '#/components/schemas/active_agreements'
       security:
         - bearerAuth: []
-  /check_agreements_by_provider/{provider_id}:
+  /check_agreements_by_provider/{provider_id}/{active}:
     get:
       tags:
         - Agreement
       summary: Check agreements by provider
       parameters:
         - name: provider_id
+          in: path
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+        - name: active
+          in: path
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/active_agreements'
+      security:
+        - bearerAuth: []
+  /check_agreements_by_data_offering/{offering_id}:
+    get:
+      tags:
+        - Agreement
+      summary: Check agreements by data offering
+      parameters:
+        - name: offering_id
           in: path
           required: true
           style: simple
@@ -335,11 +351,19 @@ paths:
                 $ref: '#/components/schemas/penalties'
       security:
         - bearerAuth: []
-  /terminate:
+  /terminate/{agreement_id}:
     put:
       tags:
         - Agreement
       summary: Terminate Agreement
+      parameters:
+        - name: agreement_id
+          in: path
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: integer
       requestBody:
         content:
           application/json:
@@ -617,13 +641,6 @@ components:
         consumer_id:
           type: string
         consumer_ethereum_address:
-          type: string
-    set_agreement_active:
-      type: object
-      properties:
-        agreement_id:
-          type: integer
-        ethereum_address:
           type: string
     active_agreements:
       type: array

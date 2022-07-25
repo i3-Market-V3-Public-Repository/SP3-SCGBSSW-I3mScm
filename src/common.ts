@@ -151,6 +151,39 @@ export function formatAgreement(agreement: any) {
 
 }
 
+// function convertState(stateNumber: number) {
+//     let state;
+
+//     switch (stateNumber) {
+//         case 0: {
+//             state = "created"
+//             break
+//         }
+//         case 1: {
+//             state = "active"
+//             break
+//         }
+//         case 2: {
+//             state = "updated" 
+//             break
+//         }
+//         case 3: {
+//             state = "violated" 
+//             break
+//         }
+//         case 4: {
+//             state = "terminated" 
+//             break
+//         }
+//         default: {
+//             state = "undefined"
+//             break
+//         }
+//     }
+
+//     return state
+// }
+
 export function formatTransaction(transaction: any) {
     return {
         nonce: transaction.nonce,

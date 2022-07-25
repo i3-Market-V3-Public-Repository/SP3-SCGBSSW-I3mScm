@@ -147,12 +147,15 @@ export default async (): Promise<typeof router> => {
         }
     })
 
-    router.get('/check_agreements_by_consumer/:consumer_id', async (req, res) => {
+    router.get('/check_agreements_by_consumer/:consumer_id/:active', async (req, res) => {
         try {
             const consumer_id = req.params.consumer_id
+            const active :boolean = JSON.parse(req.params.active)
+            
             const formatedAgreements: ReturnType<typeof formatAgreement>[] = []
             const activeAgreements = await contract.checkAgreementsByConsumer(
                 consumer_id,
+                active
             )
 
             activeAgreements.forEach((agreement) => {
@@ -175,14 +178,16 @@ export default async (): Promise<typeof router> => {
         }
     })
 
-    router.get('/check_agreements_by_provider/:provider_id', async (req, res) => {
+    router.get('/check_agreements_by_provider/:provider_id/:active', async (req, res) => {
         try {
             const provider_id = req.params.provider_id
+            const active :boolean = JSON.parse(req.params.active)
+            
             const formatedAgreements: ReturnType<typeof formatAgreement>[] = []
             const activeAgreements = await contract.checkAgreementsByProvider(
                 provider_id,
+                active
             )
-
             activeAgreements.forEach((agreement) => {
                 const formatedAgreement = formatAgreement(agreement)
                 console.log(formatedAgreement.providerId)
@@ -192,6 +197,31 @@ export default async (): Promise<typeof router> => {
             console.log(
                 'Number of active agreements by Provider: ' + formatedAgreements.length,
             )
+
+            res.status(200).send(formatedAgreements)
+        } catch (error) {
+            if (error instanceof Error) {
+                console.log(`${error.message}`)
+                res
+                    .status(500)
+                    .send({ name: `${error.name}`, message: `${error.message}` })
+            }
+        }
+    })
+
+    router.get('/check_agreements_by_data_offering/:offering_id', async (req, res) => {
+        try {
+            const offeringId = req.params.offering_id
+            const formatedAgreements: ReturnType<typeof formatAgreement>[] = []
+            const agreements = await contract.checkAgreementsByDataOffering(
+                offeringId,
+            )
+
+            agreements.forEach((agreement) => {
+                const formatedAgreement = formatAgreement(agreement)
+                console.log(formatedAgreement.providerId)
+                formatedAgreements.push(formatedAgreement)
+            })
 
             res.status(200).send(formatedAgreements)
         } catch (error) {
@@ -301,33 +331,32 @@ export default async (): Promise<typeof router> => {
                     let type: string = 'unrecognizedEvent'
                     let message: Object = {}
                     let status: string = 'unrecognizedEvent'
-                    const agreementId = logs.args.id
+                    const agreementId = parseInt(logs.args.id)
                     switch (eventName) {
                         case 'AgreementCreated':
                             console.log('created')
                             type = 'agreement.pending'
                             message = {
                                 msg: `Agreement with the id: ${agreementId} was created`,
+                                agreementId: agreementId
                             }
                             status = 'pending'
                             break
                         case 'AgreementSigned':
                             console.log('signed')
-                            type = 'agreement.accepted' //signed
-                            message = { msg: `Agreement with id: ${agreementId} was signed` }
+                            type = 'agreement.accepted' 
+                            message = { 
+                                msg: `Agreement with id: ${agreementId} was signed`,
+                                agreementId: agreementId 
+                            }
                             status = 'accepted'
-                            break
-                        case 'AgreementSetActive':
-                            console.log('active')
-                            // type = 'agreement.active' //notification manager type of queue to implement
-                            // message = { msg: `Agreement with id: ${agreementId} is active` }
-                            // status = 'activated'
                             break
                         case 'AgreementUpdated':
                             console.log('updated')
                             type = 'agreement.update'
                             message = {
                                 msg: `Agreement with the id: ${agreementId} was updated`,
+                                agreementId: agreementId
                             }
                             status = 'update'
                             break
@@ -336,14 +365,9 @@ export default async (): Promise<typeof router> => {
                             type = 'agreement.termination'
                             message = {
                                 msg: `Agreement with id: ${agreementId} was terminated`,
+                                agreementId: agreementId
                             }
                             status = 'termination'
-                            break
-                        case 'AgreementEvaluated':
-                            console.log('resoloution evaluated')
-                            // type = 'agreement.evaluated'
-                            // message = { msg: `Agreement with id: ${agreementId} is evaluated` }
-                            // status = 'evaluated'
                             break
                     }
 
@@ -439,7 +463,6 @@ export default async (): Promise<typeof router> => {
         try {
             const agreementId = req.body.agreement_id
             const consumerId = req.body.consumer_id
-            //const consumerPublicKey = req.body.consumer_public_key
             const senderAddress = req.body.consumer_ethereum_address
 
             const unsignedSignAgreementTx = (await contract.populateTransaction.signAgreement(
@@ -497,21 +520,23 @@ export default async (): Promise<typeof router> => {
         try {
             const consumer_public_key = req.params.consumer_public_key
             const formatedAgreements: ReturnType<typeof formatAgreement>[] = []
-            const activeAgreements = await contract.retrieveAgreements(
+            const agreementsTx = await contract.retrieveAgreements(
                 consumer_public_key,
             )
+            const activeAgreements = agreementsTx[0]
+            const length = agreementsTx[1]
+            if(length!=0){
+                activeAgreements.forEach((agreement) => {
+                    const formatedAgreement = formatAgreement(agreement)
+                    formatedAgreements.push(formatedAgreement)
+                })
 
-            activeAgreements.forEach((agreement) => {
-                const formatedAgreement = formatAgreement(agreement)
-                formatedAgreements.push(formatedAgreement)
-            })
-
-            console.log(
-                'Number of active agreements by Consumer Public key: ' +
-                formatedAgreements.length,
-            )
-
-            res.status(200).send(formatedAgreements)
+                console.log(
+                    'Number of active agreements by Consumer Public key: ' +
+                    formatedAgreements.length,
+                )
+                }
+                res.status(200).send(formatedAgreements)
         } catch (error) {
             if (error instanceof Error) {
                 console.log(`${error.message}`)
@@ -551,7 +576,7 @@ export default async (): Promise<typeof router> => {
 
             console.log(dataExchangeId)
             const agreementId = await getAgreementId(dataExchangeId)
-            console.log("aa")
+
             console.log(agreementId)
             const senderAddress = req.body.sender_address
             const unsignedCreateAgreementTx = (await contract.populateTransaction.evaluateSignedResolution(
@@ -593,12 +618,8 @@ export default async (): Promise<typeof router> => {
 
     router.get('/present_penalty_choices/:agreement_id', async (req, res) => {
         try {
-            //const formatedAgreements: ReturnType<typeof formatAgreement>[] = []
             const agreement_id = req.params.agreement_id
             const penalties = await contract.presentPenaltyChoices(agreement_id)
-            //if penalties length 0 then no penalties
-            console.log(penalties)
-
             res.status(200).send(penalties)
         } catch (error) {
             if (error instanceof Error) {
@@ -610,67 +631,64 @@ export default async (): Promise<typeof router> => {
         }
     })
 
-    router.put('/terminate', async (req, res, next) => {
+    router.put('/terminate/:agreement_id', async (req, res, next) => {
         try {
-            // proofType: 'resolution'
-            // type: 'dispute'
-            // resolution: 'accepted' | 'denied' // resolution is 'denied' if the cipherblock can be properly decrypted; otherwise is 'accepted'
-            // dataExchangeId: string // the unique id of this data exchange
-            // iat: number // unix timestamp stating when it was resolved
-            // iss: string // the public key of the CRS in JWK
-            // sub: string // the public key (JWK) of the entity that requested a resolution
-
-            //  // We will receive a signed resolution. Let us assume that is in variable disputeResolution
-            // const resolutionPayload = await nonRepudiationLibrary.ConflictResolution.verifyResolution<DisputeResolution>(disputeResolution)
-            // if (resolutionPayload.resolution === 'accepted') {
-            //     // We were right about our claim: the cipherblock cannot be decrypted and we can't be invoiced for it.
-            // } else { // resolutionPayload.resolution === 'denied'
-            // // The cipherblock can be decrypted with the published secret, so either we had a malicious intention or we have an issue with our software.
-            // }
-
-            const signedResolution = req.body.proof
-            console.log(signedResolution)
-            const decodedResolution = await nonRepudiationLibrary.ConflictResolution.verifyResolution(
-                signedResolution,
-            )
-
-            const trustedIssuers = [
-                '{"alg":"ES256","crv":"P-256","d":"ugSiI9ILGgMc5Nc0nAa3qFN3AN0oGba33IAakHqdvmg","kty":"EC","x":"L6WfVXGbH0io6Jpm94S1lpdi6yGtT1OmZ65A_kS_hk8","y":"6YE0oPOpWBqC75D_jtJUfy5lsXlGjO5g6QXivDwMDKc"}',
-            ]
-            const proofType = decodedResolution.payload.proofType
-            const type = decodedResolution.payload.type
-            const resolution = decodedResolution.payload.resolution
-            const dataExchangeId = decodedResolution.payload.dataExchangeId
-            const iat = decodedResolution.payload.iat
-            const iss = decodedResolution.payload.iss
-            if (!trustedIssuers.includes(iss)) {
-                throw new Error('untrusted issuer')
-            }
-            const sub = decodedResolution.payload.sub
-
-            if (resolution === 'completed' || resolution === 'denied') {
-                console.log('Call terminate function SC')
-                //const exchangeId = "OdAeDSkyqK0s6zS059YGnpOkg7s-Dl6SeJj9B9yfhbk"
-                const senderAddress = req.body.sender_address
-                const agreementId = await getAgreementId(dataExchangeId)
-                //const terminateTx = await contract.terminateAgreement(agreementId)
-                const agreementIdTest = 6
+            const agreementId = req.params.agreement_id
+            const senderAddress = req.body.sender_address
+            const agreement = await contract.getAgreement(agreementId)
+            if(agreement.dataStream) {
                 const unsignedTerminateAgreementTx = (await contract.populateTransaction.terminateAgreement(
-                    agreementIdTest,
+                    agreementId,
                     { gasLimit: gasLimit },
-                )) as any
-                const formatedRawTransaction = formatTransaction(
-                    await createRawTransaction(
-                        provider,
-                        unsignedTerminateAgreementTx,
-                        senderAddress,
-                    ),
+                    )) as any
+                    const formatedRawTransaction = formatTransaction(
+                            await createRawTransaction(
+                                provider,
+                                unsignedTerminateAgreementTx,
+                                senderAddress,
+                            ),
+                    )
+                    res.status(200).send(formatedRawTransaction)
+            }
+            else{
+                const signedResolution = req.body.proof
+                console.log(signedResolution)
+                const decodedResolution = await nonRepudiationLibrary.ConflictResolution.verifyResolution(
+                    signedResolution,
                 )
-                //get id from data access -> it's not there then cannot terminate
-                //terminateAgreement(uint256 _id)
-                res.status(200).send(formatedRawTransaction)
-                //
-            } else res.status(400).send('Agreement cannot be terminated.')
+
+                const trustedIssuers = [
+                    '{"alg":"ES256","crv":"P-256","d":"ugSiI9ILGgMc5Nc0nAa3qFN3AN0oGba33IAakHqdvmg","kty":"EC","x":"L6WfVXGbH0io6Jpm94S1lpdi6yGtT1OmZ65A_kS_hk8","y":"6YE0oPOpWBqC75D_jtJUfy5lsXlGjO5g6QXivDwMDKc"}',
+                ]
+                const proofType = decodedResolution.payload.proofType
+                const type = decodedResolution.payload.type
+                const resolution = decodedResolution.payload.resolution
+                const dataExchangeId = decodedResolution.payload.dataExchangeId
+                const iat = decodedResolution.payload.iat
+                const iss = decodedResolution.payload.iss
+                if (!trustedIssuers.includes(iss)) {
+                    throw new Error('untrusted issuer')
+                }
+                const sub = decodedResolution.payload.sub
+
+                if (resolution === 'completed' || resolution === 'denied') {
+                //const exchangeId = "OdAeDSkyqK0s6zS059YGnpOkg7s-Dl6SeJj9B9yfhbk"
+                    const agreementId = await getAgreementId(dataExchangeId)
+                
+                    const unsignedTerminateAgreementTx = (await contract.populateTransaction.terminateAgreement(
+                    agreementId,
+                    { gasLimit: gasLimit },
+                    )) as any
+                    const formatedRawTransaction = formatTransaction(
+                            await createRawTransaction(
+                                provider,
+                                unsignedTerminateAgreementTx,
+                                senderAddress,
+                            ),
+                    )
+                    res.status(200).send(formatedRawTransaction)
+                } else res.status(400).send('Agreement cannot be terminated.')
+            }
         } catch (error) {
             if (error instanceof Error) {
                 console.log(`${error.message}`)
