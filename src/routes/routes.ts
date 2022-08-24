@@ -9,6 +9,7 @@ import {
 } from '../staticParametersTemplate'
 import {
     getTemplate,
+    getFee,
     createRawTransaction,
     processTemplate,
     formatAgreement,
@@ -77,6 +78,11 @@ export default async (): Promise<typeof router> => {
 
         if (parsedToJson != undefined) {
             try {
+                //parsedToJson.active = false
+                // if(!parsedToJson.active){
+                //     //notification
+                //     console.log("Not allowed to purchase, data offering is not active")
+                // }
                 // Add static parameters to JSON template
                 const staticTemplate: StaticParametersTemplate = ConvertToStaticParametersTemplate.toStaticParametersTemplate(
                     JSON.stringify(parsedToJson),
@@ -85,7 +91,9 @@ export default async (): Promise<typeof router> => {
                     JSON.stringify(jsonTemplateFile),
                 )
 
-                const template: Template = getTemplate(jsonTemplate, staticTemplate)
+                let template: Template = getTemplate(jsonTemplate, staticTemplate)
+
+                template.pricingModel.fee = parseInt(await getFee(template.pricingModel.basicPrice))
 
                 const response = JSON.parse(JSON.stringify(template))
 
@@ -265,6 +273,7 @@ export default async (): Promise<typeof router> => {
                 const dataExchangeAgreementHash =
                     processedTemplate.dataExchangeAgreementHash
                 const dataOfferingId = processedTemplate.dataOfferingId
+                const version = processedTemplate.dataOfferingVersion
                 const purpose = processedTemplate.purpose
                 const providerId = processedTemplate.providerId
                 const consumerId = processedTemplate.consumerId
@@ -278,7 +287,7 @@ export default async (): Promise<typeof router> => {
                     providerPublicKey,
                     consumerPublicKey,
                     dataExchangeAgreementHash,
-                    [dataOfferingId, '0'],
+                    [dataOfferingId, version],
                     purpose,
                     providerId,
                     consumerId,
@@ -308,6 +317,102 @@ export default async (): Promise<typeof router> => {
         },
     )
     router.post('/deploy_signed_transaction', async (req, res, next) => {
+        try {
+            const signedTx = req.body.signed_transaction
+
+            const agreementTx = await provider.sendTransaction(signedTx)
+
+            const hash = agreementTx.hash
+
+            await provider.waitForTransaction(hash)
+            const receipt = await provider.getTransactionReceipt(hash)
+
+            const formatedTransactionReceipt = formatTransactionReceipt(receipt)
+
+            if (receipt.status == 1) {
+                if (receipt.logs.length > 0) {
+                    let logs = new ethers.utils.Interface(contractABI).parseLog(
+                        receipt.logs[0],
+                    )
+                    //filter events based on public key
+                    // consumer subscribes to did and public key events
+                    const eventName = logs.eventFragment.name
+
+                    let type: string = 'unrecognizedEvent'
+                    let message: Object = {}
+                    let status: string = 'unrecognizedEvent'
+                    const agreementId = parseInt(logs.args.id)
+                    switch (eventName) {
+                        case 'AgreementCreated':
+                            console.log('created')
+                            type = 'agreement.pending'
+                            message = {
+                                msg: `Agreement with the id: ${agreementId} was created`,
+                                agreementId: agreementId
+                            }
+                            status = 'pending'
+                            break
+                        case 'AgreementSigned':
+                            console.log('signed')
+                            type = 'agreement.accepted' 
+                            message = { 
+                                msg: `Agreement with id: ${agreementId} was signed`,
+                                agreementId: agreementId 
+                            }
+                            status = 'accepted'
+                            break
+                        case 'AgreementUpdated':
+                            console.log('updated')
+                            type = 'agreement.update'
+                            message = {
+                                msg: `Agreement with the id: ${agreementId} was updated`,
+                                agreementId: agreementId
+                            }
+                            status = 'update'
+                            break
+                        case 'AgreementTerminated':
+                            console.log('terminated')
+                            type = 'agreement.termination'
+                            message = {
+                                msg: `Agreement with id: ${agreementId} was terminated`,
+                                agreementId: agreementId
+                            }
+                            status = 'termination'
+                            break
+                    }
+
+                const origin = 'scm'
+                const predefined = true
+                await notify(
+                    origin,
+                    predefined,
+                    type,
+                    `${logs.args.providerId}`,
+                    message,
+                    status,
+                )
+                await notify(
+                    origin,
+                    predefined,
+                    type,
+                    `${logs.args.consumerId}`,
+                    message,
+                    status,
+                )
+                res.status(200).send(formatedTransactionReceipt)
+                } else throw new Error('The transaction has no logs.')
+            } else throw new Error('Transaction unsuccessful. Status:'+receipt.status)
+        } catch (error) {
+            if (error instanceof Error) {
+                console.log(`${error.message}`)
+                res
+                    .status(500)
+                    .send({ name: `${error.name}`, message: `${error.message}` })
+            }
+        }
+    })
+
+     router.post('/deploy_signed_transaction', async (req, res, next) => {
         try {
             const signedTx = req.body.signed_transaction
 
@@ -698,6 +803,46 @@ export default async (): Promise<typeof router> => {
             }
         }
     })
+
+    // router.post('/give_consent', async (req, res, next) => {
+    //     try {
+    //         const dataOfferingId = req.body.dataOfferingId
+    //         const consentFormHash = req.body.consentFormHash
+    //         const startDate = req.body.startDate
+    //         const endDate = req.body.endDate
+    //         const senderAddress = req.body.sender_address
+    //         //receive consent subject 
+
+    //         //not needed anymore
+    //         // const keyPair = await nonRepudiationLibrary.generateKeys("ES256")
+    //         // const publicKey = JSON.stringify(keyPair.publicJwk) //store consent subject
+    //         // const privateKey = JSON.stringify(keyPair.privateJwk)
+    //         // const pubKey = nonRepudiationLibrary.importJwk(JSON.parse(publicKey))
+           
+          
+            
+    //         // const unsignedGiveConsentTx = (await contract.populateTransaction.giveConsent(
+    //         //     dataOfferingId,
+    //         //     { gasLimit: gasLimit },
+    //         //     )) as any
+    //         //     const formatedRawTransaction = formatTransaction(
+    //         //             await createRawTransaction(
+    //         //                 provider,
+    //         //                 unsignedGiveConsentTx,
+    //         //                 senderAddress,
+    //         //             ),
+    //         //     )
+    //         // res.status(200).send(formatedRawTransaction)
+    //         res.status(200).send(req.body)
+    //     } catch (error) {
+    //         if (error instanceof Error) {
+    //             console.log(`${error.message}`)
+    //             res
+    //                 .status(500)
+    //                 .send({ name: `${error.name}`, message: `${error.message}` })
+    //         }
+    //     }
+    // })
 
     return router
 }

@@ -3,26 +3,83 @@ import { Template } from "./template";
 import { ethers } from 'ethers';
 import _fetch = require('isomorphic-fetch')
 import * as objectSha from 'object-sha'
+import { json } from "express";
 
 /* ============= Common Functions ==========*/
 
 export function getTemplate(jsonTemplate: Template, staticTemplate: StaticParametersTemplate) {
 
-    jsonTemplate.DataOfferingDescription.dataOfferingId = staticTemplate.offeringId
-    jsonTemplate.DataOfferingDescription.provider = staticTemplate.provider
-    jsonTemplate.DataOfferingDescription.category = staticTemplate.category
-    jsonTemplate.Purpose = staticTemplate.contractParameters.purpose
-    jsonTemplate.hasParties.Parties.dataProvider = staticTemplate.provider
-    jsonTemplate.hasIntendedUse.IntendedUse.processData = staticTemplate.contractParameters.hasIntendedUse.processData
-    jsonTemplate.hasIntendedUse.IntendedUse.shareDataWithThirdParty = staticTemplate.contractParameters.hasIntendedUse.shareDataWithThirdParty
-    jsonTemplate.hasIntendedUse.IntendedUse.editData = staticTemplate.contractParameters.hasIntendedUse.editData
-    jsonTemplate.hasLicenseGrant.LicenseGrant.copyData = staticTemplate.contractParameters.hasLicenseGrant.copyData
-    jsonTemplate.hasLicenseGrant.LicenseGrant.transferable = staticTemplate.contractParameters.hasLicenseGrant.transferable
-    jsonTemplate.hasLicenseGrant.LicenseGrant.exclusiveness = staticTemplate.contractParameters.hasLicenseGrant.exclusiveness
-    jsonTemplate.hasLicenseGrant.LicenseGrant.revocable = staticTemplate.contractParameters.hasLicenseGrant.revocable
+    jsonTemplate.dataOfferingDescription.dataOfferingId = staticTemplate.offeringId
+    jsonTemplate.dataOfferingDescription.version = staticTemplate.version
+    jsonTemplate.dataOfferingDescription.category = staticTemplate.category
+    jsonTemplate.dataOfferingDescription.active = staticTemplate.active
+
+    jsonTemplate.dids.providerDid = staticTemplate.providerDid
+
+    jsonTemplate.purpose = staticTemplate.contractParameters.purpose
+    jsonTemplate.parties.dataProvider = staticTemplate.provider
+    jsonTemplate.intendedUse.processData = staticTemplate.contractParameters.hasIntendedUse.processData
+    jsonTemplate.intendedUse.shareDataWithThirdParty = staticTemplate.contractParameters.hasIntendedUse.shareDataWithThirdParty
+    jsonTemplate.intendedUse.editData = staticTemplate.contractParameters.hasIntendedUse.editData
+    jsonTemplate.licenseGrant.copyData = staticTemplate.contractParameters.hasLicenseGrant.copyData
+    jsonTemplate.licenseGrant.transferable = staticTemplate.contractParameters.hasLicenseGrant.transferable
+    jsonTemplate.licenseGrant.exclusiveness = staticTemplate.contractParameters.hasLicenseGrant.exclusiveness
+    jsonTemplate.licenseGrant.revocable = staticTemplate.contractParameters.hasLicenseGrant.revocable
+    jsonTemplate.dataStream = staticTemplate.dataStream
+    jsonTemplate.personalData = staticTemplate.personalData
+
+    jsonTemplate.pricingModel.pricingModelName = staticTemplate.hasPricingModel.pricingModelName
+    if(staticTemplate.dataStream)
+        jsonTemplate.pricingModel.paymentType = "payment on subscription"
+    else jsonTemplate.pricingModel.paymentType = "one-time purchase"
+    jsonTemplate.pricingModel.basicPrice = staticTemplate.hasPricingModel.basicPrice
+    jsonTemplate.pricingModel.currency = staticTemplate.hasPricingModel.currency
+    
+    jsonTemplate.pricingModel.hasPaymentOnSubscription.paymentOnSubscriptionName = staticTemplate.hasPricingModel.hasPaymentOnSubscription.paymentOnSubscriptionName
+    jsonTemplate.pricingModel.hasPaymentOnSubscription.paymentType = staticTemplate.hasPricingModel.hasPaymentOnSubscription.paymentType
+    jsonTemplate.pricingModel.hasPaymentOnSubscription.timeDuration = staticTemplate.hasPricingModel.hasPaymentOnSubscription.timeDuration
+    jsonTemplate.pricingModel.hasPaymentOnSubscription.description = staticTemplate.hasPricingModel.hasPaymentOnSubscription.description
+    jsonTemplate.pricingModel.hasPaymentOnSubscription.repeat = staticTemplate.hasPricingModel.hasPaymentOnSubscription.repeat
+    jsonTemplate.pricingModel.hasPaymentOnSubscription.hasSubscriptionPrice = staticTemplate.hasPricingModel.hasPaymentOnSubscription.hasSubscriptionPrice
+    
+    jsonTemplate.pricingModel.hasFreePrice.hasPriceFree = staticTemplate.hasPricingModel.hasFreePrice.hasPriceFree
 
     return jsonTemplate
 }
+
+
+export async function getFee(price: number) {
+    let feeRequest: any = await _fetch(
+        `${process.env.BACKPLANE_URL}/pricingManager/fee/getfee?price=${price}`,
+        {
+            method: 'GET',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+            },
+        },
+    ).catch((error: any) => {
+        console.error('Error:', error)
+    })
+
+    const feeJson = await feeRequest.json()
+
+    const fee : string = feeJson
+
+    return fee
+
+    //let parsedToJson = JSON.parse(JSON.stringify(fee))
+
+    //return parseInt(parsedToJson)
+
+
+    //console.log(feeJson)
+
+    //let parsedToJson = JSON.parse(JSON.stringify(feeJson))
+
+    //return parsedToJson
+}
+
 
 // export async function createAgreements(contract:ethers.Contract, dataOfferingId:string, purpose:string, consumerId:string, providerId:string, dates:Array<Number>, descriptionOfData:Array<string>, intendedUse:Array<Boolean>, licenseGrant:Array<Boolean>, stream:Boolean) {
 
@@ -53,23 +110,27 @@ export function processTemplate(template: Template) {
 
     // process template data
 
-    const providerPublicKey = template.DataExchangeAgreement.orig
-    const consumerPublicKey = template.DataExchangeAgreement.dest
-    const dataExchangeAgreement = template.DataExchangeAgreement
+    const providerPublicKey = template.dataExchangeAgreement.orig
+    const consumerPublicKey = template.dataExchangeAgreement.dest
+    const dataExchangeAgreement = template.dataExchangeAgreement
     const obj = { src: 'A', dst: 'B', msg: { dataExchangeAgreement } }
     console.log(objectSha.hashable(obj))
 
     const dataExchangeAgreementHash = objectSha.digest(obj, 'SHA-256') ///algorithm
 
-    const dataOfferingId = template.DataOfferingDescription.dataOfferingId
-    const purpose = template.Purpose
-    const providerId = template.hasParties.Parties.dataProvider
-    const consumerId = template.hasParties.Parties.dataConsumer
+    const dataOfferingId = template.dataOfferingDescription.dataOfferingId
+    const dataOfferingVersion = template.dataOfferingDescription.version
+
+    // check whether active
+
+    const purpose = template.purpose
+    const providerId = template.parties.dataProvider
+    const consumerId = template.parties.dataConsumer
     const date = new Date()
     const creationDate = Math.floor(new Date(date.getFullYear(), date.getMonth(), date.getDate(),).getTime() / 1000)
     //const creationDate = template.hasDuration.Duration.creationDate
-    const startDate = template.hasDuration.Duration.startDate
-    const endDate = template.hasDuration.Duration.endDate
+    const startDate = template.duration.startDate
+    const endDate = template.duration.endDate
     const dates = [creationDate, startDate, endDate]
 
     // const dataType = template.hasDescriptionOfData.DescriptionOfData.dataType
@@ -77,18 +138,25 @@ export function processTemplate(template: Template) {
     // const dataSource = template.hasDescriptionOfData.DescriptionOfData.dataSource
     // const descriptionOfData = [dataType, dataFormat, dataSource]
 
-    const processData = template.hasIntendedUse.IntendedUse.processData
-    const shareDataWithThirdParty = template.hasIntendedUse.IntendedUse.shareDataWithThirdParty
-    const editData = template.hasIntendedUse.IntendedUse.editData
+    //obligation
+    const qualityOfData = template.obligations.qualityOfData
+    const characteristics = template.obligations.characteristics
+    const dataAvailability = template.obligations.dataAvailability
+    const obligation = [qualityOfData,characteristics,dataAvailability]
+
+    const processData = template.intendedUse.processData
+    const shareDataWithThirdParty = template.intendedUse.shareDataWithThirdParty
+    const editData = template.intendedUse.editData
     const intendedUse = [processData, shareDataWithThirdParty, editData]
 
-    const copyData = template.hasLicenseGrant.LicenseGrant.copyData
-    const transferable = template.hasLicenseGrant.LicenseGrant.transferable
-    const exclusiveness = template.hasLicenseGrant.LicenseGrant.revocable
-    const revocable = template.hasLicenseGrant.LicenseGrant.revocable
+    const copyData = template.licenseGrant.copyData
+    const transferable = template.licenseGrant.transferable
+    const exclusiveness = template.licenseGrant.revocable
+    const revocable = template.licenseGrant.revocable
     const licenseGrant = [copyData, transferable, exclusiveness, revocable]
 
-    const dataStream = template.DataStream
+    const dataStream = template.dataStream
+    const personalData = template.personalData
 
     console.log("dataofferingId => " + dataOfferingId + " purpose => " + purpose + " consumerId => " + consumerId + " providerId => " + providerId +
         " dates => [" + startDate + "," + endDate + "]" + " intendedUse => ["
@@ -99,6 +167,7 @@ export function processTemplate(template: Template) {
         consumerPublicKey: consumerPublicKey,
         dataExchangeAgreementHash: dataExchangeAgreementHash,
         dataOfferingId: dataOfferingId,
+        dataOfferingVersion: dataOfferingVersion,
         purpose: purpose,
         providerId: providerId,
         consumerId: consumerId,

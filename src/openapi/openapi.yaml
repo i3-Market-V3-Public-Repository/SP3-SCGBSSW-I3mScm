@@ -379,6 +379,26 @@ paths:
                 $ref: '#/components/schemas/transaction_object'
       security:
         - bearerAuth: []
+  # /give_consent:
+  #   post:
+  #     tags:
+  #       - Agreement
+  #     summary: Give consent
+  #     requestBody:
+  #       content:
+  #         application/json:
+  #           schema:
+  #             $ref: '#/components/schemas/consent'
+  #       required: true
+  #     responses:
+  #       '200':
+  #         description: OK
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: '#/components/schemas/transaction_object'
+  #     security:
+  #       - bearerAuth: []
 components:
   schemas:
     state:
@@ -454,76 +474,78 @@ components:
           type: string
     template:
       type: object
+      required:
+        - dataOfferingDescription, purpose, dids, parties, duration, obligations, intendedUse, licenseGrant, pricingModel
       properties:
-        DataOfferingDescription:
+        dataOfferingDescription:
           type: object
+          required:
+          - dataOfferingId, dataOfferingVersion, active
           properties:
             dataOfferingId:
               type: string
-            provider:
-              type: string
-            description:
-              type: string
-            title:
-              type: string
+            dataOfferingVersion:
+              type: integer
             category:
               type: string
-            isActive:
+            active:
               type: boolean
-        Purpose:
+        dids: 
+          type: object
+          required:
+          - providerDid
+          properties:
+            providerDid:
+              type: string
+            consumerDid:
+              type: string
+        purpose:
           type: string
-        hasParties:
+        parties:
           type: object
+          required:
+              - dataProvider
           properties:
-            Parties:
-              type: object
-              properties:
-                dataProvider:
-                  type: string
-                dataConsumer:
-                  type: string
-        hasDuration:
+              dataProvider:
+                type: string
+              dataConsumer:
+                type: string
+        duration:
           type: object
+          required:
+          - creationDate, startDate, endDate
           properties:
-            Duration:
-              type: object
-              properties:
                 creationDate:
                   type: integer
                 startDate:
                   type: integer
                 endDate:
                   type: integer
-        hasDuties/Obligations:
+        obligations:
           type: object
           properties:
-            Duties/Obligations:
-              type: object
-              properties:
-                qualityOfData:
-                  type: integer
-                characteristics:
-                    type: string
-                dataAvailability:
-                  type: boolean
-        hasIntendedUse:
+              qualityOfData:
+                type: integer
+              characteristics:
+                type: string
+              dataAvailability:
+                type: boolean
+        intendedUse:
           type: object
+          required:
+          - processData, shareDataWithThirdParty, editData
           properties:
-            IntendedUse:
-              type: object
-              properties:
                 processData:
                   type: boolean
                 shareDataWithThirdParty:
                   type: boolean
                 editData:
                   type: boolean
-        hasLicenseGrant:
+        licenseGrant:
           type: object
+          required:
+          - copyData, transferable, exclusiveness, revocable
           properties:
-            LicenseGrant:
-              type: object
-              properties:
                 copyData:
                   type: boolean
                 transferable:
@@ -532,10 +554,80 @@ components:
                   type: boolean
                 revocable:
                   type: boolean
-        DataStream:
+        dataStream:
           type: boolean
-        DataExchangeAgreement:
+        personalData:
+          type: boolean
+        pricingModel:
           type: object
+          required:
+          - basicPrice, currency, hasFreePrice
+          properties:
+            paymentType:
+              type: string
+            pricingModelName:
+              type: string
+            basicPrice:
+              type: integer
+            currency:
+              type: string
+            fee:
+              type: integer
+            hasPaymentOnSubscription:
+              type: object
+              properties:
+                paymentOnSubscriptionName:
+                  type: string
+                paymentType:
+                  type: string
+                timeDuration:
+                  type: string
+                description:
+                  type: string
+                repeat:
+                  type: string
+                hasSubscriptionPrice:
+                  type: integer
+            hasPaymentOnApi:
+              type: object
+              properties:
+                description:
+                  type: string
+                numberOfObject:
+                  type: integer
+                hasApiPrice:
+                  type: integer
+            hasPaymentOnUnit:
+              type: object
+              properties:
+                paymentOnUnitName:
+                  type: string
+                description:
+                  type: string
+                dataUnit:
+                  type: integer
+                hasUnitPrice:
+                  type: integer
+            hasPaymentOnSize:
+              type: object
+              properties:
+                paymentOnSizeName:
+                  type: string
+                description:
+                  type: string
+                dataSize:
+                  type: integer
+                hasSizePrice:
+                  type: integer
+            hasFreePrice:
+              type: object
+              properties:
+                hasPriceFree: 
+                  type: boolean
+        dataExchangeAgreement:
+          type: object
+          required:
+            - orig, dest
           properties:
             orig:
               type: string
@@ -633,6 +725,17 @@ components:
       example:
         proof: 'eyJhbGciOiJFUzI1NiJ9.eyJwcm9vZlR5cGUiOiJyZXNvbHV0aW9uIiwiZGF0YUV4Y2hhbmdlSWQiOiJTTmg5eUtYYjJlaGxWSFJZQkllay16Z1pVaDJtU1NvMWpwbGg3SWEtNHlRIiwiaWF0IjoxNjQ2OTUxNjM1LCJpc3MiOiJ7XCJhbGdcIjpcIkVTMjU2XCIsXCJjcnZcIjpcIlAtMjU2XCIsXCJkXCI6XCJ1Z1NpSTlJTEdnTWM1TmMwbkFhM3FGTjNBTjBvR2JhMzNJQWFrSHFkdm1nXCIsXCJrdHlcIjpcIkVDXCIsXCJ4XCI6XCJMNldmVlhHYkgwaW82SnBtOTRTMWxwZGk2eUd0VDFPbVo2NUFfa1NfaGs4XCIsXCJ5XCI6XCI2WUUwb1BPcFdCcUM3NURfanRKVWZ5NWxzWGxHak81ZzZRWGl2RHdNREtjXCJ9Iiwic3ViIjoie1wiYWxnXCI6XCJFUzI1NlwiLFwiY3J2XCI6XCJQLTI1NlwiLFwia3R5XCI6XCJFQ1wiLFwieFwiOlwiVlhzQnVPWndWamhvZkpWNGtBaGJhNnduMUVZRHdVSWtnWGIyZlZuTDh4Y1wiLFwieVwiOlwiaDRmTDVRdjRFWXQ3WGRLcWRJeTFaSnM0X1FXWURrWTF6VXpTb0k2MU43WVwifSIsInJlc29sdXRpb24iOiJkZW5pZWQiLCJ0eXBlIjoiZGlzcHV0ZSJ9.TtxUm3E6LfmwEI74cr6RO4-nw-xcFaeARYOZ4z1dBVlc_JU0mCv0Ftr9tCDhggfLiJqb4RIPiNfIytFZMUbx-g'
         sender_address: '0x4d82Bd33baA4Fe5489C45bBdC206019403dcF829'
+    # consent:
+    #   type: object
+    #   properties:
+    #     dataOfferingId:
+    #       type: string
+    #     consent_form_hash:
+    #       type: string
+    #     start_date:
+    #       type: integer
+    #     end_date:
+    #       type: integer
     sign_agreement:
       type: object
       properties:

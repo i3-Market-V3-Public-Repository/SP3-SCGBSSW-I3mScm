@@ -1,26 +1,62 @@
 {
-  "offeringId": "antoher_1",
-  "provider": "1",
-  "category": "other",
-  "contractParameters": 
-    {
-      "interestOfProvider": "NA",
-      "interestDescription": "NA",
-      "hasGoverningJurisdiction": "NA",
-      "purpose": "NA",
-      "purposeDescription": "NA", 
-      "hasIntendedUse": 
-        {
-          "processData": true,
-          "shareDataWithThirdParty": true,
-          "editData": false
-        },
-      "hasLicenseGrant": 
-        {
-          "copyData": true,
-          "transferable": false,
-          "exclusiveness": false,
-          "revocable": true
-        }
+  "offeringId": "string",
+  "version": 0,
+  "provider": "string",
+  "providerDid": "string",
+  "active": true,
+  "dataStream": true,
+  "personalData": true,
+  "category": "string",
+  "contractParameters": {
+    "interestOfProvider": "string",
+    "interestDescription": "string",
+    "hasGoverningJurisdiction": "string",
+    "purpose": "string",
+    "purposeDescription": "string",
+    "hasIntendedUse": {
+      "processData": true,
+      "shareDataWithThirdParty": true,
+      "editData": true
+    },
+    "hasLicenseGrant": {
+      "copyData": true,
+      "transferable": true,
+      "exclusiveness": true,
+      "revocable": true
     }
+  },
+  "hasPricingModel": {
+    "pricingModelName": "string",
+    "basicPrice": 0,
+    "currency": "string",
+    "hasPaymentOnSubscription": {
+      "paymentOnSubscriptionName": "string",
+      "paymentType": "string",
+      "timeDuration": "string",
+      "description": "string",
+      "repeat": "string",
+      "hasSubscriptionPrice": 0
+    },
+    "hasPaymentOnApi": {
+	    "paymentOnApiName": "string",
+      "description": "optional_field",
+      "numberOfObject": 0,
+      "hasApiPrice": 0
+    },
+    "hasPaymentOnUnit": {
+      "paymentOnUnitName": "string",
+      "description": "string",
+      "dataUnit": 0,
+      "hasUnitPrice": 0
+    },
+    "hasPaymentOnSize": {
+      "paymentOnSizeName": "string",
+      "description": "string",
+      "dataSize": "string",
+      "hasSizePrice": 0
+    },
+    "hasFreePrice": {
+      "hasPriceFree": false
+    }
+  }
 }

@@ -9,9 +9,15 @@
 
 export interface StaticParametersTemplate {
     offeringId:         string;
+    version:            number;
     provider:           string;
+    providerDid:        string;
+    active:             boolean;
+    dataStream:         boolean;
+    personalData:       boolean;
     category:           string;
     contractParameters: ContractParameters;
+    hasPricingModel:    HasPricingModel;
 }
 
 export interface ContractParameters {
@@ -35,6 +41,51 @@ export interface HasLicenseGrant {
     transferable:  boolean;
     exclusiveness: boolean;
     revocable:     boolean;
+}
+
+export interface HasPricingModel {
+    pricingModelName:         string;
+    basicPrice:               number;
+    currency:                 string;
+    hasPaymentOnSubscription: HasPaymentOnSubscription;
+    hasPaymentOnApi:          HasPaymentOnAPI;
+    hasPaymentOnUnit:         HasPaymentOnUnit;
+    hasPaymentOnSize:         HasPaymentOnSize;
+    hasFreePrice:             HasFreePrice;
+}
+
+export interface HasFreePrice {
+    hasPriceFree: boolean;
+}
+
+export interface HasPaymentOnAPI {
+    paymentOnApiName: string;
+    description:      string;
+    numberOfObject:   number;
+    hasApiPrice:      number;
+}
+
+export interface HasPaymentOnSize {
+    paymentOnSizeName: string;
+    description:       string;
+    dataSize:          string;
+    hasSizePrice:      number;
+}
+
+export interface HasPaymentOnSubscription {
+    paymentOnSubscriptionName: string;
+    paymentType:               string;
+    timeDuration:              string;
+    description:               string;
+    repeat:                    string;
+    hasSubscriptionPrice:      number;
+}
+
+export interface HasPaymentOnUnit {
+    paymentOnUnitName: string;
+    description:       string;
+    dataUnit:          number;
+    hasUnitPrice:      number;
 }
 
 // Converts JSON strings to/from your types
@@ -184,9 +235,15 @@ function r(name: string) {
 const typeMap: any = {
     "StaticParametersTemplate": o([
         { json: "offeringId", js: "offeringId", typ: "" },
+        { json: "version", js: "version", typ: 0 },
         { json: "provider", js: "provider", typ: "" },
+        { json: "providerDid", js: "providerDid", typ: "" },
+        { json: "active", js: "active", typ: true },
+        { json: "dataStream", js: "dataStream", typ: true },
+        { json: "personalData", js: "personalData", typ: true },
         { json: "category", js: "category", typ: "" },
         { json: "contractParameters", js: "contractParameters", typ: r("ContractParameters") },
+        { json: "hasPricingModel", js: "hasPricingModel", typ: r("HasPricingModel") },
     ], false),
     "ContractParameters": o([
         { json: "interestOfProvider", js: "interestOfProvider", typ: "" },
@@ -207,5 +264,44 @@ const typeMap: any = {
         { json: "transferable", js: "transferable", typ: true },
         { json: "exclusiveness", js: "exclusiveness", typ: true },
         { json: "revocable", js: "revocable", typ: true },
+    ], false),
+    "HasPricingModel": o([
+        { json: "pricingModelName", js: "pricingModelName", typ: "" },
+        { json: "basicPrice", js: "basicPrice", typ: 0 },
+        { json: "currency", js: "currency", typ: "" },
+        { json: "hasPaymentOnSubscription", js: "hasPaymentOnSubscription", typ: r("HasPaymentOnSubscription") },
+        { json: "hasPaymentOnApi", js: "hasPaymentOnApi", typ: r("HasPaymentOnAPI") },
+        { json: "hasPaymentOnUnit", js: "hasPaymentOnUnit", typ: r("HasPaymentOnUnit") },
+        { json: "hasPaymentOnSize", js: "hasPaymentOnSize", typ: r("HasPaymentOnSize") },
+        { json: "hasFreePrice", js: "hasFreePrice", typ: r("HasFreePrice") },
+    ], false),
+    "HasFreePrice": o([
+        { json: "hasPriceFree", js: "hasPriceFree", typ: true },
+    ], false),
+    "HasPaymentOnAPI": o([
+        { json: "paymentOnApiName", js: "paymentOnApiName", typ: "" },
+        { json: "description", js: "description", typ: "" },
+        { json: "numberOfObject", js: "numberOfObject", typ: 0 },
+        { json: "hasApiPrice", js: "hasApiPrice", typ: 0 },
+    ], false),
+    "HasPaymentOnSize": o([
+        { json: "paymentOnSizeName", js: "paymentOnSizeName", typ: "" },
+        { json: "description", js: "description", typ: "" },
+        { json: "dataSize", js: "dataSize", typ: "" },
+        { json: "hasSizePrice", js: "hasSizePrice", typ: 0 },
+    ], false),
+    "HasPaymentOnSubscription": o([
+        { json: "paymentOnSubscriptionName", js: "paymentOnSubscriptionName", typ: "" },
+        { json: "paymentType", js: "paymentType", typ: "" },
+        { json: "timeDuration", js: "timeDuration", typ: "" },
+        { json: "description", js: "description", typ: "" },
+        { json: "repeat", js: "repeat", typ: "" },
+        { json: "hasSubscriptionPrice", js: "hasSubscriptionPrice", typ: 0 },
+    ], false),
+    "HasPaymentOnUnit": o([
+        { json: "paymentOnUnitName", js: "paymentOnUnitName", typ: "" },
+        { json: "description", js: "description", typ: "" },
+        { json: "dataUnit", js: "dataUnit", typ: 0 },
+        { json: "hasUnitPrice", js: "hasUnitPrice", typ: 0 },
     ], false),
 };

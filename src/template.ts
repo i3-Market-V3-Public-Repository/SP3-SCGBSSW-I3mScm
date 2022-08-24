@@ -8,15 +8,18 @@
 // match the expected interface, even if the JSON is valid.
 
 export interface Template {
-    DataOfferingDescription: DataOfferingDescription;
-    Purpose:                 string;
-    hasParties:              HasParties;
-    hasDuration:             HasDuration;
-    "hasDuties/Obligations": HasDutiesObligations;
-    hasIntendedUse:          HasIntendedUse;
-    hasLicenseGrant:         HasLicenseGrant;
-    DataStream:              boolean;
-    DataExchangeAgreement:   DataExchangeAgreement;
+    dataOfferingDescription: DataOfferingDescription;
+    dids:                    Dids;
+    purpose:                 string;
+    parties:                 Parties;
+    duration:                Duration;
+    obligations:             Obligations;
+    intendedUse:             IntendedUse;
+    licenseGrant:            LicenseGrant;
+    dataStream:              boolean;
+    personalData:            boolean;
+    pricingModel:            PricingModel;
+    dataExchangeAgreement:   DataExchangeAgreement;
 }
 
 export interface DataExchangeAgreement {
@@ -34,15 +37,14 @@ export interface DataExchangeAgreement {
 
 export interface DataOfferingDescription {
     dataOfferingId: string;
-    provider:       string;
-    description:    string;
-    title:          string;
+    version:        number;
     category:       string;
-    isActive:       boolean;
+    active:         boolean;
 }
 
-export interface HasDuration {
-    Duration: Duration;
+export interface Dids {
+    providerDid: string;
+    consumerDid: string;
 }
 
 export interface Duration {
@@ -51,28 +53,10 @@ export interface Duration {
     endDate:      number;
 }
 
-export interface HasDutiesObligations {
-    "Duties/Obligations": DutiesObligations;
-}
-
-export interface DutiesObligations {
-    qualityOfData:    number;
-    characteristics:  string;
-    dataAvailability: boolean;
-}
-
-export interface HasIntendedUse {
-    IntendedUse: IntendedUse;
-}
-
 export interface IntendedUse {
     processData:             boolean;
     shareDataWithThirdParty: boolean;
     editData:                boolean;
-}
-
-export interface HasLicenseGrant {
-    LicenseGrant: LicenseGrant;
 }
 
 export interface LicenseGrant {
@@ -82,13 +66,38 @@ export interface LicenseGrant {
     revocable:     boolean;
 }
 
-export interface HasParties {
-    Parties: Parties;
+export interface Obligations {
+    qualityOfData:    number;
+    characteristics:  string;
+    dataAvailability: boolean;
 }
 
 export interface Parties {
     dataProvider: string;
     dataConsumer: string;
+}
+
+export interface PricingModel {
+    paymentType:              string;
+    pricingModelName:         string;
+    basicPrice:               number;
+    currency:                 string;
+    fee:                      number;
+    hasPaymentOnSubscription: HasPaymentOnSubscription;
+    hasFreePrice:             HasFreePrice;
+}
+
+export interface HasFreePrice {
+    hasPriceFree: boolean;
+}
+
+export interface HasPaymentOnSubscription {
+    paymentOnSubscriptionName: string;
+    paymentType:               string;
+    timeDuration:              string;
+    description:               string;
+    repeat:                    string;
+    hasSubscriptionPrice:      number;
 }
 
 // Converts JSON strings to/from your types
@@ -237,15 +246,18 @@ function r(name: string) {
 
 const typeMap: any = {
     "Template": o([
-        { json: "DataOfferingDescription", js: "DataOfferingDescription", typ: r("DataOfferingDescription") },
-        { json: "Purpose", js: "Purpose", typ: "" },
-        { json: "hasParties", js: "hasParties", typ: r("HasParties") },
-        { json: "hasDuration", js: "hasDuration", typ: r("HasDuration") },
-        { json: "hasDuties/Obligations", js: "hasDuties/Obligations", typ: r("HasDutiesObligations") },
-        { json: "hasIntendedUse", js: "hasIntendedUse", typ: r("HasIntendedUse") },
-        { json: "hasLicenseGrant", js: "hasLicenseGrant", typ: r("HasLicenseGrant") },
-        { json: "DataStream", js: "DataStream", typ: true },
-        { json: "DataExchangeAgreement", js: "DataExchangeAgreement", typ: r("DataExchangeAgreement") },
+        { json: "dataOfferingDescription", js: "dataOfferingDescription", typ: r("DataOfferingDescription") },
+        { json: "dids", js: "dids", typ: r("Dids") },
+        { json: "purpose", js: "purpose", typ: "" },
+        { json: "parties", js: "parties", typ: r("Parties") },
+        { json: "duration", js: "duration", typ: r("Duration") },
+        { json: "obligations", js: "obligations", typ: r("Obligations") },
+        { json: "intendedUse", js: "intendedUse", typ: r("IntendedUse") },
+        { json: "licenseGrant", js: "licenseGrant", typ: r("LicenseGrant") },
+        { json: "dataStream", js: "dataStream", typ: true },
+        { json: "personalData", js: "personalData", typ: true },
+        { json: "pricingModel", js: "pricingModel", typ: r("PricingModel") },
+        { json: "dataExchangeAgreement", js: "dataExchangeAgreement", typ: r("DataExchangeAgreement") },
     ], false),
     "DataExchangeAgreement": o([
         { json: "orig", js: "orig", typ: "" },
@@ -261,38 +273,23 @@ const typeMap: any = {
     ], false),
     "DataOfferingDescription": o([
         { json: "dataOfferingId", js: "dataOfferingId", typ: "" },
-        { json: "provider", js: "provider", typ: "" },
-        { json: "description", js: "description", typ: "" },
-        { json: "title", js: "title", typ: "" },
+        { json: "version", js: "version", typ: 0 },
         { json: "category", js: "category", typ: "" },
-        { json: "isActive", js: "isActive", typ: true },
+        { json: "active", js: "active", typ: true },
     ], false),
-    "HasDuration": o([
-        { json: "Duration", js: "Duration", typ: r("Duration") },
+    "Dids": o([
+        { json: "providerDid", js: "providerDid", typ: "" },
+        { json: "consumerDid", js: "consumerDid", typ: "" },
     ], false),
     "Duration": o([
         { json: "creationDate", js: "creationDate", typ: 0 },
         { json: "startDate", js: "startDate", typ: 0 },
         { json: "endDate", js: "endDate", typ: 0 },
     ], false),
-    "HasDutiesObligations": o([
-        { json: "Duties/Obligations", js: "Duties/Obligations", typ: r("DutiesObligations") },
-    ], false),
-    "DutiesObligations": o([
-        { json: "qualityOfData", js: "qualityOfData", typ: 0 },
-        { json: "characteristics", js: "characteristics", typ: "" },
-        { json: "dataAvailability", js: "dataAvailability", typ: true },
-    ], false),
-    "HasIntendedUse": o([
-        { json: "IntendedUse", js: "IntendedUse", typ: r("IntendedUse") },
-    ], false),
     "IntendedUse": o([
         { json: "processData", js: "processData", typ: true },
         { json: "shareDataWithThirdParty", js: "shareDataWithThirdParty", typ: true },
         { json: "editData", js: "editData", typ: true },
-    ], false),
-    "HasLicenseGrant": o([
-        { json: "LicenseGrant", js: "LicenseGrant", typ: r("LicenseGrant") },
     ], false),
     "LicenseGrant": o([
         { json: "copyData", js: "copyData", typ: true },
@@ -300,11 +297,33 @@ const typeMap: any = {
         { json: "exclusiveness", js: "exclusiveness", typ: true },
         { json: "revocable", js: "revocable", typ: true },
     ], false),
-    "HasParties": o([
-        { json: "Parties", js: "Parties", typ: r("Parties") },
+    "Obligations": o([
+        { json: "qualityOfData", js: "qualityOfData", typ: 0 },
+        { json: "characteristics", js: "characteristics", typ: "" },
+        { json: "dataAvailability", js: "dataAvailability", typ: true },
     ], false),
     "Parties": o([
         { json: "dataProvider", js: "dataProvider", typ: "" },
         { json: "dataConsumer", js: "dataConsumer", typ: "" },
+    ], false),
+    "PricingModel": o([
+        { json: "paymentType", js: "paymentType", typ: "" },
+        { json: "pricingModelName", js: "pricingModelName", typ: "" },
+        { json: "basicPrice", js: "basicPrice", typ: 0 },
+        { json: "currency", js: "currency", typ: "" },
+        { json: "fee", js: "fee", typ: 0 },
+        { json: "hasPaymentOnSubscription", js: "hasPaymentOnSubscription", typ: r("HasPaymentOnSubscription") },
+        { json: "hasFreePrice", js: "hasFreePrice", typ: r("HasFreePrice") },
+    ], false),
+    "HasFreePrice": o([
+        { json: "hasPriceFree", js: "hasPriceFree", typ: true },
+    ], false),
+    "HasPaymentOnSubscription": o([
+        { json: "paymentOnSubscriptionName", js: "paymentOnSubscriptionName", typ: "" },
+        { json: "paymentType", js: "paymentType", typ: "" },
+        { json: "timeDuration", js: "timeDuration", typ: "" },
+        { json: "description", js: "description", typ: "" },
+        { json: "repeat", js: "repeat", typ: "" },
+        { json: "hasSubscriptionPrice", js: "hasSubscriptionPrice", typ: 0 },
     ], false),
 };
