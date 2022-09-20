@@ -9,9 +9,8 @@
 
 export interface Template {
     dataOfferingDescription: DataOfferingDescription;
-    dids:                    Dids;
-    purpose:                 string;
     parties:                 Parties;
+    purpose:                 string;
     duration:                Duration;
     obligations:             Obligations;
     intendedUse:             IntendedUse;
@@ -38,13 +37,9 @@ export interface DataExchangeAgreement {
 export interface DataOfferingDescription {
     dataOfferingId: string;
     version:        number;
+    title:          string;
     category:       string;
     active:         boolean;
-}
-
-export interface Dids {
-    providerDid: string;
-    consumerDid: string;
 }
 
 export interface Duration {
@@ -73,8 +68,8 @@ export interface Obligations {
 }
 
 export interface Parties {
-    dataProvider: string;
-    dataConsumer: string;
+    providerDid: string;
+    consumerDid: string;
 }
 
 export interface PricingModel {
@@ -247,9 +242,8 @@ function r(name: string) {
 const typeMap: any = {
     "Template": o([
         { json: "dataOfferingDescription", js: "dataOfferingDescription", typ: r("DataOfferingDescription") },
-        { json: "dids", js: "dids", typ: r("Dids") },
-        { json: "purpose", js: "purpose", typ: "" },
         { json: "parties", js: "parties", typ: r("Parties") },
+        { json: "purpose", js: "purpose", typ: "" },
         { json: "duration", js: "duration", typ: r("Duration") },
         { json: "obligations", js: "obligations", typ: r("Obligations") },
         { json: "intendedUse", js: "intendedUse", typ: r("IntendedUse") },
@@ -274,12 +268,9 @@ const typeMap: any = {
     "DataOfferingDescription": o([
         { json: "dataOfferingId", js: "dataOfferingId", typ: "" },
         { json: "version", js: "version", typ: 0 },
+        { json: "title", js: "title", typ: "" },
         { json: "category", js: "category", typ: "" },
         { json: "active", js: "active", typ: true },
-    ], false),
-    "Dids": o([
-        { json: "providerDid", js: "providerDid", typ: "" },
-        { json: "consumerDid", js: "consumerDid", typ: "" },
     ], false),
     "Duration": o([
         { json: "creationDate", js: "creationDate", typ: 0 },
@@ -303,8 +294,8 @@ const typeMap: any = {
         { json: "dataAvailability", js: "dataAvailability", typ: true },
     ], false),
     "Parties": o([
-        { json: "dataProvider", js: "dataProvider", typ: "" },
-        { json: "dataConsumer", js: "dataConsumer", typ: "" },
+        { json: "providerDid", js: "providerDid", typ: "" },
+        { json: "consumerDid", js: "consumerDid", typ: "" },
     ], false),
     "PricingModel": o([
         { json: "paymentType", js: "paymentType", typ: "" },

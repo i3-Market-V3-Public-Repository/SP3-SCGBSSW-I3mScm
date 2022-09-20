@@ -16,6 +16,7 @@ export interface StaticParametersTemplate {
     dataStream:         boolean;
     personalData:       boolean;
     category:           string;
+    dataOfferingTitle:  string;
     contractParameters: ContractParameters;
     hasPricingModel:    HasPricingModel;
 }
@@ -242,6 +243,7 @@ const typeMap: any = {
         { json: "dataStream", js: "dataStream", typ: true },
         { json: "personalData", js: "personalData", typ: true },
         { json: "category", js: "category", typ: "" },
+        { json: "dataOfferingTitle", js: "dataOfferingTitle", typ: "" },
         { json: "contractParameters", js: "contractParameters", typ: r("ContractParameters") },
         { json: "hasPricingModel", js: "hasPricingModel", typ: r("HasPricingModel") },
     ], false),

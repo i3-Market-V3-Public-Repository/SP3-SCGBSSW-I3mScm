@@ -12,12 +12,13 @@ export function getTemplate(jsonTemplate: Template, staticTemplate: StaticParame
     jsonTemplate.dataOfferingDescription.dataOfferingId = staticTemplate.offeringId
     jsonTemplate.dataOfferingDescription.version = staticTemplate.version
     jsonTemplate.dataOfferingDescription.category = staticTemplate.category
+    jsonTemplate.dataOfferingDescription.title = staticTemplate.dataOfferingTitle
     jsonTemplate.dataOfferingDescription.active = staticTemplate.active
 
-    jsonTemplate.dids.providerDid = staticTemplate.providerDid
+    jsonTemplate.parties.providerDid = staticTemplate.providerDid
 
     jsonTemplate.purpose = staticTemplate.contractParameters.purpose
-    jsonTemplate.parties.dataProvider = staticTemplate.provider
+    
     jsonTemplate.intendedUse.processData = staticTemplate.contractParameters.hasIntendedUse.processData
     jsonTemplate.intendedUse.shareDataWithThirdParty = staticTemplate.contractParameters.hasIntendedUse.shareDataWithThirdParty
     jsonTemplate.intendedUse.editData = staticTemplate.contractParameters.hasIntendedUse.editData
@@ -120,17 +121,24 @@ export function processTemplate(template: Template) {
 
     const dataOfferingId = template.dataOfferingDescription.dataOfferingId
     const dataOfferingVersion = template.dataOfferingDescription.version
+    const dataOfferingTitle = template.dataOfferingDescription.title
 
     // check whether active
 
     const purpose = template.purpose
-    const providerId = template.parties.dataProvider
-    const consumerId = template.parties.dataConsumer
+ 
     const date = new Date()
     const creationDate = Math.floor(new Date(date.getFullYear(), date.getMonth(), date.getDate(),).getTime() / 1000)
     //const creationDate = template.hasDuration.Duration.creationDate
     const startDate = template.duration.startDate
     const endDate = template.duration.endDate
+    if(startDate<creationDate){
+        throw new Error('Start date should be after creation date')
+    }
+    else if(startDate>endDate){
+        throw new Error('Start date should before end date')
+    }
+
     const dates = [creationDate, startDate, endDate]
 
     // const dataType = template.hasDescriptionOfData.DescriptionOfData.dataType
@@ -157,8 +165,25 @@ export function processTemplate(template: Template) {
 
     const dataStream = template.dataStream
     const personalData = template.personalData
+    const typeOfData = [dataStream, personalData]
 
-    console.log("dataofferingId => " + dataOfferingId + " purpose => " + purpose + " consumerId => " + consumerId + " providerId => " + providerId +
+    const paymentType = template.pricingModel.paymentType
+    const basicPrice = template.pricingModel.basicPrice
+    const currency = template.pricingModel.currency
+    const fee =template.pricingModel.fee
+    //const paymentOnSubscriptionName = template.pricingModel.hasPaymentOnSubscription.paymentOnSubscriptionName
+    //const subscriptionPaymentType = template.pricingModel.hasPaymentOnSubscription.paymentType
+    const timeDuration = template.pricingModel.hasPaymentOnSubscription.timeDuration
+    //const description = template.pricingModel.hasPaymentOnSubscription.description
+    const repeat = template.pricingModel.hasPaymentOnSubscription.repeat
+    //const hasSubscriptionPrice = template.pricingModel.hasPaymentOnSubscription.hasSubscriptionPrice
+    const freePrice = template.pricingModel.hasFreePrice.hasPriceFree
+
+    const pricingModel = [paymentType, basicPrice, currency, fee, [timeDuration,repeat],freePrice]
+
+    console.log(pricingModel)
+
+    console.log("dataofferingId => " + dataOfferingId + " purpose => " + purpose + " consumerPK => " + consumerPublicKey + " providerPK => " + providerPublicKey +
         " dates => [" + startDate + "," + endDate + "]" + " intendedUse => ["
         + processData + "," + shareDataWithThirdParty + "," + editData + "] licenseGrant => [" + copyData + "," + transferable + "," + exclusiveness + "," + revocable + "] dataStream => " + dataStream)
 
@@ -168,14 +193,15 @@ export function processTemplate(template: Template) {
         dataExchangeAgreementHash: dataExchangeAgreementHash,
         dataOfferingId: dataOfferingId,
         dataOfferingVersion: dataOfferingVersion,
+        dataOfferingTitle,
         purpose: purpose,
-        providerId: providerId,
-        consumerId: consumerId,
         dates: dates,
         // descriptionOfData: descriptionOfData,
+        obligation: obligation,
         intendedUse: intendedUse,
         licenseGrant: licenseGrant,
-        dataStream: dataStream
+        typeOfData: typeOfData,
+        pricingModel: pricingModel,
     }
 }
 
@@ -188,13 +214,17 @@ export function formatAgreement(agreement: any) {
         dataExchangeAgreementHash: agreement.dataExchangeAgreementHash,
         dataOffering: {
             dataOfferingId: agreement.dataOffering.dataOfferingId,
-            dataOfferingVersion: parseInt(agreement.dataOffering.dataOfferingVersion)
+            dataOfferingVersion: parseInt(agreement.dataOffering.dataOfferingVersion),
+            dataOfferingTitle: agreement.dataOffering.title
         },
         purpose: agreement.purpose,
-        state: agreement.state,
-        providerId: agreement.providerId,
-        consumerId: agreement.consumerId,
+        state: agreement.state, //convert state
         agreementDates: [parseInt(agreement.agreementDates[0]), parseInt(agreement.agreementDates[1]), parseInt(agreement.agreementDates[2])],
+        obligation: {
+            qualityOfData: parseInt(agreement.obligation.qualityOfData),
+            characteristics: agreement.obligation.characteristics,
+            dataAvailability: agreement.obligation.dataAvailability
+        },
         intendedUse: {
             processData: agreement.intendedUse.processData,
             shareDataWithThirdParty: agreement.intendedUse.shareDataWithThirdParty,
@@ -206,16 +236,45 @@ export function formatAgreement(agreement: any) {
             exclusiveness: agreement.licenseGrant.exclusiveness,
             revocable: agreement.licenseGrant.revocable
         },
-        dataStream: agreement.dataStream,
-        signed: agreement.signed,
-        // violation: [
-        //     agreement.violation[0],
-        //     agreement.violation[1],
-        //     {
-        //         violationType: agreement.violation.violationType,
-        //         issuerId: agreement.violation.issuerId
-        //     }
-        // ]
+        dataStream: agreement.typeOfData.dataStream,
+        personalData: agreement.typeOfData.personalData,
+        pricingModel: {
+            paymentType: agreement.pricingModel.paymentType,
+            price: parseInt(agreement.pricingModel.price),
+            currency: agreement.pricingModel.currency,
+            fee: parseInt(agreement.pricingModel.fee),
+            paymentOnSubscription:
+                {
+                    timeDuration: agreement.pricingModel.paymentOnSubscription.timeDuration,
+                    repeat: agreement.pricingModel.paymentOnSubscription.repeat
+                },
+            isFree: agreement.pricingModel.isFree
+        },
+        violation: {
+                violationType: parseInt(agreement.violation.violationType),
+                issuerId: agreement.violation.issuerId
+        },
+        penalties: agreement.penalties
+    }
+
+}
+
+
+export function formatPricingModel(pricingModel: any) {
+
+    return {
+        pricingModel: {
+            paymentType: pricingModel.paymentType,
+            price: parseInt(pricingModel.price),
+            currency: pricingModel.currency,
+            fee: parseInt(pricingModel.fee),
+            paymentOnSubscription:
+                {
+                    timeDuration: pricingModel.paymentOnSubscription.timeDuration,
+                    repeat: pricingModel.paymentOnSubscription.repeat
+                },
+            isFree: pricingModel.isFree
+        }
     }
 
 }

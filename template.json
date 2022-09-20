@@ -2,18 +2,15 @@
 	"dataOfferingDescription": {
 	  "dataOfferingId": "62ecd16897d095001f105493",
 	  "version": 0,
+	  "title": "string",
 	  "category": "string",
 	  "active": false
 	},
-	"dids": {
+	"parties": {
 	  "providerDid": "did:ethr:i3m:0x02b6b4e416dae94b00729fe82bdce4a8480e457be2f177a82b5eb6128ece05b35c",
 	  "consumerDid": "string"
 	},
 	"purpose": "string",
-	"parties": {
-		"dataProvider": "provider-test",
-		"dataConsumer": "string"
-	},
 	"duration": {
 		"creationDate": 0,
 		"startDate": 0,

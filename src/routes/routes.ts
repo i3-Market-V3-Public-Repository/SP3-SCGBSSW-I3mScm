@@ -13,6 +13,7 @@ import {
     createRawTransaction,
     processTemplate,
     formatAgreement,
+    formatPricingModel,
     notify,
     getState,
     formatTransaction,
@@ -131,6 +132,27 @@ export default async (): Promise<typeof router> => {
         }
     })
 
+    router.get('/get_pricing_model/:agreement_id', async (req, res) => {
+        try {
+            const agreementId = req.params.agreement_id
+            const agreement_length = await contract.getAgreementsLength()
+            if (agreementId < agreement_length) {
+                const pricingModel = await contract.retrievePricingModel(agreementId) 
+                const response = JSON.parse(JSON.stringify(formatPricingModel(pricingModel)))
+                res.status(200).send(response)
+            } else {
+                res.status(400).send('Invalid agreement id.')
+            }
+        } catch (error) {
+            if (error instanceof Error) {
+                console.log(`${error.message}`)
+                res
+                    .status(500)
+                    .send({ name: `${error.name}`, message: `${error.message}` })
+            }
+        }
+    })
+
     router.get('/check_active_agreements', async (req, res) => {
         try {
             const formatedAgreements: ReturnType<typeof formatAgreement>[] = []
@@ -155,14 +177,14 @@ export default async (): Promise<typeof router> => {
         }
     })
 
-    router.get('/check_agreements_by_consumer/:consumer_id/:active', async (req, res) => {
+    router.get('/check_agreements_by_consumer/:consumer_public_key/:active', async (req, res) => {
         try {
-            const consumer_id = req.params.consumer_id
+            const consumerPublicKey = req.params.consumer_public_key
             const active :boolean = JSON.parse(req.params.active)
             
             const formatedAgreements: ReturnType<typeof formatAgreement>[] = []
             const activeAgreements = await contract.checkAgreementsByConsumer(
-                consumer_id,
+                consumerPublicKey,
                 active
             )
 
@@ -186,19 +208,19 @@ export default async (): Promise<typeof router> => {
         }
     })
 
-    router.get('/check_agreements_by_provider/:provider_id/:active', async (req, res) => {
+    router.get('/check_agreements_by_provider/:provider_public_key/:active', async (req, res) => {
         try {
-            const provider_id = req.params.provider_id
+            const providerPublicKey = req.params.provider_public_key
             const active :boolean = JSON.parse(req.params.active)
             
             const formatedAgreements: ReturnType<typeof formatAgreement>[] = []
             const activeAgreements = await contract.checkAgreementsByProvider(
-                provider_id,
+                providerPublicKey,
                 active
             )
             activeAgreements.forEach((agreement) => {
                 const formatedAgreement = formatAgreement(agreement)
-                console.log(formatedAgreement.providerId)
+                console.log(formatedAgreement.providerPublicKey)
                 formatedAgreements.push(formatedAgreement)
             })
 
@@ -227,7 +249,7 @@ export default async (): Promise<typeof router> => {
 
             agreements.forEach((agreement) => {
                 const formatedAgreement = formatAgreement(agreement)
-                console.log(formatedAgreement.providerId)
+                console.log(formatedAgreement.providerPublicKey)
                 formatedAgreements.push(formatedAgreement)
             })
 
@@ -274,27 +296,32 @@ export default async (): Promise<typeof router> => {
                     processedTemplate.dataExchangeAgreementHash
                 const dataOfferingId = processedTemplate.dataOfferingId
                 const version = processedTemplate.dataOfferingVersion
+                const dataOfferingTitle = processedTemplate.dataOfferingTitle
                 const purpose = processedTemplate.purpose
-                const providerId = processedTemplate.providerId
-                const consumerId = processedTemplate.consumerId
                 const dates = processedTemplate.dates
                 //const descriptionOfData = processedTemplate.descriptionOfData
+                const obligation = processedTemplate.obligation;
                 const intendedUse = processedTemplate.intendedUse
                 const licenseGrant = processedTemplate.licenseGrant
-                const dataStream = processedTemplate.dataStream
+                const typeOfData = processedTemplate.typeOfData
+                //const dataStream = processedTemplate.dataStream
+                const pricingModel= processedTemplate.pricingModel
+
+                //invalid BigNumber string (argument="value", value="payment on subscription", code=INVALID_ARGUMENT, version=bignumber/5.6.0)
+                //nem kell az egesz pricingModel
 
                 const unsignedCreateAgreementTx = (await contract.populateTransaction.createAgreement(
                     providerPublicKey,
                     consumerPublicKey,
                     dataExchangeAgreementHash,
-                    [dataOfferingId, version],
+                    [dataOfferingId, version, dataOfferingTitle],
                     purpose,
-                    providerId,
-                    consumerId,
                     dates,
+                    obligation,
                     intendedUse,
                     licenseGrant,
-                    dataStream,
+                    pricingModel,
+                    typeOfData,
                     { gasLimit: gasLimit },
                 )) as any
 
@@ -336,6 +363,7 @@ export default async (): Promise<typeof router> => {
                     )
                     //filter events based on public key
                     // consumer subscribes to did and public key events
+                    console.log(logs.eventFragment)
                     const eventName = logs.eventFragment.name
 
                     let type: string = 'unrecognizedEvent'
@@ -387,7 +415,7 @@ export default async (): Promise<typeof router> => {
                     origin,
                     predefined,
                     type,
-                    `${logs.args.providerId}`,
+                    `${logs.args.providerPublicKey}`,
                     message,
                     status,
                 )
@@ -395,7 +423,7 @@ export default async (): Promise<typeof router> => {
                     origin,
                     predefined,
                     type,
-                    `${logs.args.consumerId}`,
+                    `${logs.args.consumerPublicKey}`,
                     message,
                     status,
                 )
@@ -422,6 +450,7 @@ export default async (): Promise<typeof router> => {
 
             await provider.waitForTransaction(hash)
             const receipt = await provider.getTransactionReceipt(hash)
+
 
             const formatedTransactionReceipt = formatTransactionReceipt(receipt)
 
@@ -482,7 +511,7 @@ export default async (): Promise<typeof router> => {
                     origin,
                     predefined,
                     type,
-                    `${logs.args.providerId}`,
+                    `${logs.args.providerPublicKey}`,
                     message,
                     status,
                 )
@@ -490,7 +519,7 @@ export default async (): Promise<typeof router> => {
                     origin,
                     predefined,
                     type,
-                    `${logs.args.consumerId}`,
+                    `${logs.args.consumerPublicKey}`,
                     message,
                     status,
                 )
@@ -507,72 +536,68 @@ export default async (): Promise<typeof router> => {
         }
     })
 
-    router.put(
-        '/update_agreement_raw_transaction/:agreement_id/:sender_address',
-        async (req, res) => {
-            try {
-                const agreementId = req.params.agreement_id
-                const senderAddress = req.params.sender_address
-                const template = ConvertToTemplate.toTemplate(JSON.stringify(req.body))
-                const processedTemplate = processTemplate(template)
+    // router.put(
+    //     '/update_agreement_raw_transaction/:agreement_id/:sender_address',
+    //     async (req, res) => {
+    //         try {
+    //             const agreementId = req.params.agreement_id
+    //             const senderAddress = req.params.sender_address
+    //             const template = ConvertToTemplate.toTemplate(JSON.stringify(req.body))
+    //             const processedTemplate = processTemplate(template)
 
-                // process input data
-                const providerPublicKey = processedTemplate.providerPublicKey
-                const consumerPublicKey = processedTemplate.consumerPublicKey
-                const dataOfferingId = processedTemplate.dataOfferingId
-                const purpose = processedTemplate.purpose
-                const providerId = processedTemplate.providerId
-                const consumerId = processedTemplate.consumerId
-                const dates = processedTemplate.dates
-                const dates2 = [dates[1],dates[2]]
-                //const descriptionOfData = processedTemplate.descriptionOfData
-                const intendedUse = processedTemplate.intendedUse
-                const licenseGrant = processedTemplate.licenseGrant
-                const dataStream = processedTemplate.dataStream
+    //             // process input data
+    //             const providerPublicKey = processedTemplate.providerPublicKey
+    //             const consumerPublicKey = processedTemplate.consumerPublicKey
+    //             const dataOfferingId = processedTemplate.dataOfferingId
+    //             const purpose = processedTemplate.purpose
+    //             const dates = processedTemplate.dates
+    //             const dates2 = [dates[1],dates[2]]
+    //             //const descriptionOfData = processedTemplate.descriptionOfData
+    //             const intendedUse = processedTemplate.intendedUse
+    //             const licenseGrant = processedTemplate.licenseGrant
+    //             const dataStream = processedTemplate.typeOfData
 
-                const unsignedUpdateAgreementTx = (await contract.populateTransaction.updateAgreement(
-                    agreementId,
-                    providerPublicKey,
-                    consumerPublicKey,
-                    dataOfferingId,
-                    purpose,
-                    providerId,
-                    consumerId,
-                    dates2,
-                    intendedUse,
-                    licenseGrant,
-                    dataStream,
-                    { gasLimit: gasLimit },
-                )) as any
+    //             const unsignedUpdateAgreementTx = (await contract.populateTransaction.updateAgreement(
+    //                 agreementId,
+    //                 providerPublicKey,
+    //                 consumerPublicKey,
+    //                 dataOfferingId,
+    //                 purpose,
+    //                 dates2,
+    //                 intendedUse,
+    //                 licenseGrant,
+    //                 dataStream,
+    //                 { gasLimit: gasLimit },
+    //             )) as any
 
-                const formatedRawTransaction = formatTransaction(
-                    await createRawTransaction(
-                        provider,
-                        unsignedUpdateAgreementTx,
-                        senderAddress,
-                    ),
-                )
-                res.status(200).send(formatedRawTransaction)
-            } catch (error) {
-                if (error instanceof Error) {
-                    console.log(`${error.message}`)
-                    res
-                        .status(500)
-                        .send({ name: `${error.name}`, message: `${error.message}` })
-                }
-            }
-        },
-    )
+    //             const formatedRawTransaction = formatTransaction(
+    //                 await createRawTransaction(
+    //                     provider,
+    //                     unsignedUpdateAgreementTx,
+    //                     senderAddress,
+    //                 ),
+    //             )
+    //             res.status(200).send(formatedRawTransaction)
+    //         } catch (error) {
+    //             if (error instanceof Error) {
+    //                 console.log(`${error.message}`)
+    //                 res
+    //                     .status(500)
+    //                     .send({ name: `${error.name}`, message: `${error.message}` })
+    //             }
+    //         }
+    //     },
+    // )
 
     router.put('/sign_agreement_raw_transaction', async (req, res) => {
         try {
             const agreementId = req.body.agreement_id
-            const consumerId = req.body.consumer_id
+            const consumerPublicKey = req.body.consumer_public_key
             const senderAddress = req.body.consumer_ethereum_address
 
             const unsignedSignAgreementTx = (await contract.populateTransaction.signAgreement(
                 agreementId,
-                consumerId,
+                consumerPublicKey,
                 { gasLimit: gasLimit },
             )) as any
             const formatedRawTransaction = formatTransaction(
@@ -593,33 +618,6 @@ export default async (): Promise<typeof router> => {
         }
     })
 
-    router.put('/set_agreement_active_raw_transaction', async (req, res) => {
-        try {
-            const agreementId = req.body.agreement_id
-            const senderAddress = req.body.ethereum_address
-
-            const unsignedSetActiveAgreementTx = (await contract.populateTransaction.setActive(
-                agreementId,
-                { gasLimit: gasLimit },
-            )) as any
-        
-            const formatedRawTransaction = formatTransaction(
-                await createRawTransaction(
-                    provider,
-                    unsignedSetActiveAgreementTx,
-                    senderAddress,
-                ),
-            )
-            res.status(200).send(formatedRawTransaction)
-        } catch (error) {
-            if (error instanceof Error) {
-                console.log(`${error.message}`)
-                res
-                    .status(500)
-                    .send({ name: `${error.name}`, message: `${error.message}` })
-            }
-        }
-    })
 
     router.get('/retrieve_agreements/:consumer_public_key', async (req, res) => {
         try {
@@ -680,11 +678,12 @@ export default async (): Promise<typeof router> => {
             console.log(agreementIdTest)
 
             console.log(dataExchangeId)
+            //get agreement id from data access
             const agreementId = await getAgreementId(dataExchangeId)
 
             console.log(agreementId)
             const senderAddress = req.body.sender_address
-            const unsignedCreateAgreementTx = (await contract.populateTransaction.evaluateSignedResolution(
+            const unsignedEvaluateResolutionTx = (await contract.populateTransaction.evaluateSignedResolution(
                 agreementId,
                 proofType,
                 type,
@@ -695,17 +694,17 @@ export default async (): Promise<typeof router> => {
                 sub,
                 { gasLimit: gasLimit },
             )) as any
-            unsignedCreateAgreementTx.nonce = await provider.getTransactionCount(
+            unsignedEvaluateResolutionTx.nonce = await provider.getTransactionCount(
                 senderAddress,
             )
-            unsignedCreateAgreementTx.gasLimit =
-                unsignedCreateAgreementTx.gasLimit?._hex
-            unsignedCreateAgreementTx.gasPrice = (await provider.getGasPrice())._hex
-            unsignedCreateAgreementTx.chainId = (await provider.getNetwork()).chainId
-            unsignedCreateAgreementTx.from = parseHex(senderAddress, true)
+            unsignedEvaluateResolutionTx.gasLimit =
+            unsignedEvaluateResolutionTx.gasLimit?._hex
+            unsignedEvaluateResolutionTx.gasPrice = (await provider.getGasPrice())._hex
+            unsignedEvaluateResolutionTx.chainId = (await provider.getNetwork()).chainId
+            unsignedEvaluateResolutionTx.from = parseHex(senderAddress, true)
 
             const formatedRawTransaction = formatTransaction(
-                unsignedCreateAgreementTx,
+                unsignedEvaluateResolutionTx,
             )
 
             res.status(200).send(formatedRawTransaction)
@@ -721,28 +720,73 @@ export default async (): Promise<typeof router> => {
         }
     })
 
-    router.get('/present_penalty_choices/:agreement_id', async (req, res) => {
-        try {
-            const agreement_id = req.params.agreement_id
-            const penalties = await contract.presentPenaltyChoices(agreement_id)
-            res.status(200).send(penalties)
-        } catch (error) {
-            if (error instanceof Error) {
-                console.log(`${error.message}`)
-                res
-                    .status(500)
-                    .send({ name: `${error.name}`, message: `${error.message}` })
-            }
-        }
-    })
+    // router.get('/present_penalty_choices/:agreement_id', async (req, res) => {
+    //     try {
+    //         const agreement_id = req.params.agreement_id
+    //         const penalties = await contract.presentPenaltyChoices(agreement_id)
+    //         res.status(200).send(penalties)
+    //     } catch (error) {
+    //         if (error instanceof Error) {
+    //             console.log(`${error.message}`)
+    //             res
+    //                 .status(500)
+    //                 .send({ name: `${error.name}`, message: `${error.message}` })
+    //         }
+    //     }
+    // })
 
-    router.put('/terminate/:agreement_id', async (req, res, next) => {
+
+    // router.put('/enforce_penalty', async (req, res) => {
+    //     try {
+           
+    //         const agreementId = req.body.agreementId
+    //         const chosenPenalty = req.body.chosenPenalty
+    //         //check chosenPenalty -> just if NewEndDateForProviderAndReductionOfPayment calculate price
+    //         const paymentPercentage = req.body.paymentPercentage
+    //         //check new end date
+    //         const newEndDate = req.body.newEndDate
+    //         const senderAddress = req.body.senderAddress
+    //         const oldPrice = 100 // get price
+    //         const price = oldPrice - (oldPrice * paymentPercentage/100)
+    //         const fee = parseInt(await getFee(price))
+    //         console.log(price)
+    //         console.log(fee)
+
+    //         const unsignedEnforcePenaltyTx = (await contract.populateTransaction.enforcePenalty(
+    //             agreementId,
+    //             chosenPenalty,
+    //             price,
+    //             fee,
+    //             newEndDate,
+    //             { gasLimit: gasLimit },
+    //         )) as any
+        
+    //         const formatedRawTransaction = formatTransaction(
+    //             await createRawTransaction(
+    //                 provider,
+    //                 unsignedEnforcePenaltyTx,
+    //                 senderAddress,
+    //             ),
+    //         )
+    //         res.status(200).send(formatedRawTransaction)
+
+    //     } catch (error) {
+    //         if (error instanceof Error) {
+    //             console.log(`${error.message}`)
+    //             res
+    //                 .status(500)
+    //                 .send({ name: `${error.name}`, message: `${error.message}` })
+    //         }
+    //     }
+    // })
+
+    router.put('/terminate', async (req, res, next) => {
         try {
-            const agreementId = req.params.agreement_id
+            const agreementId = req.body.agreement_id
             const senderAddress = req.body.sender_address
             const agreement = await contract.getAgreement(agreementId)
-            if(agreement.dataStream) {
-                const unsignedTerminateAgreementTx = (await contract.populateTransaction.terminateAgreement(
+            
+            const unsignedTerminateAgreementTx = (await contract.populateTransaction.terminateAgreement(
                     agreementId,
                     { gasLimit: gasLimit },
                     )) as any
@@ -753,47 +797,46 @@ export default async (): Promise<typeof router> => {
                                 senderAddress,
                             ),
                     )
-                    res.status(200).send(formatedRawTransaction)
-            }
-            else{
-                const signedResolution = req.body.proof
-                console.log(signedResolution)
-                const decodedResolution = await nonRepudiationLibrary.ConflictResolution.verifyResolution(
-                    signedResolution,
-                )
+            res.status(200).send(formatedRawTransaction)
+          
+                // const signedResolution = req.body.proof
+                // console.log(signedResolution)
+                // const decodedResolution = await nonRepudiationLibrary.ConflictResolution.verifyResolution(
+                //     signedResolution,
+                // )
 
-                const trustedIssuers = [
-                    '{"alg":"ES256","crv":"P-256","d":"ugSiI9ILGgMc5Nc0nAa3qFN3AN0oGba33IAakHqdvmg","kty":"EC","x":"L6WfVXGbH0io6Jpm94S1lpdi6yGtT1OmZ65A_kS_hk8","y":"6YE0oPOpWBqC75D_jtJUfy5lsXlGjO5g6QXivDwMDKc"}',
-                ]
-                const proofType = decodedResolution.payload.proofType
-                const type = decodedResolution.payload.type
-                const resolution = decodedResolution.payload.resolution
-                const dataExchangeId = decodedResolution.payload.dataExchangeId
-                const iat = decodedResolution.payload.iat
-                const iss = decodedResolution.payload.iss
-                if (!trustedIssuers.includes(iss)) {
-                    throw new Error('untrusted issuer')
-                }
-                const sub = decodedResolution.payload.sub
+                // const trustedIssuers = [
+                //     '{"alg":"ES256","crv":"P-256","d":"ugSiI9ILGgMc5Nc0nAa3qFN3AN0oGba33IAakHqdvmg","kty":"EC","x":"L6WfVXGbH0io6Jpm94S1lpdi6yGtT1OmZ65A_kS_hk8","y":"6YE0oPOpWBqC75D_jtJUfy5lsXlGjO5g6QXivDwMDKc"}',
+                // ]
+                // const proofType = decodedResolution.payload.proofType
+                // const type = decodedResolution.payload.type
+                // const resolution = decodedResolution.payload.resolution
+                // const dataExchangeId = decodedResolution.payload.dataExchangeId
+                // const iat = decodedResolution.payload.iat
+                // const iss = decodedResolution.payload.iss
+                // if (!trustedIssuers.includes(iss)) {
+                //     throw new Error('untrusted issuer')
+                // }
+                // const sub = decodedResolution.payload.sub
 
-                if (resolution === 'completed' || resolution === 'denied') {
-                //const exchangeId = "OdAeDSkyqK0s6zS059YGnpOkg7s-Dl6SeJj9B9yfhbk"
-                    const agreementId = await getAgreementId(dataExchangeId)
+                // if (resolution === 'completed' || resolution === 'denied') {
+                // //const exchangeId = "OdAeDSkyqK0s6zS059YGnpOkg7s-Dl6SeJj9B9yfhbk"
+                //     const agreementId = await getAgreementId(dataExchangeId)
                 
-                    const unsignedTerminateAgreementTx = (await contract.populateTransaction.terminateAgreement(
-                    agreementId,
-                    { gasLimit: gasLimit },
-                    )) as any
-                    const formatedRawTransaction = formatTransaction(
-                            await createRawTransaction(
-                                provider,
-                                unsignedTerminateAgreementTx,
-                                senderAddress,
-                            ),
-                    )
-                    res.status(200).send(formatedRawTransaction)
-                } else res.status(400).send('Agreement cannot be terminated.')
-            }
+                //     const unsignedTerminateAgreementTx = (await contract.populateTransaction.terminateAgreement(
+                //     agreementId,
+                //     { gasLimit: gasLimit },
+                //     )) as any
+                //     const formatedRawTransaction = formatTransaction(
+                //             await createRawTransaction(
+                //                 provider,
+                //                 unsignedTerminateAgreementTx,
+                //                 senderAddress,
+                //             ),
+                //     )
+                //     res.status(200).send(formatedRawTransaction)
+                // } else res.status(400).send('Agreement cannot be terminated.')
+            
         } catch (error) {
             if (error instanceof Error) {
                 console.log(`${error.message}`)
