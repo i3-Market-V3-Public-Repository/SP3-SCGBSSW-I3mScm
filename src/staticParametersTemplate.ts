@@ -8,18 +8,18 @@
 // match the expected interface, even if the JSON is valid.
 
 export interface StaticParametersTemplate {
-    offeringId:               string;
-    version:                  number;
-    provider:                 string;
-    providerDid:              string;
-    active:                   boolean;
-    dataStream:               boolean;
-    personalData:             boolean;
-    category:                 string;
-    dataOfferingTitle:        string;
-    contractParameters:       ContractParameters;
-    hasPricingModel:          HasPricingModel;
-    responseDataExchangeSpec: ResponseDataExchangeSpec;
+    offeringId:         string;
+    version:            number;
+    provider:           string;
+    providerDid:        string;
+    active:             boolean;
+    dataStream:         boolean;
+    personalData:       boolean;
+    category:           string;
+    dataOfferingTitle:  string;
+    contractParameters: ContractParameters;
+    hasPricingModel:    HasPricingModel;
+    dataExchangeSpec:   DataExchangeSpec;
 }
 
 export interface ContractParameters {
@@ -43,6 +43,17 @@ export interface HasLicenseGrant {
     transferable:  boolean;
     exclusiveness: boolean;
     revocable:     boolean;
+}
+
+export interface DataExchangeSpec {
+    encAlg:                string;
+    signingAlg:            string;
+    hashAlg:               string;
+    ledgerContractAddress: string;
+    ledgerSignerAddress:   string;
+    pooToPorDelay:         number;
+    pooToPopDelay:         number;
+    pooToSecretDelay:      number;
 }
 
 export interface HasPricingModel {
@@ -88,17 +99,6 @@ export interface HasPaymentOnUnit {
     description:       string;
     dataUnit:          number;
     hasUnitPrice:      number;
-}
-
-export interface ResponseDataExchangeSpec {
-    encAlg:                string;
-    signingAlg:            string;
-    hashAlg:               string;
-    ledgerContractAddress: string;
-    ledgerSignerAddress:   string;
-    pooToPorDelay:         number;
-    pooToPopDelay:         number;
-    pooToSecretDelay:      number;
 }
 
 // Converts JSON strings to/from your types
@@ -258,7 +258,7 @@ const typeMap: any = {
         { json: "dataOfferingTitle", js: "dataOfferingTitle", typ: "" },
         { json: "contractParameters", js: "contractParameters", typ: r("ContractParameters") },
         { json: "hasPricingModel", js: "hasPricingModel", typ: r("HasPricingModel") },
-        { json: "responseDataExchangeSpec", js: "responseDataExchangeSpec", typ: r("ResponseDataExchangeSpec") },
+        { json: "dataExchangeSpec", js: "dataExchangeSpec", typ: r("DataExchangeSpec") },
     ], false),
     "ContractParameters": o([
         { json: "interestOfProvider", js: "interestOfProvider", typ: "" },
@@ -279,6 +279,16 @@ const typeMap: any = {
         { json: "transferable", js: "transferable", typ: true },
         { json: "exclusiveness", js: "exclusiveness", typ: true },
         { json: "revocable", js: "revocable", typ: true },
+    ], false),
+    "DataExchangeSpec": o([
+        { json: "encAlg", js: "encAlg", typ: "" },
+        { json: "signingAlg", js: "signingAlg", typ: "" },
+        { json: "hashAlg", js: "hashAlg", typ: "" },
+        { json: "ledgerContractAddress", js: "ledgerContractAddress", typ: "" },
+        { json: "ledgerSignerAddress", js: "ledgerSignerAddress", typ: "" },
+        { json: "pooToPorDelay", js: "pooToPorDelay", typ: 0 },
+        { json: "pooToPopDelay", js: "pooToPopDelay", typ: 0 },
+        { json: "pooToSecretDelay", js: "pooToSecretDelay", typ: 0 },
     ], false),
     "HasPricingModel": o([
         { json: "pricingModelName", js: "pricingModelName", typ: "" },
@@ -318,15 +328,5 @@ const typeMap: any = {
         { json: "description", js: "description", typ: "" },
         { json: "dataUnit", js: "dataUnit", typ: 0 },
         { json: "hasUnitPrice", js: "hasUnitPrice", typ: 0 },
-    ], false),
-    "ResponseDataExchangeSpec": o([
-        { json: "encAlg", js: "encAlg", typ: "" },
-        { json: "signingAlg", js: "signingAlg", typ: "" },
-        { json: "hashAlg", js: "hashAlg", typ: "" },
-        { json: "ledgerContractAddress", js: "ledgerContractAddress", typ: "" },
-        { json: "ledgerSignerAddress", js: "ledgerSignerAddress", typ: "" },
-        { json: "pooToPorDelay", js: "pooToPorDelay", typ: 0 },
-        { json: "pooToPopDelay", js: "pooToPopDelay", typ: 0 },
-        { json: "pooToSecretDelay", js: "pooToSecretDelay", typ: 0 },
     ], false),
 };

@@ -45,14 +45,14 @@ export function getTemplate(jsonTemplate: Template, staticTemplate: StaticParame
     
     jsonTemplate.pricingModel.hasFreePrice.hasPriceFree = staticTemplate.hasPricingModel.hasFreePrice.hasPriceFree
 
-    jsonTemplate.dataExchangeAgreement.encAlg = staticTemplate.responseDataExchangeSpec.encAlg
-    jsonTemplate.dataExchangeAgreement.signingAlg = staticTemplate.responseDataExchangeSpec.signingAlg
-    jsonTemplate.dataExchangeAgreement.hashAlg = staticTemplate.responseDataExchangeSpec.hashAlg
-    jsonTemplate.dataExchangeAgreement.ledgerContractAddress = staticTemplate.responseDataExchangeSpec.ledgerContractAddress
-    jsonTemplate.dataExchangeAgreement.ledgerSignerAddress = staticTemplate.responseDataExchangeSpec.ledgerSignerAddress
-    jsonTemplate.dataExchangeAgreement.pooToPorDelay = staticTemplate.responseDataExchangeSpec.pooToPorDelay
-    jsonTemplate.dataExchangeAgreement.pooToPopDelay = staticTemplate.responseDataExchangeSpec.pooToPopDelay
-    jsonTemplate.dataExchangeAgreement.pooToSecretDelay = staticTemplate.responseDataExchangeSpec.pooToSecretDelay
+    jsonTemplate.dataExchangeAgreement.encAlg = staticTemplate.dataExchangeSpec.encAlg
+    jsonTemplate.dataExchangeAgreement.signingAlg = staticTemplate.dataExchangeSpec.signingAlg
+    jsonTemplate.dataExchangeAgreement.hashAlg = staticTemplate.dataExchangeSpec.hashAlg
+    jsonTemplate.dataExchangeAgreement.ledgerContractAddress = staticTemplate.dataExchangeSpec.ledgerContractAddress
+    jsonTemplate.dataExchangeAgreement.ledgerSignerAddress = staticTemplate.dataExchangeSpec.ledgerSignerAddress
+    jsonTemplate.dataExchangeAgreement.pooToPorDelay = staticTemplate.dataExchangeSpec.pooToPorDelay
+    jsonTemplate.dataExchangeAgreement.pooToPopDelay = staticTemplate.dataExchangeSpec.pooToPopDelay
+    jsonTemplate.dataExchangeAgreement.pooToSecretDelay = staticTemplate.dataExchangeSpec.pooToSecretDelay
     
 
     return jsonTemplate

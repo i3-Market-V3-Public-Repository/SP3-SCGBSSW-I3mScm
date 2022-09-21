@@ -60,7 +60,7 @@
       "hasPriceFree": false
     }
   },
-  "responseDataExchangeSpec": {
+  "dataExchangeSpec": {
     "encAlg": "string",
     "signingAlg": "string",
     "hashAlg": "string",

@@ -11,16 +11,12 @@
   },
   "servers": [
     {
-      "url": "/"
-    },
-    {
-      "url": "http://95.211.3.249:3333",
-      "variables": {}
+      "url": "http://95.211.3.249:3333"
     }
   ],
   "security": [
     {
-      "bearerAuth": []
+      "jwt": []
     }
   ],
   "tags": [
@@ -62,7 +58,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "jwt": []
           }
         ]
       }
@@ -118,7 +114,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "jwt": ["provider"]
           }
         ]
       }
@@ -153,64 +149,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/update_agreement_raw_transaction/{agreement_id}/{sender_address}": {
-      "put": {
-        "tags": [
-          "Agreement"
-        ],
-        "summary": "Update agreement",
-        "parameters": [
-          {
-            "name": "agreement_id",
-            "in": "path",
-            "required": true,
-            "style": "simple",
-            "explode": false,
-            "schema": {
-              "type": "integer"
-            }
-          },
-          {
-            "name": "sender_address",
-            "in": "path",
-            "required": true,
-            "style": "simple",
-            "explode": false,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/template"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/raw_transaction_template"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
+            "jwt": ["consumer"]
           }
         ]
       }
@@ -245,7 +184,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "jwt": []
           }
         ]
       }
@@ -264,7 +203,8 @@
             "style": "simple",
             "explode": false,
             "schema": {
-              "type": "integer"
+              "type": "integer",
+              "format": "int64"
             }
           }
         ],
@@ -282,7 +222,45 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "jwt": []
+          }
+        ]
+      }
+    },
+    "/get_pricing_model/{agreement_id}": {
+      "get": {
+        "tags": [
+          "Agreement"
+        ],
+        "summary": "Get agreement's pricing model",
+        "parameters": [
+          {
+            "name": "agreement_id",
+            "in": "path",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/pricing_model_template"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "jwt": []
           }
         ]
       }
@@ -307,12 +285,12 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "jwt": []
           }
         ]
       }
     },
-    "/check_agreements_by_consumer/{consumer_id}/{active}": {
+    "/check_agreements_by_consumer/{consumer_public_key}/{active}": {
       "get": {
         "tags": [
           "Agreement"
@@ -320,7 +298,7 @@
         "summary": "Check agreements by consumer",
         "parameters": [
           {
-            "name": "consumer_id",
+            "name": "consumer_public_key",
             "in": "path",
             "required": true,
             "style": "simple",
@@ -354,12 +332,12 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "jwt": []
           }
         ]
       }
     },
-    "/check_agreements_by_provider/{provider_id}/{active}": {
+    "/check_agreements_by_provider/{provider_public_key}/{active}": {
       "get": {
         "tags": [
           "Agreement"
@@ -367,7 +345,7 @@
         "summary": "Check agreements by provider",
         "parameters": [
           {
-            "name": "provider_id",
+            "name": "provider_public_key",
             "in": "path",
             "required": true,
             "style": "simple",
@@ -401,7 +379,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "jwt": []
           }
         ]
       }
@@ -438,7 +416,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "jwt": []
           }
         ]
       }
@@ -457,7 +435,8 @@
             "style": "simple",
             "explode": false,
             "schema": {
-              "type": "integer"
+              "type": "integer",
+              "format": "int64"
             }
           }
         ],
@@ -475,7 +454,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "jwt": []
           }
         ]
       }
@@ -485,7 +464,7 @@
         "tags": [
           "Agreement"
         ],
-        "summary": "Retrieve the agreement based on consumer public key",
+        "summary": "Retrieve the active agreements, which start date is reached, based on consumer public key",
         "parameters": [
           {
             "name": "consumer_public_key",
@@ -512,7 +491,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "jwt": []
           }
         ]
       }
@@ -527,7 +506,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/signed_resolution"
+                "$ref": "#/components/schemas/signed_resolution_scm"
               }
             }
           },
@@ -547,71 +526,22 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "jwt": ["consumer"]
           }
         ]
       }
     },
-    "/present_penalty_choices/{agreement_id}": {
-      "get": {
-        "tags": [
-          "Agreement"
-        ],
-        "summary": "Present penalty options",
-        "parameters": [
-          {
-            "name": "agreement_id",
-            "in": "path",
-            "required": true,
-            "style": "simple",
-            "explode": false,
-            "schema": {
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/penalties"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/terminate/{agreement_id}": {
+    "/terminate": {
       "put": {
         "tags": [
           "Agreement"
         ],
         "summary": "Terminate Agreement",
-        "parameters": [
-          {
-            "name": "agreement_id",
-            "in": "path",
-            "required": true,
-            "style": "simple",
-            "explode": false,
-            "schema": {
-              "type": "integer"
-            }
-          }
-        ],
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/signed_resolution"
+                "$ref": "#/components/schemas/terminate"
               }
             }
           },
@@ -631,7 +561,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "jwt": []
           }
         ]
       }
@@ -667,7 +597,8 @@
         "type": "object",
         "properties": {
           "agreement_id": {
-            "type": "integer"
+            "type": "integer",
+            "format": "int64"
           }
         }
       },
@@ -675,7 +606,8 @@
         "type": "object",
         "properties": {
           "nonce": {
-            "type": "integer"
+            "type": "integer",
+            "format": "int64"
           },
           "to": {
             "type": "string"
@@ -684,13 +616,16 @@
             "type": "string"
           },
           "gasLimit": {
-            "type": "integer"
+            "type": "integer",
+            "format": "int64"
           },
           "gasPrice": {
-            "type": "integer"
+            "type": "integer",
+            "format": "int64"
           },
           "chainId": {
-            "type": "integer"
+            "type": "integer",
+            "format": "int64"
           },
           "data": {
             "type": "string"
@@ -713,7 +648,8 @@
             "type": "string"
           },
           "cumulativeGasUsed": {
-            "type": "integer"
+            "type": "integer",
+            "format": "int64"
           },
           "to": {
             "type": "string"
@@ -722,7 +658,8 @@
             "type": "string"
           },
           "gasUsed": {
-            "type": "integer"
+            "type": "integer",
+            "format": "int64"
           },
           "logsBloom": {
             "type": "string"
@@ -764,7 +701,7 @@
               "dataOfferingId": {
                 "type": "string"
               },
-              "dataOfferingVersion": {
+              "version": {
                 "type": "integer"
               },
               "category": {
@@ -772,10 +709,13 @@
               },
               "active": {
                 "type": "boolean"
+              },
+              "title": {
+                "type": "string"
               }
             }
           },
-          "dids": {
+          "parties": {
             "type": "object",
             "required": [
               "providerDid"
@@ -792,20 +732,6 @@
           "purpose": {
             "type": "string"
           },
-          "parties": {
-            "type": "object",
-            "required": [
-              "dataProvider"
-            ],
-            "properties": {
-              "dataProvider": {
-                "type": "string"
-              },
-              "dataConsumer": {
-                "type": "string"
-              }
-            }
-          },
           "duration": {
             "type": "object",
             "required": [
@@ -813,13 +739,16 @@
             ],
             "properties": {
               "creationDate": {
-                "type": "integer"
+                "type": "integer",
+                "format": "int64"
               },
               "startDate": {
-                "type": "integer"
+                "type": "integer",
+                "format": "int64"
               },
               "endDate": {
-                "type": "integer"
+                "type": "integer",
+                "format": "int64"
               }
             }
           },
@@ -924,54 +853,6 @@
                   }
                 }
               },
-              "hasPaymentOnApi": {
-                "type": "object",
-                "properties": {
-                  "description": {
-                    "type": "string"
-                  },
-                  "numberOfObject": {
-                    "type": "integer"
-                  },
-                  "hasApiPrice": {
-                    "type": "integer"
-                  }
-                }
-              },
-              "hasPaymentOnUnit": {
-                "type": "object",
-                "properties": {
-                  "paymentOnUnitName": {
-                    "type": "string"
-                  },
-                  "description": {
-                    "type": "string"
-                  },
-                  "dataUnit": {
-                    "type": "integer"
-                  },
-                  "hasUnitPrice": {
-                    "type": "integer"
-                  }
-                }
-              },
-              "hasPaymentOnSize": {
-                "type": "object",
-                "properties": {
-                  "paymentOnSizeName": {
-                    "type": "string"
-                  },
-                  "description": {
-                    "type": "string"
-                  },
-                  "dataSize": {
-                    "type": "integer"
-                  },
-                  "hasSizePrice": {
-                    "type": "integer"
-                  }
-                }
-              },
               "hasFreePrice": {
                 "type": "object",
                 "properties": {
@@ -1045,6 +926,9 @@
               },
               "dataOfferingVersion": {
                 "type": "integer"
+              },
+              "dataOfferingTitle": {
+                "type": "string"
               }
             }
           },
@@ -1054,16 +938,25 @@
           "state": {
             "type": "integer"
           },
-          "providerId": {
-            "type": "string"
-          },
-          "consumerId": {
-            "type": "string"
-          },
           "agreementDates": {
             "type": "array",
             "items": {
-              "type": "integer"
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          "obligation": {
+            "type": "object",
+            "properties": {
+              "qualityOfData": {
+                "type": "integer"
+              },
+              "characteristics": {
+                "type": "string"
+              },
+              "dataAvailability": {
+                "type": "boolean"
+              }
             }
           },
           "intendedUse": {
@@ -1100,36 +993,97 @@
           "dataStream": {
             "type": "boolean"
           },
-          "signed": {
+          "personalData": {
             "type": "boolean"
           },
-          "violation": {
-            "type": "array",
-            "items": {
-              "oneOf": [
-                {
-                  "type": "integer"
-                },
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "object",
-                  "properties": {
-                    "violationType": {
-                      "type": "integer"
-                    },
-                    "issuerId": {
-                      "type": "string"
-                    }
+          "pricingModel": {
+            "type": "object",
+            "properties": {
+              "paymentType": {
+                "type": "string"
+              },
+              "price": {
+                "type": "integer"
+              },
+              "currency": {
+                "type": "string"
+              },
+              "fee": {
+                "type": "integer"
+              },
+              "paymentOnSubscription": {
+                "type": "object",
+                "properties": {
+                  "timeDuration": {
+                    "type": "string"
+                  },
+                  "repeat": {
+                    "type": "string"
                   }
                 }
-              ]
+              },
+              "isFree": {
+                "type": "boolean"
+              }
+            }
+          },
+          "violation": {
+            "type": "object",
+            "properties": {
+              "violationType": {
+                "type": "integer"
+              },
+              "issuerId": {
+                "type": "string"
+              }
             }
           }
         }
       },
-      "signed_resolution": {
+      "pricing_model_template": {
+        "type": "object",
+        "properties": {
+          "paymentType": {
+            "type": "string"
+          },
+          "price": {
+            "type": "integer"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "fee": {
+            "type": "integer"
+          },
+          "paymentOnSubscription": {
+            "type": "object",
+            "properties": {
+              "timeDuration": {
+                "type": "string"
+              },
+              "repeat": {
+                "type": "string"
+              }
+            }
+          },
+          "isFree": {
+            "type": "boolean"
+          }
+        }
+      },
+      "terminate": {
+        "type": "object",
+        "properties": {
+          "agreement_id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "sender_address": {
+            "type": "string"
+          }
+        }
+      },
+      "signed_resolution_scm": {
         "type": "object",
         "properties": {
           "proof": {
@@ -1148,9 +1102,10 @@
         "type": "object",
         "properties": {
           "agreement_id": {
-            "type": "integer"
+            "type": "integer",
+            "format": "int64"
           },
-          "consumer_id": {
+          "consumer_public_key": {
             "type": "string"
           },
           "consumer_ethereum_address": {
@@ -1162,23 +1117,6 @@
         "type": "array",
         "items": {
           "$ref": "#/components/schemas/agreement_template"
-        }
-      },
-      "penalties": {
-        "type": "array",
-        "items": {
-          "type": "string"
-        }
-      },
-      "data_exchange_to_agreement_id": {
-        "type": "object",
-        "properties": {
-          "data_exchange_id": {
-            "type": "string"
-          },
-          "agreement_id": {
-            "type": "integer"
-          }
         }
       }
     },
