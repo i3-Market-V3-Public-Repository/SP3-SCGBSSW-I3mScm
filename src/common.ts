@@ -45,6 +45,16 @@ export function getTemplate(jsonTemplate: Template, staticTemplate: StaticParame
     
     jsonTemplate.pricingModel.hasFreePrice.hasPriceFree = staticTemplate.hasPricingModel.hasFreePrice.hasPriceFree
 
+    jsonTemplate.dataExchangeAgreement.encAlg = staticTemplate.responseDataExchangeSpec.encAlg
+    jsonTemplate.dataExchangeAgreement.signingAlg = staticTemplate.responseDataExchangeSpec.signingAlg
+    jsonTemplate.dataExchangeAgreement.hashAlg = staticTemplate.responseDataExchangeSpec.hashAlg
+    jsonTemplate.dataExchangeAgreement.ledgerContractAddress = staticTemplate.responseDataExchangeSpec.ledgerContractAddress
+    jsonTemplate.dataExchangeAgreement.ledgerSignerAddress = staticTemplate.responseDataExchangeSpec.ledgerSignerAddress
+    jsonTemplate.dataExchangeAgreement.pooToPorDelay = staticTemplate.responseDataExchangeSpec.pooToPorDelay
+    jsonTemplate.dataExchangeAgreement.pooToPopDelay = staticTemplate.responseDataExchangeSpec.pooToPopDelay
+    jsonTemplate.dataExchangeAgreement.pooToSecretDelay = staticTemplate.responseDataExchangeSpec.pooToSecretDelay
+    
+
     return jsonTemplate
 }
 
@@ -254,7 +264,6 @@ export function formatAgreement(agreement: any) {
                 violationType: parseInt(agreement.violation.violationType),
                 issuerId: agreement.violation.issuerId
         },
-        penalties: agreement.penalties
     }
 
 }

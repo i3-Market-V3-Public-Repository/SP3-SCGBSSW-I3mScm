@@ -764,10 +764,6 @@ components:
                     type: integer
                   issuerId:
                     type: string
-        penalties:
-          type: array
-          items:
-            type: string
     pricing_model_template:
       type: object
       properties:

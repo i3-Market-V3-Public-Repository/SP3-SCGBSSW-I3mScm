@@ -407,6 +407,17 @@ export default async (): Promise<typeof router> => {
                             }
                             status = 'termination'
                             break
+                        case 'PenaltyChoices':
+                                console.log('penalties')
+                                const penalties = logs.args.penaltyChoices
+                                type = 'agreement.penaltyOptions'
+                                message = {
+                                    msg: `Agreement with id: ${agreementId} was violated. `,
+                                    agreementId: agreementId,
+                                    penalties: penalties
+                                }
+                                status = 'penalties'
+                                break
                     }
 
                 const origin = 'scm'
