@@ -20,10 +20,22 @@
       "editData": false
     },
     "hasLicenseGrant": {
-      "copyData": false,
       "transferable": false,
       "exclusiveness": false,
-      "revocable": false
+      "paidUp": false,
+      "revocable": false,
+      "processing": false,
+      "modifying": false,
+      "analyzing": false,
+      "storingData": false,
+      "storingCopy": false,
+      "reproducing": false,
+      "distributing": false,
+      "loaning": false,
+      "selling": false,
+      "renting": false,
+      "furtherLicensing": false,
+      "leasing": false
     }
   },
   "hasPricingModel": {

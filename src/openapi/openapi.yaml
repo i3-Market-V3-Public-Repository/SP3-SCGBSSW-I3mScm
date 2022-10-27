@@ -74,26 +74,26 @@ paths:
                 data: "0x89a8348c00000000000000000000000000000000000000000000000000000000000001c"
       security:
         - bearerAuth: []
-  /sign_agreement_raw_transaction:
-    put:
-      tags:
-        - Agreement
-      summary: Sign agreement 
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/sign_agreement'
-        required: true
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/raw_transaction_template'
-      security:
-        - bearerAuth: []
+  # /sign_agreement_raw_transaction:
+  #   put:
+  #     tags:
+  #       - Agreement
+  #     summary: Sign agreement 
+  #     requestBody:
+  #       content:
+  #         application/json:
+  #           schema:
+  #             $ref: '#/components/schemas/sign_agreement'
+  #       required: true
+  #     responses:
+  #       '200':
+  #         description: OK
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: '#/components/schemas/raw_transaction_template'
+  #     security:
+  #       - bearerAuth: []
   # /update_agreement_raw_transaction/{agreement_id}/{sender_address}:
   #   put:
   #     tags:
@@ -334,7 +334,7 @@ paths:
   /evaluate_signed_resolution:
     post:
       tags:
-        - Agreement
+        - Agreement Violation
       summary: Verify a signed resolution
       requestBody:
         content:
@@ -373,26 +373,57 @@ paths:
   #               $ref: '#/components/schemas/penalties'
   #     security:
   #       - bearerAuth: []
-  # /enforce_penalty:
-  #   put:
-  #     tags:
-  #       - Agreement
-  #     summary: Enforce penalty
-  #     requestBody:
-  #       content:
-  #         application/json:
-  #           schema:
-  #             $ref: '#/components/schemas/enforce_penalty'
-  #       required: true
-  #     responses:
-  #       '200':
-  #         description: OK
-  #         content:
-  #           application/json:
-  #             schema:
-  #               $ref: '#/components/schemas/transaction_object'
-  #     security:
-  #       - bearerAuth: []
+
+  #/choose_penalty', async (req, res, next) => {
+        # try {
+
+        #     const agreementId = req.body.agreementId
+        #     const chosenPenalty = req.body.chosenPenalty
+        #     //check chosenPenalty -> just if NewEndDateForProviderAndReductionOfPayment calculate price
+        #     const paymentPercentage = req.body.paymentPercentage
+        #     //check new end date
+        #     const newEndDate = req.body.newEndDate
+        #     const senderAddress = req.body.senderAddress
+  /choose_penalty:
+    post:
+      tags:
+        - Agreement Violation
+      summary: Choose penalty
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/choose_penalty'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/choose_penalty'
+      security:
+        - bearerAuth: []
+  /enforce_penalty:
+    put:
+      tags:
+        - Agreement Violation
+      summary: Enforce penalty
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/enforce_penalty'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/transaction_object'
+      security:
+        - bearerAuth: []
   /terminate:
     put:
       tags:
@@ -413,16 +444,85 @@ paths:
                 $ref: '#/components/schemas/transaction_object'
       security:
         - bearerAuth: []
-  # /give_consent:
+  /give_consent:
+    post:
+      tags:
+        - Explicit User Consent
+      summary: Give consent
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/consent'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/transaction_object'
+      security:
+        - bearerAuth: []
+  /check_consent_status/{dataOfferingId}/{consentSubject}:
+    get:
+      tags:
+        - Explicit User Consent
+      summary: Check consent status
+      parameters:
+        - name: dataOfferingId
+          in: path
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+        - name: consentSubject
+          in: path
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/consent_status'
+      security:
+        - bearerAuth: []
+  /revoke_consent:
+    put:
+      tags:
+        - Explicit User Consent
+      summary: Revoke consent
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/revokeConsent'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/transaction_object'
+      security:
+        - bearerAuth: []
+  # /deploy_signed_transaction_consent:
   #   post:
   #     tags:
   #       - Agreement
-  #     summary: Give consent
+  #     summary: Deploy signed transaction
   #     requestBody:
   #       content:
   #         application/json:
   #           schema:
-  #             $ref: '#/components/schemas/consent'
+  #             $ref: '#/components/schemas/signed_transaction'
   #       required: true
   #     responses:
   #       '200':
@@ -432,7 +532,7 @@ paths:
   #             schema:
   #               $ref: '#/components/schemas/transaction_object'
   #     security:
-  #       - bearerAuth: []
+  #       - bearerAuth: []    
 components:
   schemas:
     state:
@@ -504,17 +604,33 @@ components:
     signed_transaction:
       type: object
       properties:
-        signed_transaction:
+        signedTransaction:
+          type: string
+        providerDid:
+          type: string
+        consumerDid:
           type: string
     template:
       type: object
       required:
-        - dataOfferingDescription, purpose, dids, parties, duration, obligations, intendedUse, licenseGrant, pricingModel
+        - dataOfferingDescription
+        - parties
+        - purpose
+        - duration
+        - intendedUse
+        - licenseGrant
+        - dataStream
+        - personalData
+        - pricingModel
+        - dataExchangeAgreement
+        - signatures
       properties:
         dataOfferingDescription:
           type: object
           required:
-          - dataOfferingId, dataOfferingVersion, active
+          - dataOfferingId
+          - dataOfferingVersion
+          - active
           properties:
             dataOfferingId:
               type: string
@@ -530,6 +646,7 @@ components:
           type: object
           required:
           - providerDid
+          - consumerDid
           properties:
             providerDid:
               type: string
@@ -540,7 +657,9 @@ components:
         duration:
           type: object
           required:
-          - creationDate, startDate, endDate
+          - creationDate
+          - startDate
+          - endDate
           properties:
                 creationDate:
                   type: integer
@@ -548,19 +667,12 @@ components:
                   type: integer
                 endDate:
                   type: integer
-        obligations:
-          type: object
-          properties:
-              qualityOfData:
-                type: integer
-              characteristics:
-                type: string
-              dataAvailability:
-                type: boolean
         intendedUse:
           type: object
           required:
-          - processData, shareDataWithThirdParty, editData
+          - processData
+          - shareDataWithThirdParty
+          - editData
           properties:
                 processData:
                   type: boolean
@@ -571,16 +683,55 @@ components:
         licenseGrant:
           type: object
           required:
-          - copyData, transferable, exclusiveness, revocable
+          - transferable
+          - exclusiveness
+          - paidUp
+          - revocable
+          - processing
+          - modifying
+          - analyzing
+          - storingData
+          - storingCopy
+          - reproducing
+          - distributing
+          - loaning
+          - selling
+          - renting
+          - furtherLicensing
+          - leasing
           properties:
-                copyData:
-                  type: boolean
-                transferable:
-                  type: boolean
-                exclusiveness:
-                  type: boolean
-                revocable:
-                  type: boolean
+            transferable:
+              type: boolean
+            exclusiveness:
+              type: boolean
+            paidUp:
+              type: boolean
+            revocable:
+              type: boolean
+            processing:
+              type: boolean
+            modifying:
+              type: boolean
+            analyzing:
+              type: boolean
+            storingData:
+              type: boolean
+            storingCopy:
+              type: boolean
+            reproducing:
+              type: boolean
+            distributing:
+              type: boolean
+            loaning:
+              type: boolean
+            selling:
+              type: boolean
+            renting:
+              type: boolean
+            furtherLicensing:
+              type: boolean
+            leasing:
+              type: boolean    
         dataStream:
           type: boolean
         personalData:
@@ -588,18 +739,22 @@ components:
         pricingModel:
           type: object
           required:
-          - basicPrice, currency, hasFreePrice
+          - basicPrice
+          - currency
+          - hasFreePrice
           properties:
             paymentType:
               type: string
             pricingModelName:
               type: string
             basicPrice:
-              type: integer
+              type: number
+              format: float
             currency:
               type: string
             fee:
-              type: integer
+              type: number
+              format: float
             hasPaymentOnSubscription:
               type: object
               properties:
@@ -615,37 +770,6 @@ components:
                   type: string
                 hasSubscriptionPrice:
                   type: integer
-            # hasPaymentOnApi:
-            #   type: object
-            #   properties:
-            #     description:
-            #       type: string
-            #     numberOfObject:
-            #       type: integer
-            #     hasApiPrice:
-            #       type: integer
-            # hasPaymentOnUnit:
-            #   type: object
-            #   properties:
-            #     paymentOnUnitName:
-            #       type: string
-            #     description:
-            #       type: string
-            #     dataUnit:
-            #       type: integer
-            #     hasUnitPrice:
-            #       type: integer
-            # hasPaymentOnSize:
-            #   type: object
-            #   properties:
-            #     paymentOnSizeName:
-            #       type: string
-            #     description:
-            #       type: string
-            #     dataSize:
-            #       type: integer
-            #     hasSizePrice:
-            #       type: integer
             hasFreePrice:
               type: object
               properties:
@@ -654,7 +778,16 @@ components:
         dataExchangeAgreement:
           type: object
           required:
-            - orig, dest
+            - orig
+            - dest
+            - encAlg
+            - signingAlg
+            - hashAlg
+            - ledgerContractAddress
+            - ledgerSignerAddress
+            - pooToPorDelay
+            - pooToPopDelay
+            - pooToSecretDelay
           properties:
             orig:
               type: string
@@ -676,6 +809,16 @@ components:
               type: integer
             pooToSecretDelay:
               type: integer
+        signatures:
+          type: object
+          required:
+            - providerSignature
+            - consumerSignature
+          properties:
+            providerSignature:
+              type: string
+            consumerSignature:
+              type: string
     agreement_template:
       type: object
       properties:
@@ -687,6 +830,13 @@ components:
           type: string
         dataExchangeAgreementHash:
           type: string
+        signatures:
+          type: object
+          properties:
+            providerSigniture:
+              type: string
+            consumerSigniture:
+              type: string
         dataOffering:
           type: object
           properties:
@@ -704,15 +854,15 @@ components:
           type: array
           items:
             type: integer
-        obligation:
-          type: object
-          properties:
-            qualityOfData:
-              type: integer
-            characteristics:
-              type: string
-            dataAvailability:
-              type: boolean
+        # obligation:
+        #   type: object
+        #   properties:
+        #     qualityOfData:
+        #       type: integer
+        #     characteristics:
+        #       type: string
+        #     dataAvailability:
+        #       type: boolean
         intendedUse:
           type: object
           properties:
@@ -725,14 +875,38 @@ components:
         licenseGrant:
           type: object
           properties:
-            copydata:
-              type: boolean
             transferable:
               type: boolean
             exclusiveness:
               type: boolean
+            paidUp:
+              type: boolean
             revocable:
               type: boolean
+            processing:
+              type: boolean
+            modifying:
+              type: boolean
+            analyzing:
+              type: boolean
+            storingData:
+              type: boolean
+            storingCopy:
+              type: boolean
+            reproducing:
+              type: boolean
+            distributing:
+              type: boolean
+            loaning:
+              type: boolean
+            selling:
+              type: boolean
+            renting:
+              type: boolean
+            furtherLicensing:
+              type: boolean
+            leasing:
+              type: boolean     
         dataStream:
           type: boolean
         personalData:
@@ -802,6 +976,19 @@ components:
       example:
         proof: 'eyJhbGciOiJFUzI1NiJ9.eyJwcm9vZlR5cGUiOiJyZXNvbHV0aW9uIiwiZGF0YUV4Y2hhbmdlSWQiOiJTTmg5eUtYYjJlaGxWSFJZQkllay16Z1pVaDJtU1NvMWpwbGg3SWEtNHlRIiwiaWF0IjoxNjQ2OTUxNjM1LCJpc3MiOiJ7XCJhbGdcIjpcIkVTMjU2XCIsXCJjcnZcIjpcIlAtMjU2XCIsXCJkXCI6XCJ1Z1NpSTlJTEdnTWM1TmMwbkFhM3FGTjNBTjBvR2JhMzNJQWFrSHFkdm1nXCIsXCJrdHlcIjpcIkVDXCIsXCJ4XCI6XCJMNldmVlhHYkgwaW82SnBtOTRTMWxwZGk2eUd0VDFPbVo2NUFfa1NfaGs4XCIsXCJ5XCI6XCI2WUUwb1BPcFdCcUM3NURfanRKVWZ5NWxzWGxHak81ZzZRWGl2RHdNREtjXCJ9Iiwic3ViIjoie1wiYWxnXCI6XCJFUzI1NlwiLFwiY3J2XCI6XCJQLTI1NlwiLFwia3R5XCI6XCJFQ1wiLFwieFwiOlwiVlhzQnVPWndWamhvZkpWNGtBaGJhNnduMUVZRHdVSWtnWGIyZlZuTDh4Y1wiLFwieVwiOlwiaDRmTDVRdjRFWXQ3WGRLcWRJeTFaSnM0X1FXWURrWTF6VXpTb0k2MU43WVwifSIsInJlc29sdXRpb24iOiJkZW5pZWQiLCJ0eXBlIjoiZGlzcHV0ZSJ9.TtxUm3E6LfmwEI74cr6RO4-nw-xcFaeARYOZ4z1dBVlc_JU0mCv0Ftr9tCDhggfLiJqb4RIPiNfIytFZMUbx-g'
         sender_address: '0x4d82Bd33baA4Fe5489C45bBdC206019403dcF829'
+    choose_penalty:
+      type: object
+      properties:
+        agreementId:
+          type: integer
+          format: int64
+        chosenPenalty:
+          type: string
+        paymentPercentage:
+          type: integer
+        newEndDate:
+          type: integer
+          format: int64
     enforce_penalty:
       type: object
       properties:
@@ -817,17 +1004,32 @@ components:
         newEndDate:
           type: integer
           format: int64
-    # consent:
-    #   type: object
-    #   properties:
-    #     dataOfferingId:
-    #       type: string
-    #     consent_form_hash:
-    #       type: string
-    #     start_date:
-    #       type: integer
-    #     end_date:
-    #       type: integer
+    consent:
+      type: object
+      properties:
+        dataOfferingId:
+          type: string
+        consentSubject:
+          type: string
+        consentFormHash:
+          type: string
+        startDate:
+          type: integer
+        endDate:
+          type: integer
+        senderAddress:
+          type: string
+    revokeConsent:
+      type: object
+      properties:
+        dataOfferingId:
+          type: string
+        consentSubjects:
+          type: array
+          items:
+            type: string
+        senderAddress:
+          type: string
     sign_agreement:
       type: object
       properties:
@@ -841,6 +1043,10 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/agreement_template'
+    consent_status:
+      type: array
+      items:
+        type: integer
     penalties:
       type: array
       items:

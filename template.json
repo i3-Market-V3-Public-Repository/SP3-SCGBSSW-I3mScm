@@ -1,67 +1,78 @@
 {
-	"dataOfferingDescription": {
-	  "dataOfferingId": "62ecd16897d095001f105493",
-	  "version": 0,
-	  "title": "string",
-	  "category": "string",
-	  "active": false
-	},
-	"parties": {
-	  "providerDid": "did:ethr:i3m:0x02b6b4e416dae94b00729fe82bdce4a8480e457be2f177a82b5eb6128ece05b35c",
-	  "consumerDid": "string"
-	},
-	"purpose": "string",
-	"duration": {
-		"creationDate": 0,
-		"startDate": 0,
-		"endDate": 0
-	},
-	"obligations": {
-		"qualityOfData": 0,
-		"characteristics": "string",
-		"dataAvailability": false
-	},
-	"intendedUse": {
-		"processData": true,
-		"shareDataWithThirdParty": true,
-		"editData": true
-	},
-	"licenseGrant": {
-		"copyData": true,
-		"transferable": false,
-		"exclusiveness": true,
-		"revocable": true
-	  },
-	"dataStream": true,
-	"personalData": true,
-	"pricingModel": {
-	  "paymentType": "string", 
-	  "pricingModelName": "string",
-	  "basicPrice": 0,
-	  "currency": "string",
-	  "fee": 0,
-	  "hasPaymentOnSubscription": {
-		"paymentOnSubscriptionName": "string",
-		"paymentType": "string",
-		"timeDuration": "string",
-		"description": "string",
-		"repeat": "string",
-		"hasSubscriptionPrice": 0
-	  },
-	  "hasFreePrice": {
-		"hasPriceFree": true
-	  }
-	},
-	"dataExchangeAgreement": {
-	  "orig": "string",
-	  "dest": "string",
-	  "encAlg": "string",
-	  "signingAlg": "string",
-	  "hashAlg": "string",
-	  "ledgerContractAddress": "string",
-	  "ledgerSignerAddress": "string",
-	  "pooToPorDelay": 0,
-	  "pooToPopDelay": 0,
-	  "pooToSecretDelay": 0
-	}
+  "dataOfferingDescription": {
+    "dataOfferingId": "string",
+    "version": 0,
+    "title": "string",
+    "category": "string",
+    "active": true
+  },
+  "parties": {
+    "providerDid": "string",
+    "consumerDid": "string"
+  },
+  "purpose": "string",
+  "duration": {
+    "creationDate": 0,
+    "startDate": 0,
+    "endDate": 0
+  },
+  "intendedUse": {
+    "processData": false,
+    "shareDataWithThirdParty": false,
+    "editData": false
+  },
+  "licenseGrant": {
+    "transferable": false,
+    "exclusiveness": false,
+    "paidUp": false,
+    "revocable": false,
+    "processing": false,
+    "modifying": false,
+    "analyzing": false,
+    "storingData": false,
+    "storingCopy": false,
+    "reproducing": false,
+    "distributing": false,
+    "loaning": false,
+    "selling": false,
+    "renting": false,
+    "furtherLicensing": false,
+    "leasing": false
+  },
+  "dataStream": false,
+  "personalData": false,
+  "pricingModel": {
+    "paymentType": "string",
+    "pricingModelName": "string",
+    "basicPrice": 0,
+    "currency": "string",
+    "fee": 0,
+    "hasPaymentOnSubscription": {
+      "paymentOnSubscriptionName": "string",
+      "paymentType": "string",
+      "timeDuration": "string",
+      "description": "string",
+      "repeat": "string",
+      "hasSubscriptionPrice": 0
+    },
+    "hasFreePrice": {
+      "hasPriceFree": true
+    }
+  },
+  "dataExchangeAgreement": {
+    "orig": "string",
+    "dest": "string",
+    "encAlg": "string",
+    "signingAlg": "string",
+    "hashAlg": "string",
+    "ledgerContractAddress": "string",
+    "ledgerSignerAddress": "string",
+    "pooToPorDelay": 0,
+    "pooToPopDelay": 0,
+    "pooToSecretDelay": 0
+  },
+  "signatures": {
+    "providerSignature": "string",
+    "consumerSignature": "string"
   }
+}

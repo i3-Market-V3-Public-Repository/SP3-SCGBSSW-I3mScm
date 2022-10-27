@@ -4,6 +4,7 @@ import { ethers } from 'ethers';
 import _fetch = require('isomorphic-fetch')
 import * as objectSha from 'object-sha'
 import { json } from "express";
+import { resolveProperties } from "ethers/lib/utils";
 
 /* ============= Common Functions ==========*/
 
@@ -22,10 +23,24 @@ export function getTemplate(jsonTemplate: Template, staticTemplate: StaticParame
     jsonTemplate.intendedUse.processData = staticTemplate.contractParameters.hasIntendedUse.processData
     jsonTemplate.intendedUse.shareDataWithThirdParty = staticTemplate.contractParameters.hasIntendedUse.shareDataWithThirdParty
     jsonTemplate.intendedUse.editData = staticTemplate.contractParameters.hasIntendedUse.editData
-    jsonTemplate.licenseGrant.copyData = staticTemplate.contractParameters.hasLicenseGrant.copyData
+
     jsonTemplate.licenseGrant.transferable = staticTemplate.contractParameters.hasLicenseGrant.transferable
     jsonTemplate.licenseGrant.exclusiveness = staticTemplate.contractParameters.hasLicenseGrant.exclusiveness
+    jsonTemplate.licenseGrant.paidUp = staticTemplate.contractParameters.hasLicenseGrant.paidUp
     jsonTemplate.licenseGrant.revocable = staticTemplate.contractParameters.hasLicenseGrant.revocable
+    jsonTemplate.licenseGrant.processing = staticTemplate.contractParameters.hasLicenseGrant.processing
+    jsonTemplate.licenseGrant.modifying = staticTemplate.contractParameters.hasLicenseGrant.modifying
+    jsonTemplate.licenseGrant.analyzing = staticTemplate.contractParameters.hasLicenseGrant.analyzing
+    jsonTemplate.licenseGrant.storingData = staticTemplate.contractParameters.hasLicenseGrant.storingData
+    jsonTemplate.licenseGrant.storingCopy = staticTemplate.contractParameters.hasLicenseGrant.storingCopy
+    jsonTemplate.licenseGrant.reproducing = staticTemplate.contractParameters.hasLicenseGrant.reproducing
+    jsonTemplate.licenseGrant.distributing = staticTemplate.contractParameters.hasLicenseGrant.distributing
+    jsonTemplate.licenseGrant.loaning = staticTemplate.contractParameters.hasLicenseGrant.loaning
+    jsonTemplate.licenseGrant.selling = staticTemplate.contractParameters.hasLicenseGrant.selling
+    jsonTemplate.licenseGrant.renting = staticTemplate.contractParameters.hasLicenseGrant.renting
+    jsonTemplate.licenseGrant.furtherLicensing = staticTemplate.contractParameters.hasLicenseGrant.furtherLicensing
+    jsonTemplate.licenseGrant.leasing = staticTemplate.contractParameters.hasLicenseGrant.leasing
+
     jsonTemplate.dataStream = staticTemplate.dataStream
     jsonTemplate.personalData = staticTemplate.personalData
 
@@ -33,7 +48,7 @@ export function getTemplate(jsonTemplate: Template, staticTemplate: StaticParame
     if(staticTemplate.dataStream)
         jsonTemplate.pricingModel.paymentType = "payment on subscription"
     else jsonTemplate.pricingModel.paymentType = "one-time purchase"
-    jsonTemplate.pricingModel.basicPrice = staticTemplate.hasPricingModel.basicPrice
+    jsonTemplate.pricingModel.basicPrice = 56.34  //staticTemplate.hasPricingModel.basicPrice
     jsonTemplate.pricingModel.currency = staticTemplate.hasPricingModel.currency
     
     jsonTemplate.pricingModel.hasPaymentOnSubscription.paymentOnSubscriptionName = staticTemplate.hasPricingModel.hasPaymentOnSubscription.paymentOnSubscriptionName
@@ -125,21 +140,17 @@ export function processTemplate(template: Template) {
     const consumerPublicKey = template.dataExchangeAgreement.dest
     const dataExchangeAgreement = template.dataExchangeAgreement
     const obj = { src: 'A', dst: 'B', msg: { dataExchangeAgreement } }
-    console.log(objectSha.hashable(obj))
 
-    const dataExchangeAgreementHash = objectSha.digest(obj, 'SHA-256') ///algorithm
+    const dataExchangeAgreementHash = objectSha.digest(obj, template.dataExchangeAgreement.hashAlg) 
 
     const dataOfferingId = template.dataOfferingDescription.dataOfferingId
     const dataOfferingVersion = template.dataOfferingDescription.version
     const dataOfferingTitle = template.dataOfferingDescription.title
 
-    // check whether active
-
     const purpose = template.purpose
  
     const date = new Date()
     const creationDate = Math.floor(new Date(date.getFullYear(), date.getMonth(), date.getDate(),).getTime() / 1000)
-    //const creationDate = template.hasDuration.Duration.creationDate
     const startDate = template.duration.startDate
     const endDate = template.duration.endDate
     if(startDate<creationDate){
@@ -156,11 +167,10 @@ export function processTemplate(template: Template) {
     // const dataSource = template.hasDescriptionOfData.DescriptionOfData.dataSource
     // const descriptionOfData = [dataType, dataFormat, dataSource]
 
-    //obligation
-    const qualityOfData = template.obligations.qualityOfData
-    const characteristics = template.obligations.characteristics
-    const dataAvailability = template.obligations.dataAvailability
-    const obligation = [qualityOfData,characteristics,dataAvailability]
+    // const qualityOfData = template.obligations.qualityOfData
+    // const characteristics = template.obligations.characteristics
+    // const dataAvailability = template.obligations.dataAvailability
+    //const obligation = [qualityOfData,characteristics,dataAvailability]
 
     const processData = template.intendedUse.processData
     const shareDataWithThirdParty = template.intendedUse.shareDataWithThirdParty
@@ -189,7 +199,7 @@ export function processTemplate(template: Template) {
     //const hasSubscriptionPrice = template.pricingModel.hasPaymentOnSubscription.hasSubscriptionPrice
     const freePrice = template.pricingModel.hasFreePrice.hasPriceFree
 
-    const pricingModel = [paymentType, basicPrice, currency, fee, [timeDuration,repeat],freePrice]
+    const pricingModel = [paymentType, basicPrice*100, currency, fee*100, [timeDuration,repeat],freePrice]
 
     console.log(pricingModel)
 
@@ -207,13 +217,29 @@ export function processTemplate(template: Template) {
         purpose: purpose,
         dates: dates,
         // descriptionOfData: descriptionOfData,
-        obligation: obligation,
+        // obligation: obligation,
         intendedUse: intendedUse,
         licenseGrant: licenseGrant,
         typeOfData: typeOfData,
         pricingModel: pricingModel,
     }
 }
+
+formatConsent
+
+
+export function formatConsent(consents: any) {
+    let formatedConsent
+    for (let i = 0; i < consents.length; i++) {
+        formatedConsent[i] = parseInt(consents[i])
+    }
+
+    return {
+       formatedConsent
+    }
+
+}
+
 
 export function formatAgreement(agreement: any) {
 
@@ -250,9 +276,9 @@ export function formatAgreement(agreement: any) {
         personalData: agreement.typeOfData.personalData,
         pricingModel: {
             paymentType: agreement.pricingModel.paymentType,
-            price: parseInt(agreement.pricingModel.price),
+            price: parseInt(agreement.pricingModel.price)/100,
             currency: agreement.pricingModel.currency,
-            fee: parseInt(agreement.pricingModel.fee),
+            fee: parseInt(agreement.pricingModel.fee)/100,
             paymentOnSubscription:
                 {
                     timeDuration: agreement.pricingModel.paymentOnSubscription.timeDuration,
@@ -274,9 +300,9 @@ export function formatPricingModel(pricingModel: any) {
     return {
         pricingModel: {
             paymentType: pricingModel.paymentType,
-            price: parseInt(pricingModel.price),
+            price: parseInt(pricingModel.price)/100,
             currency: pricingModel.currency,
-            fee: parseInt(pricingModel.fee),
+            fee: parseInt(pricingModel.fee)/100,
             paymentOnSubscription:
                 {
                     timeDuration: pricingModel.paymentOnSubscription.timeDuration,
@@ -424,7 +450,7 @@ export function parseHex(a: string, prefix0x: boolean = false): string {
 
 export async function getAgreementId(exchangeId: string) {
     try {
-        let agreementIdRequest: any = await _fetch(`${process.env.DATA_ACCESS_URL}/getAgreementId/${exchangeId}`, {
+        let agreementIdRequest: any = await _fetch(`${process.env.DATA_ACCESS_URL}/agreement/getAgreementId/${exchangeId}`, {
             method: 'GET',
             headers: {
                 'Accept': 'application/json',
@@ -433,11 +459,13 @@ export async function getAgreementId(exchangeId: string) {
         }).catch((error: any) => {
             console.error('Error:', error)
         })
+
         const agreementIdJson = await agreementIdRequest.json();
 
-        const agreementId = agreementIdJson.agreement_id;
+       // const agreementId = parseInt(agreementIdJson.AgreementId);
 
-        return agreementId;
+       // return agreementId;
+       return agreementIdJson;
 
     } catch (error) {
         if (error instanceof Error) {

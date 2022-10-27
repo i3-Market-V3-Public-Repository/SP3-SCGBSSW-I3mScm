@@ -29,20 +29,13 @@ export interface ContractParameters {
     purpose:                  string;
     purposeDescription:       string;
     hasIntendedUse:           HasIntendedUse;
-    hasLicenseGrant:          HasLicenseGrant;
+    hasLicenseGrant:          { [key: string]: boolean };
 }
 
 export interface HasIntendedUse {
     processData:             boolean;
     shareDataWithThirdParty: boolean;
     editData:                boolean;
-}
-
-export interface HasLicenseGrant {
-    copyData:      boolean;
-    transferable:  boolean;
-    exclusiveness: boolean;
-    revocable:     boolean;
 }
 
 export interface DataExchangeSpec {
@@ -267,18 +260,12 @@ const typeMap: any = {
         { json: "purpose", js: "purpose", typ: "" },
         { json: "purposeDescription", js: "purposeDescription", typ: "" },
         { json: "hasIntendedUse", js: "hasIntendedUse", typ: r("HasIntendedUse") },
-        { json: "hasLicenseGrant", js: "hasLicenseGrant", typ: r("HasLicenseGrant") },
+        { json: "hasLicenseGrant", js: "hasLicenseGrant", typ: m(true) },
     ], false),
     "HasIntendedUse": o([
         { json: "processData", js: "processData", typ: true },
         { json: "shareDataWithThirdParty", js: "shareDataWithThirdParty", typ: true },
         { json: "editData", js: "editData", typ: true },
-    ], false),
-    "HasLicenseGrant": o([
-        { json: "copyData", js: "copyData", typ: true },
-        { json: "transferable", js: "transferable", typ: true },
-        { json: "exclusiveness", js: "exclusiveness", typ: true },
-        { json: "revocable", js: "revocable", typ: true },
     ], false),
     "DataExchangeSpec": o([
         { json: "encAlg", js: "encAlg", typ: "" },

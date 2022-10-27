@@ -12,13 +12,13 @@ export interface Template {
     parties:                 Parties;
     purpose:                 string;
     duration:                Duration;
-    obligations:             Obligations;
     intendedUse:             IntendedUse;
-    licenseGrant:            LicenseGrant;
+    licenseGrant:            { [key: string]: boolean };
     dataStream:              boolean;
     personalData:            boolean;
     pricingModel:            PricingModel;
     dataExchangeAgreement:   DataExchangeAgreement;
+    signatures:              Signatures;
 }
 
 export interface DataExchangeAgreement {
@@ -54,19 +54,6 @@ export interface IntendedUse {
     editData:                boolean;
 }
 
-export interface LicenseGrant {
-    copyData:      boolean;
-    transferable:  boolean;
-    exclusiveness: boolean;
-    revocable:     boolean;
-}
-
-export interface Obligations {
-    qualityOfData:    number;
-    characteristics:  string;
-    dataAvailability: boolean;
-}
-
 export interface Parties {
     providerDid: string;
     consumerDid: string;
@@ -93,6 +80,11 @@ export interface HasPaymentOnSubscription {
     description:               string;
     repeat:                    string;
     hasSubscriptionPrice:      number;
+}
+
+export interface Signatures {
+    providerSignature: string;
+    consumerSignature: string;
 }
 
 // Converts JSON strings to/from your types
@@ -245,13 +237,13 @@ const typeMap: any = {
         { json: "parties", js: "parties", typ: r("Parties") },
         { json: "purpose", js: "purpose", typ: "" },
         { json: "duration", js: "duration", typ: r("Duration") },
-        { json: "obligations", js: "obligations", typ: r("Obligations") },
         { json: "intendedUse", js: "intendedUse", typ: r("IntendedUse") },
-        { json: "licenseGrant", js: "licenseGrant", typ: r("LicenseGrant") },
+        { json: "licenseGrant", js: "licenseGrant", typ: m(true) },
         { json: "dataStream", js: "dataStream", typ: true },
         { json: "personalData", js: "personalData", typ: true },
         { json: "pricingModel", js: "pricingModel", typ: r("PricingModel") },
         { json: "dataExchangeAgreement", js: "dataExchangeAgreement", typ: r("DataExchangeAgreement") },
+        { json: "signatures", js: "signatures", typ: r("Signatures") },
     ], false),
     "DataExchangeAgreement": o([
         { json: "orig", js: "orig", typ: "" },
@@ -282,17 +274,6 @@ const typeMap: any = {
         { json: "shareDataWithThirdParty", js: "shareDataWithThirdParty", typ: true },
         { json: "editData", js: "editData", typ: true },
     ], false),
-    "LicenseGrant": o([
-        { json: "copyData", js: "copyData", typ: true },
-        { json: "transferable", js: "transferable", typ: true },
-        { json: "exclusiveness", js: "exclusiveness", typ: true },
-        { json: "revocable", js: "revocable", typ: true },
-    ], false),
-    "Obligations": o([
-        { json: "qualityOfData", js: "qualityOfData", typ: 0 },
-        { json: "characteristics", js: "characteristics", typ: "" },
-        { json: "dataAvailability", js: "dataAvailability", typ: true },
-    ], false),
     "Parties": o([
         { json: "providerDid", js: "providerDid", typ: "" },
         { json: "consumerDid", js: "consumerDid", typ: "" },
@@ -316,5 +297,9 @@ const typeMap: any = {
         { json: "description", js: "description", typ: "" },
         { json: "repeat", js: "repeat", typ: "" },
         { json: "hasSubscriptionPrice", js: "hasSubscriptionPrice", typ: 0 },
+    ], false),
+    "Signatures": o([
+        { json: "providerSignature", js: "providerSignature", typ: "" },
+        { json: "consumerSignature", js: "consumerSignature", typ: "" },
     ], false),
 };
