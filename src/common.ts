@@ -48,7 +48,7 @@ export function getTemplate(jsonTemplate: Template, staticTemplate: StaticParame
     if(staticTemplate.dataStream)
         jsonTemplate.pricingModel.paymentType = "payment on subscription"
     else jsonTemplate.pricingModel.paymentType = "one-time purchase"
-    jsonTemplate.pricingModel.basicPrice = 56.34  //staticTemplate.hasPricingModel.basicPrice
+    jsonTemplate.pricingModel.basicPrice = staticTemplate.hasPricingModel.basicPrice
     jsonTemplate.pricingModel.currency = staticTemplate.hasPricingModel.currency
     
     jsonTemplate.pricingModel.hasPaymentOnSubscription.paymentOnSubscriptionName = staticTemplate.hasPricingModel.hasPaymentOnSubscription.paymentOnSubscriptionName
@@ -177,11 +177,25 @@ export function processTemplate(template: Template) {
     const editData = template.intendedUse.editData
     const intendedUse = [processData, shareDataWithThirdParty, editData]
 
-    const copyData = template.licenseGrant.copyData
     const transferable = template.licenseGrant.transferable
     const exclusiveness = template.licenseGrant.revocable
+    const paidUp = template.licenseGrant.paidUp
     const revocable = template.licenseGrant.revocable
-    const licenseGrant = [copyData, transferable, exclusiveness, revocable]
+    const processing = template.licenseGrant.processing
+    const modifying = template.licenseGrant.modifying
+    const analyzing = template.licenseGrant.analyzing
+    const storingData = template.licenseGrant.storingData
+    const storingCopy = template.licenseGrant.storingCopy
+    const reproducing = template.licenseGrant.reproducing
+    const distributing = template.licenseGrant.distributing
+    const loaning = template.licenseGrant.loaning
+    const selling = template.licenseGrant.selling
+    const renting = template.licenseGrant.renting
+    const furtherLicensing = template.licenseGrant.furtherLicensing
+    const leasing = template.licenseGrant.leasing
+
+    const licenseGrant = [transferable, exclusiveness, paidUp, revocable, processing, modifying, analyzing, storingData, storingCopy,
+        reproducing, distributing, loaning, selling, renting, furtherLicensing, leasing]
 
     const dataStream = template.dataStream
     const personalData = template.personalData
@@ -193,24 +207,28 @@ export function processTemplate(template: Template) {
     const fee =template.pricingModel.fee
     //const paymentOnSubscriptionName = template.pricingModel.hasPaymentOnSubscription.paymentOnSubscriptionName
     //const subscriptionPaymentType = template.pricingModel.hasPaymentOnSubscription.paymentType
+    //const timeDuration = template.pricingModel.hasPaymentOnSubscription.timeDuration
     const timeDuration = template.pricingModel.hasPaymentOnSubscription.timeDuration
     //const description = template.pricingModel.hasPaymentOnSubscription.description
     const repeat = template.pricingModel.hasPaymentOnSubscription.repeat
     //const hasSubscriptionPrice = template.pricingModel.hasPaymentOnSubscription.hasSubscriptionPrice
     const freePrice = template.pricingModel.hasFreePrice.hasPriceFree
 
-    const pricingModel = [paymentType, basicPrice*100, currency, fee*100, [timeDuration,repeat],freePrice]
+    const pricingModel = [paymentType, basicPrice*100, currency, fee*100, [timeDuration,repeat], freePrice]
 
     console.log(pricingModel)
 
+    const signatures = [template.signatures.providerSignature, template.signatures.consumerSignature]
+
     console.log("dataofferingId => " + dataOfferingId + " purpose => " + purpose + " consumerPK => " + consumerPublicKey + " providerPK => " + providerPublicKey +
         " dates => [" + startDate + "," + endDate + "]" + " intendedUse => ["
-        + processData + "," + shareDataWithThirdParty + "," + editData + "] licenseGrant => [" + copyData + "," + transferable + "," + exclusiveness + "," + revocable + "] dataStream => " + dataStream)
+        + processData + "," + shareDataWithThirdParty + "," + editData + "] licenseGrant => [" + paidUp + "," + transferable + "," + exclusiveness + "," + revocable + "] dataStream => " + dataStream)
 
     return {
         providerPublicKey: providerPublicKey,
         consumerPublicKey: consumerPublicKey,
         dataExchangeAgreementHash: dataExchangeAgreementHash,
+        signatures: signatures,
         dataOfferingId: dataOfferingId,
         dataOfferingVersion: dataOfferingVersion,
         dataOfferingTitle,
@@ -225,20 +243,7 @@ export function processTemplate(template: Template) {
     }
 }
 
-formatConsent
 
-
-export function formatConsent(consents: any) {
-    let formatedConsent
-    for (let i = 0; i < consents.length; i++) {
-        formatedConsent[i] = parseInt(consents[i])
-    }
-
-    return {
-       formatedConsent
-    }
-
-}
 
 
 export function formatAgreement(agreement: any) {
@@ -256,21 +261,29 @@ export function formatAgreement(agreement: any) {
         purpose: agreement.purpose,
         state: agreement.state, //convert state
         agreementDates: [parseInt(agreement.agreementDates[0]), parseInt(agreement.agreementDates[1]), parseInt(agreement.agreementDates[2])],
-        obligation: {
-            qualityOfData: parseInt(agreement.obligation.qualityOfData),
-            characteristics: agreement.obligation.characteristics,
-            dataAvailability: agreement.obligation.dataAvailability
-        },
         intendedUse: {
             processData: agreement.intendedUse.processData,
             shareDataWithThirdParty: agreement.intendedUse.shareDataWithThirdParty,
             editData: agreement.intendedUse.editData
         },
         licenseGrant: {
-            copyData: agreement.licenseGrant.copyData,
             transferable: agreement.licenseGrant.transferable,
             exclusiveness: agreement.licenseGrant.exclusiveness,
-            revocable: agreement.licenseGrant.revocable
+            paidUp: agreement.licenseGrant.paidUp,
+            revocable: agreement.licenseGrant.revocable,
+            processing: agreement.licenseGrant.processing,
+            modifying: agreement.licenseGrant.modifying,
+            analyzing: agreement.licenseGrant.analyzing,
+            storingData: agreement.licenseGrant.storingData,
+            storingCopy: agreement.licenseGrant.storingCopy,
+            reproducing: agreement.licenseGrant.reproducing,
+            distributing: agreement.licenseGrant.distributing,
+            loaning: agreement.licenseGrant.loaning,
+            selling: agreement.licenseGrant.selling,
+            renting: agreement.licenseGrant.renting,
+            furtherLicensing: agreement.licenseGrant.furtherLicensing,
+            leasing: agreement.licenseGrant.leasing,
+            
         },
         dataStream: agreement.typeOfData.dataStream,
         personalData: agreement.typeOfData.personalData,
@@ -288,7 +301,10 @@ export function formatAgreement(agreement: any) {
         },
         violation: {
                 violationType: parseInt(agreement.violation.violationType),
-                issuerId: agreement.violation.issuerId
+        },
+        signatures: {
+            providerSignature: agreement.signatures[0],
+            consumerSignature: agreement.signatures[1]
         },
     }
 
@@ -411,22 +427,14 @@ export function getState(state: number) {
 
     switch (state) {
         case 0: {
-            response = { state: "created" }
-            break
-        }
-        case 1: {
             response = { state: "active" }
             break
         }
-        case 2: {
-            response = { state: "updated" }
-            break
-        }
-        case 3: {
+        case 1: {
             response = { state: "violated" }
             break
         }
-        case 4: {
+        case 2: {
             response = { state: "terminated" }
             break
         }

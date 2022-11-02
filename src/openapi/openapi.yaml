@@ -74,61 +74,6 @@ paths:
                 data: "0x89a8348c00000000000000000000000000000000000000000000000000000000000001c"
       security:
         - bearerAuth: []
-  # /sign_agreement_raw_transaction:
-  #   put:
-  #     tags:
-  #       - Agreement
-  #     summary: Sign agreement 
-  #     requestBody:
-  #       content:
-  #         application/json:
-  #           schema:
-  #             $ref: '#/components/schemas/sign_agreement'
-  #       required: true
-  #     responses:
-  #       '200':
-  #         description: OK
-  #         content:
-  #           application/json:
-  #             schema:
-  #               $ref: '#/components/schemas/raw_transaction_template'
-  #     security:
-  #       - bearerAuth: []
-  # /update_agreement_raw_transaction/{agreement_id}/{sender_address}:
-  #   put:
-  #     tags:
-  #       - Agreement
-  #     summary: Update agreement 
-  #     parameters:
-  #       - name: agreement_id
-  #         in: path
-  #         required: true
-  #         style: simple
-  #         explode: false
-  #         schema:
-  #           type: integer
-  #       - name: sender_address
-  #         in: path
-  #         required: true
-  #         style: simple
-  #         explode: false
-  #         schema:
-  #           type: string
-  #     requestBody:
-  #       content:
-  #         application/json:
-  #           schema:
-  #             $ref: '#/components/schemas/template'
-  #       required: true
-  #     responses:
-  #       '200':
-  #         description: OK
-  #         content:
-  #           application/json:
-  #             schema:
-  #               $ref: '#/components/schemas/raw_transaction_template'
-  #     security:
-  #       - bearerAuth: [] 
   /deploy_signed_transaction:
     post:
       tags:
@@ -190,7 +135,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/pricing_model_template'
+                $ref: '#/components/schemas/pricingModelTemplate'
       security:
         - bearerAuth: []
   /check_active_agreements:
@@ -334,7 +279,7 @@ paths:
   /evaluate_signed_resolution:
     post:
       tags:
-        - Agreement Violation
+        - Agreement
       summary: Verify a signed resolution
       requestBody:
         content:
@@ -351,43 +296,10 @@ paths:
                 $ref: '#/components/schemas/transaction_object'
       security:
         - bearerAuth: []
-  # /present_penalty_choices/{agreement_id}:
-  #   get:
-  #     tags:
-  #       - Agreement
-  #     summary: Present penalty options
-  #     parameters:
-  #       - name: agreement_id
-  #         in: path
-  #         required: true
-  #         style: simple
-  #         explode: false
-  #         schema:
-  #           type: integer
-  #     responses:
-  #       '200':
-  #         description: OK
-  #         content:
-  #           application/json:
-  #             schema:
-  #               $ref: '#/components/schemas/penalties'
-  #     security:
-  #       - bearerAuth: []
-
-  #/choose_penalty', async (req, res, next) => {
-        # try {
-
-        #     const agreementId = req.body.agreementId
-        #     const chosenPenalty = req.body.chosenPenalty
-        #     //check chosenPenalty -> just if NewEndDateForProviderAndReductionOfPayment calculate price
-        #     const paymentPercentage = req.body.paymentPercentage
-        #     //check new end date
-        #     const newEndDate = req.body.newEndDate
-        #     const senderAddress = req.body.senderAddress
-  /choose_penalty:
+  /propose_penalty:
     post:
       tags:
-        - Agreement Violation
+        - Agreement 
       summary: Choose penalty
       requestBody:
         content:
@@ -407,13 +319,33 @@ paths:
   /enforce_penalty:
     put:
       tags:
-        - Agreement Violation
+        - Agreement 
       summary: Enforce penalty
       requestBody:
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/enforce_penalty'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/transaction_object'
+      security:
+        - bearerAuth: []
+  /request_termination:
+    put:
+      tags:
+        - Agreement
+      summary: Request Agreement Termination
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/requestTermination'
         required: true
       responses:
         '200':
@@ -513,26 +445,26 @@ paths:
                 $ref: '#/components/schemas/transaction_object'
       security:
         - bearerAuth: []
-  # /deploy_signed_transaction_consent:
-  #   post:
-  #     tags:
-  #       - Agreement
-  #     summary: Deploy signed transaction
-  #     requestBody:
-  #       content:
-  #         application/json:
-  #           schema:
-  #             $ref: '#/components/schemas/signed_transaction'
-  #       required: true
-  #     responses:
-  #       '200':
-  #         description: OK
-  #         content:
-  #           application/json:
-  #             schema:
-  #               $ref: '#/components/schemas/transaction_object'
-  #     security:
-  #       - bearerAuth: []    
+  /deploy_consent_signed_transaction:
+    post:
+      tags:
+        - Explicit User Consent
+      summary: Deploy consent signed transaction
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/signed_transaction'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/consent_msg'
+      security:
+        - bearerAuth: []    
 components:
   schemas:
     state:
@@ -605,10 +537,6 @@ components:
       type: object
       properties:
         signedTransaction:
-          type: string
-        providerDid:
-          type: string
-        consumerDid:
           type: string
     template:
       type: object
@@ -830,13 +758,6 @@ components:
           type: string
         dataExchangeAgreementHash:
           type: string
-        signatures:
-          type: object
-          properties:
-            providerSigniture:
-              type: string
-            consumerSigniture:
-              type: string
         dataOffering:
           type: object
           properties:
@@ -854,15 +775,6 @@ components:
           type: array
           items:
             type: integer
-        # obligation:
-        #   type: object
-        #   properties:
-        #     qualityOfData:
-        #       type: integer
-        #     characteristics:
-        #       type: string
-        #     dataAvailability:
-        #       type: boolean
         intendedUse:
           type: object
           properties:
@@ -936,9 +848,14 @@ components:
           properties:
                   violationType:
                     type: integer
-                  issuerId:
-                    type: string
-    pricing_model_template:
+        signatures:
+          type: object
+          properties:
+            providerSigniture:
+              type: string
+            consumerSigniture:
+              type: string
+    pricingModelTemplate:
       type: object
       properties:
             paymentType:
@@ -958,14 +875,24 @@ components:
                   type: string
             isFree:
               type: boolean
+    requestTermination:
+      type: object
+      properties:
+        senderAddress:
+          type: string
+        agreementId:
+          type: integer
+          format: int64
+        publicKey:
+          type: string
     terminate:
       type: object
       properties:
-        agreement_id:
+        senderAddress:
+          type: string
+        agreementId:
           type: integer
           format: int64
-        sender_address:
-          type: string
     signed_resolution:
       type: object
       properties:
@@ -1030,6 +957,17 @@ components:
             type: string
         senderAddress:
           type: string
+    consent_msg:
+      type: object
+      properties:
+        msg:
+          type: string
+        dataOfferingId:
+          type: string
+        consumers:
+          type: array
+          items:
+            type: string
     sign_agreement:
       type: object
       properties:
@@ -1051,13 +989,6 @@ components:
       type: array
       items:
         type: string
-    data_exchange_to_agreement_id:
-      type: object
-      properties:
-        data_exchange_id:
-          type: string
-        agreement_id:
-          type: integer
   securitySchemes:
     bearerAuth:
       type: http
