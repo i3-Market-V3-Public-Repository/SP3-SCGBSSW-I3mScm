@@ -1,9 +1,10 @@
-FROM node:14-slim
+FROM node:16
 
 COPY ./scripts/dependencies.sh ./dependencies.sh
 COPY ./template.json ./template.json
 COPY ./staticParametersTemplate.json ./staticParametersTemplate.json
 COPY ./DataSharingAgreement.json ./DataSharingAgreement.json
+COPY ./ExplicitUserConsent.json ./ExplicitUserConsent.json
 
 ADD ./src /src
 
