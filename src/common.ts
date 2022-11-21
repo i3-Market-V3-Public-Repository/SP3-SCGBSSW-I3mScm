@@ -395,22 +395,31 @@ export function formatTransactionReceipt(transaction: any) {
 
 export async function notify(origin: string, predefined: boolean, type: string, receiver_id: string, message: Object, status: string) {
 
-    const notification = {
-        origin: origin,
-        predefined: predefined,
-        type: type,
-        receiver_id: receiver_id,
-        message: message,
-        status: status
+    try{
+        const notification = {
+            origin: origin,
+            predefined: predefined,
+            type: type,
+            receiver_id: receiver_id,
+            message: message,
+            status: status
+        }
+        let notification_send = await _fetch(`${process.env.BACKPLANE_URL}/notification-manager-oas/api/v1/notification`, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(notification),
+        })
+    } catch (error) {
+        if (error instanceof Error) {
+            console.log(`${error.message}`)
+        }
     }
-    let notification_send = await _fetch(`${process.env.BACKPLANE_URL}/notification-manager-oas/api/v1/notification`, {
-        method: 'POST',
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(notification),
-    })
+
+
+    
     // let notification_send = await _fetch(`${process.env.NOTIFICATION_MANAGER_URL}/api/v1/notification`, {
     //     method: 'POST',
     //     headers: {

@@ -23,10 +23,12 @@ import {
 } from '../common'
 import { ethers } from 'ethers'
 import * as path from 'path'
+import { TextEncoder, TextDecoder } from 'util';
 import * as objectSha from 'object-sha'
 
 import * as nonRepudiationLibrary from '@i3m/non-repudiation-library'
 import { DisputeRequestPayload, exchangeId } from '@i3m/non-repudiation-library'
+import { NrpDltAgent } from '@i3m/non-repudiation-library/types/dlt/agents/NrpDltAgent'
 
 const dotenv = require('dotenv').config({
     path: path.resolve(__dirname, '../../.env'),
@@ -84,13 +86,6 @@ export default async (): Promise<typeof router> => {
 
         if (parsedToJson != undefined) {
             try {
-                // if(!parsedToJson.active){
-                //     throw new Error("Not allowed to purchase, data offering is not active")
-                // }
-                //if(parsedToJson.personalData){
-                    //check consent
-                //}
-                // Add static parameters to JSON template
                 const staticTemplate: StaticParametersTemplate = ConvertToStaticParametersTemplate.toStaticParametersTemplate(
                     JSON.stringify(parsedToJson),
                 )
@@ -214,6 +209,41 @@ export default async (): Promise<typeof router> => {
         }
     })
 
+    router.get('/agreements/:consumerPublicKeys/:active', async (req, res) => {
+        try {
+
+            const consumerPublicKeysString = req.params.consumerPublicKeys
+            const consumerPublicKeysArray = consumerPublicKeysString.split(',')
+            console.log(consumerPublicKeysArray)
+          
+            const active :boolean = JSON.parse(req.params.active)
+            
+            const formatedAgreements: ReturnType<typeof formatAgreement>[] = []
+            const activeAgreements = await contract.getAgreementsByConsumer(
+                consumerPublicKeysArray,
+                active
+            )
+
+            activeAgreements.forEach((agreement) => {
+                const formatedAgreement = formatAgreement(agreement)
+                formatedAgreements.push(formatedAgreement)
+            })
+
+            console.log(
+                'Number of active agreements by Consumer: ' + formatedAgreements.length,
+            )
+
+            res.status(200).send(formatedAgreements)
+        } catch (error) {
+            if (error instanceof Error) {
+                console.log(`${error.message}`)
+                res
+                    .status(500)
+                    .send({ name: `${error.name}`, message: `${error.message}` })
+            }
+        }
+    })
+
     router.get('/check_agreements_by_provider/:provider_public_key/:active', async (req, res) => {
         try {
             const providerPublicKey = req.params.provider_public_key
@@ -292,23 +322,26 @@ export default async (): Promise<typeof router> => {
         async (req, res, next) => {
             try {
                 const senderAddress = req.params.sender_address
+                const dataSharingAgreement : nonRepudiationLibrary.DataSharingAgreement = req.body
+                nonRepudiationLibrary.validateDataSharingAgreementSchema(dataSharingAgreement)
+                console.log(dataSharingAgreement)
                 const template = ConvertToTemplate.toTemplate(JSON.stringify(req.body))
                 let consentGiven : boolean = true
                 if(template.personalData){
                     const consents = await explicitUserConsentContract.checkConsentStatus(template.dataOfferingDescription.dataOfferingId, "")
                     console.log(consents)
-                    consents.forEach((consent) => {
-                        if(parseInt(consent) == 0){
-                            consentGiven = false;
-                            throw new Error("Consent was not given for offering " + template.dataOfferingDescription.dataOfferingId)
-                        }
-
+                    if(consents.length!=0)
+                        consents.forEach((consent) => {
+                            if(parseInt(consent) == 0){
+                                consentGiven = false;
+                            }
                     })
+                    else throw new Error("Consent was not given for offering " + template.dataOfferingDescription.dataOfferingId)
                 }
-                else if(template.personalData == false || consentGiven == true){
+                
+                if(template.personalData == false || consentGiven == true){
                         const processedTemplate = processTemplate(template)
 
-                        // process input data
                         const providerPublicKey = processedTemplate.providerPublicKey
                         const consumerPublicKey = processedTemplate.consumerPublicKey
                         const dataExchangeAgreementHash =
@@ -401,14 +434,12 @@ export default async (): Promise<typeof router> => {
                             status = 'accepted'
                             break
                         case 'TerminationProposal':
-                            type = 'agreement.terminationproposal'
                             message = {
                                 agreementId: agreementId
                             }
                             status = 'terminationproposal'
                             break
                         case 'AgreementTerminated':
-                            console.log('terminated')
                             type = 'agreement.termination'
                             message = {
                                 msg: `Agreement with id: ${agreementId} is terminated`,
@@ -417,7 +448,6 @@ export default async (): Promise<typeof router> => {
                             status = 'termination'
                             break
                         case 'PenaltyChoices':
-                                console.log('penalties')
                                 const penalties = logs.args.penaltyChoices
                                 type = 'agreement.penaltychoices'
                                 message = {
@@ -443,56 +473,45 @@ export default async (): Promise<typeof router> => {
                                 }
                                 status = 'penalties'
                                 break
-                        case 'ConsentGiven':
-                                    console.log('consent given')
-                                    const dataOfferingId = logs.args.dataOfferingId
-                                    //type = 'consent.revoked'
-                                    //iterate through consumers
-                                    message = {
-                                        msg: `Consent was given for offering: ${dataOfferingId}. `,
-                                        agreementId: agreementId,
-                                        offeringId: dataOfferingId
-                                    }
-                                    status = 'given'
-                                    break
-                        case 'ConsentRevoked':
-                                    console.log('consent revoked')
-                                    const consumers = logs.args.consumers
-                                    const offeringId = logs.args.dataOfferingId
-                                    //type = 'consent.revoked'
-                                    //iterate through consumers
-                                    message = {
-                                        msg: `Consent was revoked for offering: ${offeringId}. `,
-                                        agreementId: agreementId,
-                                        offeringId: offeringId
-                                    }
-                                    status = 'revoked'
-                                    break
                     }
 
                 const origin = 'i3-market'
                 const predefined = true
-                let publicKey1 = logs.args.providerPublicKey
-                const publicKey2 = logs.args.consumerPublicKey
+                let publicKey1 : string = logs.args.providerPublicKey
+                const publicKey2 : string = logs.args.consumerPublicKey
                 if(type == 'agreement.terminationproposal')
                     publicKey1 = logs.args.publicKey
+                
+                const publickeyJsonObj1 = JSON.parse(publicKey1)
+                const strData = JSON.stringify(message)
+                const uint8Data = new TextEncoder().encode(strData)
+                const jwe1 = await nonRepudiationLibrary.jweEncrypt(uint8Data, publickeyJsonObj1, "A256GCM")
+                console.log('Ciphertext: ', jwe1)
+
+                const publickeyJsonObj2 = JSON.parse(publicKey2)
+                const strData2 = JSON.stringify(message)
+                const uint8Data2 = new TextEncoder().encode(strData2)
+                const jwe2 = await nonRepudiationLibrary.jweEncrypt(uint8Data2, publickeyJsonObj2, "A256GCM")
+                console.log('Ciphertext: ', jwe2)
+                    
 
                 await notify(
                     origin,
                     predefined,
                     type,
-                    publicKey1, //`${logs.args.providerPublicKey}`,
-                    message,
+                    publicKey1, 
+                    {jwe: jwe1},
                     status,
                 )
                 await notify(
                     origin,
                     predefined,
                     type,
-                    publicKey2, //`${logs.args.consumerPublicKey}`,
-                    message,
+                    publicKey2, 
+                    {jwe: jwe2},
                     status,
                 )
+
                 res.status(200).send(formatedTransactionReceipt)
                 } else throw new Error('The transaction has no logs.')
             } else throw new Error('Transaction unsuccessful. Status:' + receipt.status)
@@ -510,17 +529,20 @@ export default async (): Promise<typeof router> => {
     router.get('/retrieve_agreements/:consumer_public_key', async (req, res) => {
         try {
             const consumer_public_key = req.params.consumer_public_key
+
             const formatedAgreements: ReturnType<typeof formatAgreement>[] = []
             const agreementsTx = await contract.retrieveAgreements(
                 consumer_public_key,
             )
             const activeAgreements = agreementsTx[0]
-            const length = agreementsTx[1]      //csak a hosszusagig ird ki
+            const length = parseInt(agreementsTx[1])
+
             if(length!=0){
-                activeAgreements.forEach((agreement) => {
-                    const formatedAgreement = formatAgreement(agreement)
+
+                for(let i=0; i<length; i++){
+                    const formatedAgreement = formatAgreement(activeAgreements[i])
                     formatedAgreements.push(formatedAgreement)
-                })
+                }
 
                 console.log(
                     'Number of active agreements by Consumer Public key: ' +
@@ -569,7 +591,7 @@ export default async (): Promise<typeof router> => {
 
             if(agreementIdJson.AgreementId == undefined)
                 throw new Error(agreementIdJson.msg)
-            const agreementId = 0//parseInt(agreementIdJson.AgreementId);
+            const agreementId = parseInt(agreementIdJson.AgreementId);
 
             
             const senderAddress = req.body.sender_address
@@ -599,7 +621,6 @@ export default async (): Promise<typeof router> => {
 
             res.status(200).send(formatedRawTransaction)
 
-            //res.status(200).send(decodedResolution.payload)
         } catch (error) {
             if (error instanceof Error) {
                 console.log(`${error.message}`)
@@ -803,10 +824,11 @@ export default async (): Promise<typeof router> => {
     })
 
 
-    router.get('/check_consent_status/:dataOfferingId/:consentSubject', async (req, res, next) => {
+    router.get('/check_consent_status/:dataOfferingId', async (req, res, next) => {
         try {
             const dataOfferingId = req.params.dataOfferingId
-            const consentSubject = req.params.consentSubject
+            const consentSubject = req.query.consentSubject
+            console.log(consentSubject)
         
             const formatedConsents : any = []
             const consents = await explicitUserConsentContract.checkConsentStatus(dataOfferingId, consentSubject)
@@ -873,7 +895,7 @@ export default async (): Promise<typeof router> => {
             const formatedTransactionReceipt = formatTransactionReceipt(receipt)
 
             console.log(receipt.logs[0])
-
+            
             if (receipt.status == 1) {
                 if (receipt.logs.length > 0) {
                     let logs = new ethers.utils.Interface(contractABIConsent).parseLog(
@@ -882,35 +904,43 @@ export default async (): Promise<typeof router> => {
                     
                     const eventName = logs.eventFragment.name
                     
+                    let type: string = 'unrecognizedEvent'
                     let message: Object = {}
-                    
-                    switch (eventName) {
-                       
-                        case 'ConsentGiven':
-                                    console.log('consent given')
-                                    const dataOfferingId = logs.args.dataOfferingId
-                                    //type = 'consent.revoked'
-                                    //iterate through consumers
+                    let status: string = 'unrecognizedEvent'
+                    const origin = 'i3-market'
+                    const predefined = true
+                    const dataOfferingId = logs.args.dataOfferingId
+                    const consentSubjects = logs.args.consentSubjects
+                    if (eventName == 'ConsentRevoked') {
+                                    type = 'consent.revoked'
                                     message = {
-                                        msg: `Consent was given for offering: ${dataOfferingId}. `,
-                                        offeringId: dataOfferingId
+                                        msg: `Consent was revoked for offering: ${dataOfferingId}. `,
+                                        dataOfferingId: dataOfferingId,
+                                        consentSubjects: consentSubjects
                                     }
-                                    
-                                    break
-                        case 'ConsentRevoked':
-                                    const consumers = logs.args.consumers
-                                    const offeringId = logs.args.dataOfferingId
-                                    //type = 'consent.revoked'
-                                    //iterate through consumers
-                                    message = {
-                                        msg: `Consent was revoked for offering: ${offeringId}. `,
-                                        offeringId: offeringId,
-                                        consumers:consumers
-                                    }
-                                   
-                                    break
+                                   status = 'revoked'
                     }
-               
+                    
+                    const consumerPublicKeys : string[] = logs.args.consumerPublicKeys
+                    if(consumerPublicKeys.length > 0){
+                        for(let i =0; i < consumerPublicKeys.length; i++){
+                            const publickeyJsonObj1 = JSON.parse(consumerPublicKeys[i])
+                            const strData = JSON.stringify(message)
+                            const uint8Data = new TextEncoder().encode(strData)
+                            const jwe = await nonRepudiationLibrary.jweEncrypt(uint8Data, publickeyJsonObj1, "A256GCM")
+                            console.log('Ciphertext: ', jwe)
+
+                            await notify(
+                                origin,
+                                predefined,
+                                type,
+                                consumerPublicKeys[i], 
+                                {jwe: jwe},
+                                status,
+                            )
+                        }
+                    }
+                
                 res.status(200).send(message)
                 } else throw new Error('The transaction has no logs.')
             } else throw new Error('Transaction unsuccessful. Status:' + receipt.status)

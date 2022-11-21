@@ -107,6 +107,7 @@ paths:
           explode: false
           schema:
             type: integer
+            format: int64
       responses:
         '200':
           description: OK
@@ -129,6 +130,7 @@ paths:
           explode: false
           schema:
             type: integer
+            format: int64
       responses:
         '200':
           description: OK
@@ -232,6 +234,36 @@ paths:
                 $ref: '#/components/schemas/active_agreements'
       security:
         - bearerAuth: []
+  /agreements/{consumerPublicKeys}/{active}:
+    get:
+      tags:
+        - Agreement
+      summary: Get agreements by consumer
+      parameters:
+        - name: consumerPublicKeys
+          in: query
+          required: true
+          explode: false
+          schema:
+            type: array
+            items:
+              type: string
+            example: ["", "", ""]
+        - name: active
+          in: path
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: boolean
+            example: false
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/active_agreements'
   /get_state/{agreement_id}:
     get:
       tags:
@@ -245,6 +277,7 @@ paths:
           explode: false
           schema:
             type: integer
+            format: int64
       responses:
         '200':
           description: OK
@@ -285,7 +318,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/signed_resolution'
+              $ref: '#/components/schemas/signed_resolution_scm'
         required: true
       responses:
         '200':
@@ -293,7 +326,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/transaction_object'
+                $ref: '#/components/schemas/raw_transaction_template'
       security:
         - bearerAuth: []
   /propose_penalty:
@@ -333,7 +366,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/transaction_object'
+                $ref: '#/components/schemas/raw_transaction_template'
       security:
         - bearerAuth: []
   /request_termination:
@@ -353,7 +386,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/transaction_object'
+                $ref: '#/components/schemas/raw_transaction_template'
       security:
         - bearerAuth: []
   /terminate:
@@ -373,7 +406,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/transaction_object'
+                $ref: '#/components/schemas/raw_transaction_template'
       security:
         - bearerAuth: []
   /give_consent:
@@ -393,10 +426,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/transaction_object'
+                $ref: '#/components/schemas/raw_transaction_template'
       security:
         - bearerAuth: []
-  /check_consent_status/{dataOfferingId}/{consentSubject}:
+  /check_consent_status/{dataOfferingId}:
     get:
       tags:
         - Explicit User Consent
@@ -410,12 +443,12 @@ paths:
           schema:
             type: string
         - name: consentSubject
-          in: path
-          required: true
-          style: simple
+          in: query
+          required: false
           explode: false
           schema:
             type: string
+            default: " "
       responses:
         '200':
           description: OK
@@ -442,7 +475,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/transaction_object'
+                $ref: '#/components/schemas/raw_transaction_template'
       security:
         - bearerAuth: []
   /deploy_consent_signed_transaction:
@@ -462,7 +495,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/consent_msg'
+                $ref: '#/components/schemas/transaction_object'
       security:
         - bearerAuth: []    
 components:
@@ -472,36 +505,31 @@ components:
       properties:
         state:
           type: string
-    sign_msg:
-      type: object
-      properties:
-        msg:
-          type: string
-    update_msg:
-      type: object
-      properties:
-        msg:
-          type: string
     agreement_id:
       type: object
       properties:
         agreement_id:
           type: integer
+          format: int64
     raw_transaction_template:
       type: object
       properties:
         nonce:
           type: integer
+          format: int64
         to:
           type: string
         from:
           type: string
         gasLimit:
           type: integer
+          format: int64
         gasPrice:
           type: integer
+          format: int64
         chainId:
           type: integer
+          format: int64
         data:
           type: string
     transaction_object:
@@ -517,12 +545,14 @@ components:
             type: string
           cumulativeGasUsed:
             type: integer
+            format: int64
           to:
             type: string
           from:
             type: string
           gasUsed:
             type: integer
+            format: int64
           logsBloom:
             type: string
           logs:
@@ -591,10 +621,13 @@ components:
           properties:
                 creationDate:
                   type: integer
+                  format: int64
                 startDate:
                   type: integer
+                  format: int64
                 endDate:
                   type: integer
+                  format: int64
         intendedUse:
           type: object
           required:
@@ -752,6 +785,7 @@ components:
       properties:
         agreementId: 
           type: integer
+          format: int64
         providerPublicKey:
           type: string
         consumerPublicKey:
@@ -775,6 +809,7 @@ components:
           type: array
           items:
             type: integer
+            format: int64
         intendedUse:
           type: object
           properties:
@@ -893,7 +928,9 @@ components:
         agreementId:
           type: integer
           format: int64
-    signed_resolution:
+        publicKey:
+          type: string
+    signed_resolution_scm:
       type: object
       properties:
         proof:
@@ -957,26 +994,6 @@ components:
             type: string
         senderAddress:
           type: string
-    consent_msg:
-      type: object
-      properties:
-        msg:
-          type: string
-        dataOfferingId:
-          type: string
-        consumers:
-          type: array
-          items:
-            type: string
-    sign_agreement:
-      type: object
-      properties:
-        agreement_id:
-          type: integer
-        consumer_public_key:
-          type: string
-        consumer_ethereum_address:
-          type: string
     active_agreements:
       type: array
       items:
@@ -985,10 +1002,6 @@ components:
       type: array
       items:
         type: integer
-    penalties:
-      type: array
-      items:
-        type: string
   securitySchemes:
     bearerAuth:
       type: http

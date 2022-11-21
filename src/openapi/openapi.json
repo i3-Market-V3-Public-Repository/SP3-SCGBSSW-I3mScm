@@ -11,12 +11,16 @@
   },
   "servers": [
     {
-      "url": "http://95.211.3.249:3333"
+      "url": "/"
+    },
+    {
+      "url": "http://95.211.3.249:3333",
+      "variables": {}
     }
   ],
   "security": [
     {
-      "jwt": []
+      "bearerAuth": []
     }
   ],
   "tags": [
@@ -58,7 +62,7 @@
         },
         "security": [
           {
-            "jwt": []
+            "bearerAuth": []
           }
         ]
       }
@@ -114,42 +118,7 @@
         },
         "security": [
           {
-            "jwt": ["provider"]
-          }
-        ]
-      }
-    },
-    "/sign_agreement_raw_transaction": {
-      "put": {
-        "tags": [
-          "Agreement"
-        ],
-        "summary": "Sign agreement",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/sign_agreement"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/raw_transaction_template"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "jwt": ["consumer"]
+            "bearerAuth": []
           }
         ]
       }
@@ -184,7 +153,7 @@
         },
         "security": [
           {
-            "jwt": []
+            "bearerAuth": []
           }
         ]
       }
@@ -222,7 +191,7 @@
         },
         "security": [
           {
-            "jwt": []
+            "bearerAuth": []
           }
         ]
       }
@@ -252,7 +221,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/pricing_model_template"
+                  "$ref": "#/components/schemas/pricingModelTemplate"
                 }
               }
             }
@@ -260,7 +229,7 @@
         },
         "security": [
           {
-            "jwt": []
+            "bearerAuth": []
           }
         ]
       }
@@ -285,7 +254,7 @@
         },
         "security": [
           {
-            "jwt": []
+            "bearerAuth": []
           }
         ]
       }
@@ -332,7 +301,7 @@
         },
         "security": [
           {
-            "jwt": []
+            "bearerAuth": []
           }
         ]
       }
@@ -379,7 +348,7 @@
         },
         "security": [
           {
-            "jwt": []
+            "bearerAuth": []
           }
         ]
       }
@@ -416,7 +385,7 @@
         },
         "security": [
           {
-            "jwt": []
+            "bearerAuth": []
           }
         ]
       }
@@ -454,7 +423,7 @@
         },
         "security": [
           {
-            "jwt": []
+            "bearerAuth": []
           }
         ]
       }
@@ -491,7 +460,7 @@
         },
         "security": [
           {
-            "jwt": []
+            "bearerAuth": []
           }
         ]
       }
@@ -518,7 +487,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/transaction_object"
+                  "$ref": "#/components/schemas/raw_transaction_template"
                 }
               }
             }
@@ -526,7 +495,112 @@
         },
         "security": [
           {
-            "jwt": ["consumer"]
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/propose_penalty": {
+      "post": {
+        "tags": [
+          "Agreement"
+        ],
+        "summary": "Choose penalty",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/choose_penalty"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/choose_penalty"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/enforce_penalty": {
+      "put": {
+        "tags": [
+          "Agreement"
+        ],
+        "summary": "Enforce penalty",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/enforce_penalty"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/raw_transaction_template"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/request_termination": {
+      "put": {
+        "tags": [
+          "Agreement"
+        ],
+        "summary": "Request Agreement Termination",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/requestTermination"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/raw_transaction_template"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
           }
         ]
       }
@@ -553,6 +627,158 @@
             "content": {
               "application/json": {
                 "schema": {
+                  "$ref": "#/components/schemas/raw_transaction_template"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/give_consent": {
+      "post": {
+        "tags": [
+          "Explicit User Consent"
+        ],
+        "summary": "Give consent",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/consent"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/raw_transaction_template"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/check_consent_status/{dataOfferingId}/{consentSubject}": {
+      "get": {
+        "tags": [
+          "Explicit User Consent"
+        ],
+        "summary": "Check consent status",
+        "parameters": [
+          {
+            "name": "dataOfferingId",
+            "in": "path",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "consentSubject",
+            "in": "path",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/consent_status"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/revoke_consent": {
+      "put": {
+        "tags": [
+          "Explicit User Consent"
+        ],
+        "summary": "Revoke consent",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/revokeConsent"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/raw_transaction_template"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/deploy_consent_signed_transaction": {
+      "post": {
+        "tags": [
+          "Explicit User Consent"
+        ],
+        "summary": "Deploy consent signed transaction",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/signed_transaction"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
                   "$ref": "#/components/schemas/transaction_object"
                 }
               }
@@ -561,7 +787,7 @@
         },
         "security": [
           {
-            "jwt": []
+            "bearerAuth": []
           }
         ]
       }
@@ -573,22 +799,6 @@
         "type": "object",
         "properties": {
           "state": {
-            "type": "string"
-          }
-        }
-      },
-      "sign_msg": {
-        "type": "object",
-        "properties": {
-          "msg": {
-            "type": "string"
-          }
-        }
-      },
-      "update_msg": {
-        "type": "object",
-        "properties": {
-          "msg": {
             "type": "string"
           }
         }
@@ -681,7 +891,7 @@
       "signed_transaction": {
         "type": "object",
         "properties": {
-          "signed_transaction": {
+          "signedTransaction": {
             "type": "string"
           }
         }
@@ -689,13 +899,25 @@
       "template": {
         "type": "object",
         "required": [
-          "dataOfferingDescription, purpose, dids, parties, duration, obligations, intendedUse, licenseGrant, pricingModel"
+          "dataOfferingDescription",
+          "parties",
+          "purpose",
+          "duration",
+          "intendedUse",
+          "licenseGrant",
+          "dataStream",
+          "personalData",
+          "pricingModel",
+          "dataExchangeAgreement",
+          "signatures"
         ],
         "properties": {
           "dataOfferingDescription": {
             "type": "object",
             "required": [
-              "dataOfferingId, dataOfferingVersion, active"
+              "dataOfferingId",
+              "dataOfferingVersion",
+              "active"
             ],
             "properties": {
               "dataOfferingId": {
@@ -718,7 +940,8 @@
           "parties": {
             "type": "object",
             "required": [
-              "providerDid"
+              "providerDid",
+              "consumerDid"
             ],
             "properties": {
               "providerDid": {
@@ -735,7 +958,9 @@
           "duration": {
             "type": "object",
             "required": [
-              "creationDate, startDate, endDate"
+              "creationDate",
+              "startDate",
+              "endDate"
             ],
             "properties": {
               "creationDate": {
@@ -752,24 +977,12 @@
               }
             }
           },
-          "obligations": {
-            "type": "object",
-            "properties": {
-              "qualityOfData": {
-                "type": "integer"
-              },
-              "characteristics": {
-                "type": "string"
-              },
-              "dataAvailability": {
-                "type": "boolean"
-              }
-            }
-          },
           "intendedUse": {
             "type": "object",
             "required": [
-              "processData, shareDataWithThirdParty, editData"
+              "processData",
+              "shareDataWithThirdParty",
+              "editData"
             ],
             "properties": {
               "processData": {
@@ -786,19 +999,70 @@
           "licenseGrant": {
             "type": "object",
             "required": [
-              "copyData, transferable, exclusiveness, revocable"
+              "transferable",
+              "exclusiveness",
+              "paidUp",
+              "revocable",
+              "processing",
+              "modifying",
+              "analyzing",
+              "storingData",
+              "storingCopy",
+              "reproducing",
+              "distributing",
+              "loaning",
+              "selling",
+              "renting",
+              "furtherLicensing",
+              "leasing"
             ],
             "properties": {
-              "copyData": {
-                "type": "boolean"
-              },
               "transferable": {
                 "type": "boolean"
               },
               "exclusiveness": {
                 "type": "boolean"
               },
+              "paidUp": {
+                "type": "boolean"
+              },
               "revocable": {
+                "type": "boolean"
+              },
+              "processing": {
+                "type": "boolean"
+              },
+              "modifying": {
+                "type": "boolean"
+              },
+              "analyzing": {
+                "type": "boolean"
+              },
+              "storingData": {
+                "type": "boolean"
+              },
+              "storingCopy": {
+                "type": "boolean"
+              },
+              "reproducing": {
+                "type": "boolean"
+              },
+              "distributing": {
+                "type": "boolean"
+              },
+              "loaning": {
+                "type": "boolean"
+              },
+              "selling": {
+                "type": "boolean"
+              },
+              "renting": {
+                "type": "boolean"
+              },
+              "furtherLicensing": {
+                "type": "boolean"
+              },
+              "leasing": {
                 "type": "boolean"
               }
             }
@@ -812,7 +1076,9 @@
           "pricingModel": {
             "type": "object",
             "required": [
-              "basicPrice, currency, hasFreePrice"
+              "basicPrice",
+              "currency",
+              "hasFreePrice"
             ],
             "properties": {
               "paymentType": {
@@ -822,13 +1088,15 @@
                 "type": "string"
               },
               "basicPrice": {
-                "type": "integer"
+                "type": "number",
+                "format": "float"
               },
               "currency": {
                 "type": "string"
               },
               "fee": {
-                "type": "integer"
+                "type": "number",
+                "format": "float"
               },
               "hasPaymentOnSubscription": {
                 "type": "object",
@@ -866,38 +1134,101 @@
           "dataExchangeAgreement": {
             "type": "object",
             "required": [
-              "orig, dest"
+              "orig",
+              "dest",
+              "encAlg",
+              "signingAlg",
+              "hashAlg",
+              "ledgerContractAddress",
+              "ledgerSignerAddress",
+              "pooToPorDelay",
+              "pooToPopDelay",
+              "pooToSecretDelay"
             ],
             "properties": {
               "orig": {
-                "type": "string"
+                "type": "string",
+                "description": "A stingfied JWK with alphabetically sorted claims",
+                "example": "{\"alg\":\"ES256\",\"crv\":\"P-256\",\"kty\":\"EC\",\"x\":\"t0ueMqN9j8lWYa2FXZjSw3cycpwSgxjl26qlV6zkFEo\",\"y\":\"rMqWC9jGfXXLEh_1cku4-f0PfbFa1igbNWLPzos_gb0\"}"
               },
               "dest": {
-                "type": "string"
+                "type": "string",
+                "description": "A stingfied JWK with alphabetically sorted claims",
+                "example": "{\"alg\":\"ES256\",\"crv\":\"P-256\",\"kty\":\"EC\",\"x\":\"sI5lkRCGpfeViQzAnu-gLnZnIGdbtfPiY7dGk4yVn-k\",\"y\":\"4iFXDnEzPEb7Ce_18RSV22jW6VaVCpwH3FgTAKj3Cf4\"}"
               },
               "encAlg": {
-                "type": "string"
+                "type": "string",
+                "enum": [
+                  "A128GCM",
+                  "A256GCM"
+                ],
+                "example": "A256GCM"
               },
               "signingAlg": {
-                "type": "string"
+                "type": "string",
+                "enum": [
+                  "ES256",
+                  "ES384",
+                  "ES512"
+                ],
+                "example": "ES256"
               },
               "hashAlg": {
-                "type": "string"
+                "type": "string",
+                "enum": [
+                  "SHA-256",
+                  "SHA-384",
+                  "SHA-512"
+                ],
+                "example": "SHA-256"
               },
               "ledgerContractAddress": {
-                "type": "string"
+                "description": "Ethereum Address in EIP-55 format (with checksum)",
+                "type": "string",
+                "pattern": "^0x([0-9A-Fa-f]){40}$",
+                "example": "0x71C7656EC7ab88b098defB751B7401B5f6d8976F"
               },
               "ledgerSignerAddress": {
-                "type": "string"
+                "description": "Ethereum Address in EIP-55 format (with checksum)",
+                "type": "string",
+                "pattern": "^0x([0-9A-Fa-f]){40}$",
+                "example": "0x71C7656EC7ab88b098defB751B7401B5f6d8976F"
               },
               "pooToPorDelay": {
-                "type": "integer"
+                "description": "Maximum acceptable time in milliseconds between issued PoO and verified PoR",
+                "type": "integer",
+                "minimum": 0,
+                "exclusiveMinimum": true,
+                "example": 10000
               },
               "pooToPopDelay": {
-                "type": "integer"
+                "description": "Maximum acceptable time in milliseconds between issued PoO and issued PoP",
+                "type": "integer",
+                "minimum": 0,
+                "exclusiveMinimum": true,
+                "example": 20000
               },
               "pooToSecretDelay": {
-                "type": "integer"
+                "description": "Maximum acceptable time between issued PoO and secret published on the ledger",
+                "type": "integer",
+                "minimum": 0,
+                "exclusiveMinimum": true,
+                "example": 180000
+              }
+            }
+          },
+          "signatures": {
+            "type": "object",
+            "required": [
+              "providerSignature",
+              "consumerSignature"
+            ],
+            "properties": {
+              "providerSignature": {
+                "type": "string"
+              },
+              "consumerSignature": {
+                "type": "string"
               }
             }
           }
@@ -907,7 +1238,8 @@
         "type": "object",
         "properties": {
           "agreementId": {
-            "type": "integer"
+            "type": "integer",
+            "format": "int64"
           },
           "providerPublicKey": {
             "type": "string"
@@ -945,20 +1277,6 @@
               "format": "int64"
             }
           },
-          "obligation": {
-            "type": "object",
-            "properties": {
-              "qualityOfData": {
-                "type": "integer"
-              },
-              "characteristics": {
-                "type": "string"
-              },
-              "dataAvailability": {
-                "type": "boolean"
-              }
-            }
-          },
           "intendedUse": {
             "type": "object",
             "properties": {
@@ -976,16 +1294,52 @@
           "licenseGrant": {
             "type": "object",
             "properties": {
-              "copydata": {
-                "type": "boolean"
-              },
               "transferable": {
                 "type": "boolean"
               },
               "exclusiveness": {
                 "type": "boolean"
               },
+              "paidUp": {
+                "type": "boolean"
+              },
               "revocable": {
+                "type": "boolean"
+              },
+              "processing": {
+                "type": "boolean"
+              },
+              "modifying": {
+                "type": "boolean"
+              },
+              "analyzing": {
+                "type": "boolean"
+              },
+              "storingData": {
+                "type": "boolean"
+              },
+              "storingCopy": {
+                "type": "boolean"
+              },
+              "reproducing": {
+                "type": "boolean"
+              },
+              "distributing": {
+                "type": "boolean"
+              },
+              "loaning": {
+                "type": "boolean"
+              },
+              "selling": {
+                "type": "boolean"
+              },
+              "renting": {
+                "type": "boolean"
+              },
+              "furtherLicensing": {
+                "type": "boolean"
+              },
+              "leasing": {
                 "type": "boolean"
               }
             }
@@ -1032,15 +1386,23 @@
             "properties": {
               "violationType": {
                 "type": "integer"
+              }
+            }
+          },
+          "signatures": {
+            "type": "object",
+            "properties": {
+              "providerSigniture": {
+                "type": "string"
               },
-              "issuerId": {
+              "consumerSigniture": {
                 "type": "string"
               }
             }
           }
         }
       },
-      "pricing_model_template": {
+      "pricingModelTemplate": {
         "type": "object",
         "properties": {
           "paymentType": {
@@ -1071,14 +1433,32 @@
           }
         }
       },
-      "terminate": {
+      "requestTermination": {
         "type": "object",
         "properties": {
-          "agreement_id": {
+          "senderAddress": {
+            "type": "string"
+          },
+          "agreementId": {
             "type": "integer",
             "format": "int64"
           },
-          "sender_address": {
+          "publicKey": {
+            "type": "string"
+          }
+        }
+      },
+      "terminate": {
+        "type": "object",
+        "properties": {
+          "senderAddress": {
+            "type": "string"
+          },
+          "agreementId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "publicKey": {
             "type": "string"
           }
         }
@@ -1098,17 +1478,83 @@
           "sender_address": "0x4d82Bd33baA4Fe5489C45bBdC206019403dcF829"
         }
       },
-      "sign_agreement": {
+      "choose_penalty": {
         "type": "object",
         "properties": {
-          "agreement_id": {
+          "agreementId": {
             "type": "integer",
             "format": "int64"
           },
-          "consumer_public_key": {
+          "chosenPenalty": {
             "type": "string"
           },
-          "consumer_ethereum_address": {
+          "paymentPercentage": {
+            "type": "integer"
+          },
+          "newEndDate": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "enforce_penalty": {
+        "type": "object",
+        "properties": {
+          "senderAddress": {
+            "type": "string"
+          },
+          "agreementId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "chosenPenalty": {
+            "type": "string"
+          },
+          "paymentPercentage": {
+            "type": "integer"
+          },
+          "newEndDate": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "consent": {
+        "type": "object",
+        "properties": {
+          "dataOfferingId": {
+            "type": "string"
+          },
+          "consentSubject": {
+            "type": "string"
+          },
+          "consentFormHash": {
+            "type": "string"
+          },
+          "startDate": {
+            "type": "integer"
+          },
+          "endDate": {
+            "type": "integer"
+          },
+          "senderAddress": {
+            "type": "string"
+          }
+        }
+      },
+      "revokeConsent": {
+        "type": "object",
+        "properties": {
+          "dataOfferingId": {
+            "type": "string"
+          },
+          "consentSubjects": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "senderAddress": {
             "type": "string"
           }
         }
@@ -1117,6 +1563,12 @@
         "type": "array",
         "items": {
           "$ref": "#/components/schemas/agreement_template"
+        }
+      },
+      "consent_status": {
+        "type": "array",
+        "items": {
+          "type": "integer"
         }
       }
     },
