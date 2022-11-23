@@ -11,7 +11,7 @@ servers:
   - url: http://95.211.3.249:3333
     variables: {}
 security:
-  - bearerAuth: []
+  - jwt: []
 tags:
   - name: Agreement
     description: Contractual Agreement between Provider and Consumer.
@@ -37,7 +37,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/template'
       security:
-        - bearerAuth: []
+        - jwt: []
   /create_agreement_raw_transaction/{sender_address}:
     post:
       tags:
@@ -73,7 +73,7 @@ paths:
                 chainId: 1337
                 data: "0x89a8348c00000000000000000000000000000000000000000000000000000000000001c"
       security:
-        - bearerAuth: []
+        - jwt: []
   /deploy_signed_transaction:
     post:
       tags:
@@ -93,7 +93,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/transaction_object'
       security:
-        - bearerAuth: []    
+        - jwt: []    
   /get_agreement/{agreement_id}:
     get:
       tags:
@@ -116,7 +116,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/agreement_template'
       security:
-        - bearerAuth: []
+        - jwt: []
   /get_pricing_model/{agreement_id}:
     get:
       tags:
@@ -139,7 +139,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/pricingModelTemplate'
       security:
-        - bearerAuth: []
+        - jwt: []
   /check_active_agreements:
     get:
       tags:
@@ -153,25 +153,29 @@ paths:
               schema:
                 $ref: '#/components/schemas/active_agreements'
       security:
-        - bearerAuth: []
-  /check_agreements_by_consumer/{consumer_public_key}/{active}:
+        - jwt: []
+  /check_agreements_by_consumer/{consumer_public_keys}/{active}:
     get:
       tags:
         - Agreement
       summary: Check agreements by consumer
       parameters:
-        - name: consumer_public_key
+        - name: consumer_public_keys
           in: path
           required: true
-          style: simple
+          style: label
           explode: false
           schema:
-            type: string
+            type: array
+            items:
+              type: string
+            example: ['{"kty":"EC","crv":"P-256","x":"6MGDu3EsCdEJZVV2KFhnF2lxCRI5yNpf4vWQrCIMk5M","y":"0OZbKAdooCqrQcPB3Bfqy0g-Y5SmnTyovFoFY35F00N","alg":"ES256"}']
         - name: active
           in: path
           required: true
           style: simple
           explode: false
+          example: false
           schema:
             type: boolean
       responses:
@@ -182,20 +186,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/active_agreements'
       security:
-        - bearerAuth: []
-  /check_agreements_by_provider/{provider_public_key}/{active}:
+        - jwt: []
+  /check_agreements_by_provider/{provider_public_keys}/{active}:
     get:
       tags:
         - Agreement
       summary: Check agreements by provider
       parameters:
-        - name: provider_public_key
+        - name: provider_public_keys
           in: path
           required: true
-          style: simple
+          style: label
           explode: false
           schema:
-            type: string
+            type: array
+            items:
+              type: string
+            example: ['{"kty":"EC","crv":"P-256","x":"4sxPPpsZomxPmPwDAsqSp94QpZ3iXP8xX4VxWCSCfms","y":"8YI_bvVrKPW63bGAsHgRvwXE6uj3TlnHwoQi9XaEBBE","alg":"ES256"}']
         - name: active
           in: path
           required: true
@@ -203,6 +210,7 @@ paths:
           explode: false
           schema:
             type: boolean
+          example: false
       responses:
         '200':
           description: OK
@@ -211,7 +219,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/active_agreements'
       security:
-        - bearerAuth: []
+        - jwt: []
   /check_agreements_by_data_offering/{offering_id}:
     get:
       tags:
@@ -233,7 +241,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/active_agreements'
       security:
-        - bearerAuth: []
+        - jwt: []
   /agreements/{consumerPublicKeys}/{active}:
     get:
       tags:
@@ -241,8 +249,9 @@ paths:
       summary: Get agreements by consumer
       parameters:
         - name: consumerPublicKeys
-          in: query
+          in: path
           required: true
+          style: label
           explode: false
           schema:
             type: array
@@ -286,7 +295,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/state'
       security:
-        - bearerAuth: []
+        - jwt: []
   /retrieve_agreements/{consumer_public_key}:
     get:
       tags:
@@ -308,7 +317,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/active_agreements'
       security:
-        - bearerAuth: []
+        - jwt: []
   /evaluate_signed_resolution:
     post:
       tags:
@@ -328,7 +337,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/raw_transaction_template'
       security:
-        - bearerAuth: []
+        - jwt: []
   /propose_penalty:
     post:
       tags:
@@ -348,7 +357,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/choose_penalty'
       security:
-        - bearerAuth: []
+        - jwt: []
   /enforce_penalty:
     put:
       tags:
@@ -368,7 +377,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/raw_transaction_template'
       security:
-        - bearerAuth: []
+        - jwt: []
   /request_termination:
     put:
       tags:
@@ -388,7 +397,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/raw_transaction_template'
       security:
-        - bearerAuth: []
+        - jwt: []
   /terminate:
     put:
       tags:
@@ -408,7 +417,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/raw_transaction_template'
       security:
-        - bearerAuth: []
+        - jwt: []
   /give_consent:
     post:
       tags:
@@ -428,7 +437,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/raw_transaction_template'
       security:
-        - bearerAuth: []
+        - jwt: []
   /check_consent_status/{dataOfferingId}:
     get:
       tags:
@@ -448,7 +457,6 @@ paths:
           explode: false
           schema:
             type: string
-            default: " "
       responses:
         '200':
           description: OK
@@ -457,7 +465,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/consent_status'
       security:
-        - bearerAuth: []
+        - jwt: []
   /revoke_consent:
     put:
       tags:
@@ -477,7 +485,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/raw_transaction_template'
       security:
-        - bearerAuth: []
+        - jwt: []
   /deploy_consent_signed_transaction:
     post:
       tags:
@@ -497,7 +505,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/transaction_object'
       security:
-        - bearerAuth: []    
+        - jwt: []    
 components:
   schemas:
     state:
@@ -752,24 +760,68 @@ components:
           properties:
             orig:
               type: string
+              description: A stingfied JWK with alphabetically sorted claims
+              example: >-
+                {"alg":"ES256","crv":"P-256","kty":"EC","x":"t0ueMqN9j8lWYa2FXZjSw3cycpwSgxjl26qlV6zkFEo","y":"rMqWC9jGfXXLEh_1cku4-f0PfbFa1igbNWLPzos_gb0"}
             dest:
               type: string
+              description: A stingfied JWK with alphabetically sorted claims
+              example: >-
+                {"alg":"ES256","crv":"P-256","kty":"EC","x":"sI5lkRCGpfeViQzAnu-gLnZnIGdbtfPiY7dGk4yVn-k","y":"4iFXDnEzPEb7Ce_18RSV22jW6VaVCpwH3FgTAKj3Cf4"}
             encAlg:
               type: string
+              enum:
+                - A128GCM
+                - A256GCM
+              example: A256GCM
             signingAlg:
               type: string
+              enum:
+                - ES256
+                - ES384
+                - ES512
+              example: ES256
             hashAlg:
               type: string
+              enum:
+                - SHA-256
+                - SHA-384
+                - SHA-512
+              example: SHA-256
             ledgerContractAddress:
+              description: Ethereum Address in EIP-55 format (with checksum)
               type: string
+              pattern: ^0x([0-9A-Fa-f]){40}$
+              example: '0x71C7656EC7ab88b098defB751B7401B5f6d8976F'
             ledgerSignerAddress:
+              description: Ethereum Address in EIP-55 format (with checksum)
               type: string
+              pattern: ^0x([0-9A-Fa-f]){40}$
+              example: '0x71C7656EC7ab88b098defB751B7401B5f6d8976F'
             pooToPorDelay:
+              description: >-
+                Maximum acceptable time in milliseconds between issued PoO and
+                verified PoR
               type: integer
+              minimum: 0
+              exclusiveMinimum: true
+              example: 10000
             pooToPopDelay:
+              description: >-
+                Maximum acceptable time in milliseconds between issued PoO and
+                issued PoP
               type: integer
+              minimum: 0
+              exclusiveMinimum: true
+              example: 20000
             pooToSecretDelay:
+              description: >-
+                Maximum acceptable time between issued PoO and secret published
+                on the ledger
               type: integer
+              minimum: 0
+              exclusiveMinimum: true
+              example: 180000
         signatures:
           type: object
           required:
@@ -973,8 +1025,10 @@ components:
       properties:
         dataOfferingId:
           type: string
-        consentSubject:
-          type: string
+        consentSubjects:
+          type: array
+          items:
+            type: string
         consentFormHash:
           type: string
         startDate:
@@ -1003,9 +1057,9 @@ components:
       items:
         type: integer
   securitySchemes:
-    bearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
+    jwt:
+      type: apiKey
+      in: header
+      name: id_token
 
 

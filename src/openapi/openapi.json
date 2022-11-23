@@ -11,16 +11,12 @@
   },
   "servers": [
     {
-      "url": "/"
-    },
-    {
-      "url": "http://95.211.3.249:3333",
-      "variables": {}
+      "url": "http://95.211.3.249:3333"
     }
   ],
   "security": [
     {
-      "bearerAuth": []
+      "jwt": []
     }
   ],
   "tags": [
@@ -62,7 +58,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "jwt": []
           }
         ]
       }
@@ -118,7 +114,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "jwt": ["provider"]
           }
         ]
       }
@@ -153,7 +149,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "jwt": []
           }
         ]
       }
@@ -191,7 +187,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "jwt": []
           }
         ]
       }
@@ -229,7 +225,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "jwt": []
           }
         ]
       }
@@ -254,12 +250,12 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "jwt": []
           }
         ]
       }
     },
-    "/check_agreements_by_consumer/{consumer_public_key}/{active}": {
+    "/check_agreements_by_consumer/{consumer_public_keys}/{active}": {
       "get": {
         "tags": [
           "Agreement"
@@ -267,13 +263,19 @@
         "summary": "Check agreements by consumer",
         "parameters": [
           {
-            "name": "consumer_public_key",
+            "name": "consumer_public_keys",
             "in": "path",
             "required": true,
-            "style": "simple",
+            "style": "label",
             "explode": false,
             "schema": {
-              "type": "string"
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "example": [
+                "{\"kty\":\"EC\",\"crv\":\"P-256\",\"x\":\"6MGDu3EsCdEJZVV2KFhnF2lxCRI5yNpf4vWQrCIMk5M\",\"y\":\"0OZbKAdooCqrQcPB3Bfqy0g-Y5SmnTyovFoFY35F00N\",\"alg\":\"ES256\"}"
+              ]
             }
           },
           {
@@ -282,6 +284,7 @@
             "required": true,
             "style": "simple",
             "explode": false,
+            "example": false,
             "schema": {
               "type": "boolean"
             }
@@ -301,12 +304,12 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "jwt": []
           }
         ]
       }
     },
-    "/check_agreements_by_provider/{provider_public_key}/{active}": {
+    "/check_agreements_by_provider/{provider_public_keys}/{active}": {
       "get": {
         "tags": [
           "Agreement"
@@ -314,13 +317,19 @@
         "summary": "Check agreements by provider",
         "parameters": [
           {
-            "name": "provider_public_key",
+            "name": "provider_public_keys",
             "in": "path",
             "required": true,
-            "style": "simple",
+            "style": "label",
             "explode": false,
             "schema": {
-              "type": "string"
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "example": [
+                "{\"kty\":\"EC\",\"crv\":\"P-256\",\"x\":\"4sxPPpsZomxPmPwDAsqSp94QpZ3iXP8xX4VxWCSCfms\",\"y\":\"8YI_bvVrKPW63bGAsHgRvwXE6uj3TlnHwoQi9XaEBBE\",\"alg\":\"ES256\"}"
+              ]
             }
           },
           {
@@ -331,7 +340,8 @@
             "explode": false,
             "schema": {
               "type": "boolean"
-            }
+            },
+            "example": false
           }
         ],
         "responses": {
@@ -348,7 +358,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "jwt": []
           }
         ]
       }
@@ -385,7 +395,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "jwt": []
           }
         ]
       }
@@ -423,7 +433,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "jwt": []
           }
         ]
       }
@@ -460,7 +470,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "jwt": []
           }
         ]
       }
@@ -495,7 +505,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "jwt": ["consumer"]
           }
         ]
       }
@@ -530,7 +540,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "jwt": ["consumer"]
           }
         ]
       }
@@ -565,7 +575,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "jwt": ["provider"]
           }
         ]
       }
@@ -600,7 +610,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "jwt": []
           }
         ]
       }
@@ -635,7 +645,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "jwt": []
           }
         ]
       }
@@ -670,12 +680,12 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "jwt": []
           }
         ]
       }
     },
-    "/check_consent_status/{dataOfferingId}/{consentSubject}": {
+    "/check_consent_status/{dataOfferingId}": {
       "get": {
         "tags": [
           "Explicit User Consent"
@@ -694,9 +704,8 @@
           },
           {
             "name": "consentSubject",
-            "in": "path",
-            "required": true,
-            "style": "simple",
+            "in": "query",
+            "required": false,
             "explode": false,
             "schema": {
               "type": "string"
@@ -717,7 +726,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "jwt": []
           }
         ]
       }
@@ -752,7 +761,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "jwt": []
           }
         ]
       }
@@ -787,7 +796,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "jwt": []
           }
         ]
       }
@@ -1525,8 +1534,11 @@
           "dataOfferingId": {
             "type": "string"
           },
-          "consentSubject": {
-            "type": "string"
+          "consentSubjects": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           },
           "consentFormHash": {
             "type": "string"
@@ -1573,10 +1585,10 @@
       }
     },
     "securitySchemes": {
-      "bearerAuth": {
-        "type": "http",
-        "scheme": "bearer",
-        "bearerFormat": "JWT"
+      "jwt": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "id_token"
       }
     }
   }

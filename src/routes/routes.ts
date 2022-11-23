@@ -178,49 +178,19 @@ export default async (): Promise<typeof router> => {
         }
     })
 
-    router.get('/check_agreements_by_consumer/:consumer_public_key/:active', async (req, res) => {
-        try {
-            const consumerPublicKey = req.params.consumer_public_key
-            const active :boolean = JSON.parse(req.params.active)
-            
-            const formatedAgreements: ReturnType<typeof formatAgreement>[] = []
-            const activeAgreements = await contract.checkAgreementsByConsumer(
-                consumerPublicKey,
-                active
-            )
-
-            activeAgreements.forEach((agreement) => {
-                const formatedAgreement = formatAgreement(agreement)
-                formatedAgreements.push(formatedAgreement)
-            })
-
-            console.log(
-                'Number of active agreements by Consumer: ' + formatedAgreements.length,
-            )
-
-            res.status(200).send(formatedAgreements)
-        } catch (error) {
-            if (error instanceof Error) {
-                console.log(`${error.message}`)
-                res
-                    .status(500)
-                    .send({ name: `${error.name}`, message: `${error.message}` })
-            }
-        }
-    })
-
-    router.get('/agreements/:consumerPublicKeys/:active', async (req, res) => {
+    router.get('/check_agreements_by_consumer/:consumer_public_keys/:active', async (req, res) => {
         try {
 
-            const consumerPublicKeysString = req.params.consumerPublicKeys
-            const consumerPublicKeysArray = consumerPublicKeysString.split(',')
-            console.log(consumerPublicKeysArray)
-          
+            const consumerPublicKeysSerialised = req.params.consumer_public_keys
+            console.log(consumerPublicKeysSerialised)
+            const consumerPublicKeys = consumerPublicKeysSerialised.split('.')
+            console.log(consumerPublicKeys)
+
             const active :boolean = JSON.parse(req.params.active)
             
             const formatedAgreements: ReturnType<typeof formatAgreement>[] = []
             const activeAgreements = await contract.getAgreementsByConsumer(
-                consumerPublicKeysArray,
+                consumerPublicKeys,
                 active
             )
 
@@ -244,14 +214,18 @@ export default async (): Promise<typeof router> => {
         }
     })
 
-    router.get('/check_agreements_by_provider/:provider_public_key/:active', async (req, res) => {
+
+    router.get('/check_agreements_by_provider/:provider_public_keys/:active', async (req, res) => {
         try {
-            const providerPublicKey = req.params.provider_public_key
+            const providerPublicKeysSerialised = req.params.provider_public_keys
             const active :boolean = JSON.parse(req.params.active)
             
+            const providerPublicKeys = providerPublicKeysSerialised.split('.')
+            console.log(providerPublicKeys)
+
             const formatedAgreements: ReturnType<typeof formatAgreement>[] = []
-            const activeAgreements = await contract.checkAgreementsByProvider(
-                providerPublicKey,
+            const activeAgreements = await contract.getAgreementsByProvider(
+                providerPublicKeys,
                 active
             )
             activeAgreements.forEach((agreement) => {
@@ -481,37 +455,40 @@ export default async (): Promise<typeof router> => {
                 const publicKey2 : string = logs.args.consumerPublicKey
                 if(type == 'agreement.terminationproposal')
                     publicKey1 = logs.args.publicKey
+                if(publicKey1!=undefined)
+                {
+                    const publickeyJsonObj1 = JSON.parse(publicKey1)
+                    const strData = JSON.stringify(message)
+                    const uint8Data = new TextEncoder().encode(strData)
+                    const jwe1 = await nonRepudiationLibrary.jweEncrypt(uint8Data, publickeyJsonObj1, "A256GCM")
+                    console.log('Ciphertext: ', jwe1)
+                    await notify(
+                        origin,
+                        predefined,
+                        type,
+                        publicKey1, 
+                        {jwe: jwe1},
+                        status,
+                    )
+                }
                 
-                const publickeyJsonObj1 = JSON.parse(publicKey1)
-                const strData = JSON.stringify(message)
-                const uint8Data = new TextEncoder().encode(strData)
-                const jwe1 = await nonRepudiationLibrary.jweEncrypt(uint8Data, publickeyJsonObj1, "A256GCM")
-                console.log('Ciphertext: ', jwe1)
+                if(publicKey2!= undefined)
+                {
+                    const publickeyJsonObj2 = JSON.parse(publicKey2)
+                    const strData2 = JSON.stringify(message)
+                    const uint8Data2 = new TextEncoder().encode(strData2)
+                    const jwe2 = await nonRepudiationLibrary.jweEncrypt(uint8Data2, publickeyJsonObj2, "A256GCM")
+                    console.log('Ciphertext: ', jwe2)
 
-                const publickeyJsonObj2 = JSON.parse(publicKey2)
-                const strData2 = JSON.stringify(message)
-                const uint8Data2 = new TextEncoder().encode(strData2)
-                const jwe2 = await nonRepudiationLibrary.jweEncrypt(uint8Data2, publickeyJsonObj2, "A256GCM")
-                console.log('Ciphertext: ', jwe2)
-                    
-
-                await notify(
-                    origin,
-                    predefined,
-                    type,
-                    publicKey1, 
-                    {jwe: jwe1},
-                    status,
-                )
-                await notify(
-                    origin,
-                    predefined,
-                    type,
-                    publicKey2, 
-                    {jwe: jwe2},
-                    status,
-                )
-
+                    await notify(
+                        origin,
+                        predefined,
+                        type,
+                        publicKey2, 
+                        {jwe: jwe2},
+                        status,
+                    )
+                }
                 res.status(200).send(formatedTransactionReceipt)
                 } else throw new Error('The transaction has no logs.')
             } else throw new Error('Transaction unsuccessful. Status:' + receipt.status)
@@ -575,7 +552,7 @@ export default async (): Promise<typeof router> => {
             ]
             const proofType = decodedResolution.payload.proofType
             const type = decodedResolution.payload.type
-            const resolution = 'accepted' //decodedResolution.payload.resolution //'accepted' - penalties
+            const resolution = decodedResolution.payload.resolution 
             const dataExchangeId = decodedResolution.payload.dataExchangeId
             const iat = decodedResolution.payload.iat
             const iss = decodedResolution.payload.iss
@@ -657,12 +634,18 @@ export default async (): Promise<typeof router> => {
 
                 const origin = 'i3-market'
                 const predefined = true
+
+                const publickeyJsonObj1 = JSON.parse(providerPublicKey)
+                const strData = JSON.stringify(message)
+                const uint8Data = new TextEncoder().encode(strData)
+                const jwe = await nonRepudiationLibrary.jweEncrypt(uint8Data, publickeyJsonObj1, "A256GCM")
+
                 await notify(
                     origin,
                     predefined,
                     type,
                     providerPublicKey,
-                    message,
+                    {jwe: jwe},
                     status,
                     )
                 res.status(200).send(chosenPenalty)
@@ -766,7 +749,6 @@ export default async (): Promise<typeof router> => {
             
             const unsignedTerminateAgreementTx = (await contract.populateTransaction.terminateAgreement(
                     agreementId,
-                    2,
                     { gasLimit: gasLimit },
                     )) as any
                     const formatedRawTransaction = formatTransaction(
@@ -791,15 +773,17 @@ export default async (): Promise<typeof router> => {
     router.post('/give_consent', async (req, res, next) => {
         try {
             const dataOfferingId = req.body.dataOfferingId
-            const consentSubject = req.body.consentSubject
+            const consentSubjects = req.body.consentSubjects
             const consentFormHash = req.body.consentFormHash
             const startDate = req.body.startDate
             const endDate = req.body.endDate
             const senderAddress = req.body.senderAddress
 
+            console.log(consentSubjects)
+
             const unsignedGiveConsentTx = (await explicitUserConsentContract.populateTransaction.giveConsent(
                 dataOfferingId,
-                consentSubject,
+                consentSubjects,
                 consentFormHash,
                 startDate,
                 endDate,
@@ -827,8 +811,10 @@ export default async (): Promise<typeof router> => {
     router.get('/check_consent_status/:dataOfferingId', async (req, res, next) => {
         try {
             const dataOfferingId = req.params.dataOfferingId
-            const consentSubject = req.query.consentSubject
+            let consentSubject = req.query.consentSubject
             console.log(consentSubject)
+            if(consentSubject == undefined)
+                consentSubject = ""
         
             const formatedConsents : any = []
             const consents = await explicitUserConsentContract.checkConsentStatus(dataOfferingId, consentSubject)
@@ -922,7 +908,7 @@ export default async (): Promise<typeof router> => {
                     }
                     
                     const consumerPublicKeys : string[] = logs.args.consumerPublicKeys
-                    if(consumerPublicKeys.length > 0){
+                    if(consumerPublicKeys != undefined){
                         for(let i =0; i < consumerPublicKeys.length; i++){
                             const publickeyJsonObj1 = JSON.parse(consumerPublicKeys[i])
                             const strData = JSON.stringify(message)
@@ -941,7 +927,7 @@ export default async (): Promise<typeof router> => {
                         }
                     }
                 
-                res.status(200).send(message)
+                res.status(200).send(formatedTransactionReceipt)
                 } else throw new Error('The transaction has no logs.')
             } else throw new Error('Transaction unsuccessful. Status:' + receipt.status)
         } catch (error) {

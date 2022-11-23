@@ -94,43 +94,8 @@ export async function getFee(price: number) {
 
     return fee
 
-    //let parsedToJson = JSON.parse(JSON.stringify(fee))
-
-    //return parseInt(parsedToJson)
-
-
-    //console.log(feeJson)
-
-    //let parsedToJson = JSON.parse(JSON.stringify(feeJson))
-
-    //return parsedToJson
 }
 
-
-// export async function createAgreements(contract:ethers.Contract, dataOfferingId:string, purpose:string, consumerId:string, providerId:string, dates:Array<Number>, descriptionOfData:Array<string>, intendedUse:Array<Boolean>, licenseGrant:Array<Boolean>, stream:Boolean) {
-
-//     const gasLimit = 12500000;
-//     const createAgreementTx = await contract.createAgreement(dataOfferingId, purpose, consumerId, providerId, dates, descriptionOfData,intendedUse, licenseGrant, stream, {gasLimit: gasLimit})
-//     await createAgreementTx.wait();
-
-//     const agreementLength = await contract.getAgreementsLength();
-//     const agreementId = parseInt(agreementLength) - 1
-
-//     console.log("Agreement ID is " + agreementId)
-
-//     return agreementId
-//   } 
-
-function stringToBoolean(input: string) {
-
-    if (input === "true") {
-        return true
-    } else if (input === "false") {
-        return false
-    } else {
-        throw new Error('The inserted parameter is not true OR false')
-    }
-}
 
 export function processTemplate(template: Template) {
 
@@ -153,24 +118,14 @@ export function processTemplate(template: Template) {
     const creationDate = Math.floor(new Date(date.getFullYear(), date.getMonth(), date.getDate(),).getTime() / 1000)
     const startDate = template.duration.startDate
     const endDate = template.duration.endDate
-    if(startDate<creationDate){
+    if(startDate < creationDate){
         throw new Error('Start date should be after creation date')
     }
-    else if(startDate>endDate){
-        throw new Error('Start date should before end date')
+    else if(startDate > endDate){
+        throw new Error('Start date should be before end date')
     }
 
     const dates = [creationDate, startDate, endDate]
-
-    // const dataType = template.hasDescriptionOfData.DescriptionOfData.dataType
-    // const dataFormat = template.hasDescriptionOfData.DescriptionOfData.dataFormat
-    // const dataSource = template.hasDescriptionOfData.DescriptionOfData.dataSource
-    // const descriptionOfData = [dataType, dataFormat, dataSource]
-
-    // const qualityOfData = template.obligations.qualityOfData
-    // const characteristics = template.obligations.characteristics
-    // const dataAvailability = template.obligations.dataAvailability
-    //const obligation = [qualityOfData,characteristics,dataAvailability]
 
     const processData = template.intendedUse.processData
     const shareDataWithThirdParty = template.intendedUse.shareDataWithThirdParty
@@ -205,24 +160,16 @@ export function processTemplate(template: Template) {
     const basicPrice = template.pricingModel.basicPrice
     const currency = template.pricingModel.currency
     const fee =template.pricingModel.fee
-    //const paymentOnSubscriptionName = template.pricingModel.hasPaymentOnSubscription.paymentOnSubscriptionName
-    //const subscriptionPaymentType = template.pricingModel.hasPaymentOnSubscription.paymentType
-    //const timeDuration = template.pricingModel.hasPaymentOnSubscription.timeDuration
+
     const timeDuration = template.pricingModel.hasPaymentOnSubscription.timeDuration
-    //const description = template.pricingModel.hasPaymentOnSubscription.description
+
     const repeat = template.pricingModel.hasPaymentOnSubscription.repeat
-    //const hasSubscriptionPrice = template.pricingModel.hasPaymentOnSubscription.hasSubscriptionPrice
+  
     const freePrice = template.pricingModel.hasFreePrice.hasPriceFree
 
     const pricingModel = [paymentType, basicPrice*100, currency, fee*100, [timeDuration,repeat], freePrice]
 
-    console.log(pricingModel)
-
     const signatures = [template.signatures.providerSignature, template.signatures.consumerSignature]
-
-    console.log("dataofferingId => " + dataOfferingId + " purpose => " + purpose + " consumerPK => " + consumerPublicKey + " providerPK => " + providerPublicKey +
-        " dates => [" + startDate + "," + endDate + "]" + " intendedUse => ["
-        + processData + "," + shareDataWithThirdParty + "," + editData + "] licenseGrant => [" + paidUp + "," + transferable + "," + exclusiveness + "," + revocable + "] dataStream => " + dataStream)
 
     return {
         providerPublicKey: providerPublicKey,
@@ -234,8 +181,6 @@ export function processTemplate(template: Template) {
         dataOfferingTitle,
         purpose: purpose,
         dates: dates,
-        // descriptionOfData: descriptionOfData,
-        // obligation: obligation,
         intendedUse: intendedUse,
         licenseGrant: licenseGrant,
         typeOfData: typeOfData,
@@ -259,7 +204,7 @@ export function formatAgreement(agreement: any) {
             dataOfferingTitle: agreement.dataOffering.title
         },
         purpose: agreement.purpose,
-        state: agreement.state, //convert state
+        state: agreement.state, 
         agreementDates: [parseInt(agreement.agreementDates[0]), parseInt(agreement.agreementDates[1]), parseInt(agreement.agreementDates[2])],
         intendedUse: {
             processData: agreement.intendedUse.processData,
@@ -330,39 +275,6 @@ export function formatPricingModel(pricingModel: any) {
 
 }
 
-// function convertState(stateNumber: number) {
-//     let state;
-
-//     switch (stateNumber) {
-//         case 0: {
-//             state = "created"
-//             break
-//         }
-//         case 1: {
-//             state = "active"
-//             break
-//         }
-//         case 2: {
-//             state = "updated" 
-//             break
-//         }
-//         case 3: {
-//             state = "violated" 
-//             break
-//         }
-//         case 4: {
-//             state = "terminated" 
-//             break
-//         }
-//         default: {
-//             state = "undefined"
-//             break
-//         }
-//     }
-
-//     return state
-// }
-
 export function formatTransaction(transaction: any) {
     return {
         nonce: transaction.nonce,
@@ -418,16 +330,6 @@ export async function notify(origin: string, predefined: boolean, type: string, 
         }
     }
 
-
-    
-    // let notification_send = await _fetch(`${process.env.NOTIFICATION_MANAGER_URL}/api/v1/notification`, {
-    //     method: 'POST',
-    //     headers: {
-    //         'Accept': 'application/json',
-    //         'Content-Type': 'application/json'
-    //     },
-    //     body: JSON.stringify(notification),
-    // })
 }
 
 export function getState(state: number) {
@@ -479,9 +381,6 @@ export async function getAgreementId(exchangeId: string) {
 
         const agreementIdJson = await agreementIdRequest.json();
 
-       // const agreementId = parseInt(agreementIdJson.AgreementId);
-
-       // return agreementId;
        return agreementIdJson;
 
     } catch (error) {
