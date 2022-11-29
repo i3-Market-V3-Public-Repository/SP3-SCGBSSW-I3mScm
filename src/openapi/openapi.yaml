@@ -242,37 +242,6 @@ paths:
                 $ref: '#/components/schemas/active_agreements'
       security:
         - jwt: []
-  /agreements/{consumerPublicKeys}/{active}:
-    get:
-      tags:
-        - Agreement
-      summary: Get agreements by consumer
-      parameters:
-        - name: consumerPublicKeys
-          in: path
-          required: true
-          style: label
-          explode: false
-          schema:
-            type: array
-            items:
-              type: string
-            example: ["", "", ""]
-        - name: active
-          in: path
-          required: true
-          style: simple
-          explode: false
-          schema:
-            type: boolean
-            example: false
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/active_agreements'
   /get_state/{agreement_id}:
     get:
       tags:
@@ -595,7 +564,7 @@ components:
           type: object
           required:
           - dataOfferingId
-          - dataOfferingVersion
+          - version
           - active
           properties:
             dataOfferingId:
