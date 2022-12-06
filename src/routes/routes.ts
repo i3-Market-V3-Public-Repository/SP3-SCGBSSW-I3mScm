@@ -113,15 +113,17 @@ export default async (): Promise<typeof router> => {
 
     router.get('/get_agreement/:agreement_id', async (req, res) => {
         try {
-            const agreementId = req.params.agreement_id
-            const agreement_length = await contract.getAgreementsLength()
-            if (agreementId < agreement_length) {
+            const agreementId = parseInt(req.params.agreement_id)
+            const agreementsLength = await contract.getAgreementsLength()
+            console.log(agreementsLength)
+            const length = parseInt(agreementsLength)
+            if (agreementId < length) {
                 const agreement = await contract.getAgreement(agreementId)
-                console.log(agreement)
+                //console.log(agreement)
                 const response = JSON.parse(JSON.stringify(formatAgreement(agreement)))
                 res.status(200).send(response)
             } else {
-                res.status(400).send('Invalid agreement id.')
+              res.status(400).send('Invalid agreement id.')
             }
         } catch (error) {
             if (error instanceof Error) {
@@ -135,9 +137,10 @@ export default async (): Promise<typeof router> => {
 
     router.get('/get_pricing_model/:agreement_id', async (req, res) => {
         try {
-            const agreementId = req.params.agreement_id
-            const agreement_length = await contract.getAgreementsLength()
-            if (agreementId < agreement_length) {
+            const agreementId = parseInt(req.params.agreement_id)
+            const agreementsLength = await contract.getAgreementsLength()
+            const length = parseInt(agreementsLength)
+            if (agreementId < length) {
                 const pricingModel = await contract.retrievePricingModel(agreementId) 
                 const response = JSON.parse(JSON.stringify(formatPricingModel(pricingModel)))
                 res.status(200).send(response)
