@@ -19,7 +19,7 @@ const should = chai.should()
 const server = require('../index')
 
 
-const sessionObjJson = JSON.stringify({"masterKey":{"from":{"name":"Initiator"},"to":{"name":"Wallet desktop"},"port":29170,"na":"RunniT1FSJnBItvpdkgU2Q","nb":"2sYEK5XFcE2BaZiYVSbbZQ","secret":"Sqrp4C_hVsOnkzhl6QcMFrtFsUaxH7VkAlyduJH5pKY"},"code":"65794a68624763694f694a6b615849694c434a6c626d4d694f694a424d6a553252304e4e496e302e2e5f6a4e766a346c6c5954714d455a5a4e2e5a416a365937534e7177713573757a53654d386144353953367279475147316c5a59314643715a354d4655494a79614b69634835646c772d7a467262755261704e57705f44706d365f7a75465f534a5a5f61352d57744a7051645833584e63453836525f57436372697665544e6a6676714b44673247735a32655f504530455a37684956656f56497646594c5f774d79367170507233355f5a594953324a46664b387067595177336f455a526d6759333251494f374f4b4f30576c5a62746b586e54774d7a6467696a4d546b46484156626c356a2d4c4f697759757676665f415f644a38687159426138774955535461774339426f5669665444717044626d436d74716861344d4b6473315a3757476d62616e6d52536a65636169446f55387a346c7a6a513834584f575071315475784a6e5037384f615851474c656c6e78447977345757454433704b554e446c6a535349706d4c3446387a7568496f2d646b6d4355694464686f364b7777715439495a70327658316a43555a687474672e664962715772424d4c53444f715a2d45394935794177"})//process.env.I3M_WALLET_SESSION_TOKEN //as string
+const sessionObjJson = JSON.stringify({"masterKey":{"from":{"name":"Initiator"},"to":{"name":"Wallet desktop"},"port":29170,"na":"z5--oAI5QgRJ8ulTzi33Vw","nb":"Y3mXncUg92gfI7N5dCD88w","secret":"L9xObOmCEJ87iNtRBVjPPEEmdikfC0jMeleF2JOcQ7Y"},"code":"65794a68624763694f694a6b615849694c434a6c626d4d694f694a424d6a553252304e4e496e302e2e5244666f6b30416a4c6671655968354e2e64644c3766534c7a5350595442526e636568423259432d646a7946327367665836327342686f424579677873504e39365059746a5f796f334335654a554f6a3576387043376b3373714f534d505a565976444e79714857517146324a4d4f585668546832396435586759736d4e4337656154325133424f386d794754325a35553646306f454868735166676841554f57757251637a58376f6c35547355575a38515f784342367772737646754551535a623371464a4c3738374d53477656314b39444b726553336e784f49557771464c67506258526664576b494a73696a7a6b597637706c556437636c4d724a2d677a516761583167425745624f5f4e57322d3568334535446d7054764d51666c30446535686e4247553065644838796c5f4f79646b746a4e62775566594b6f6e5537644b6d47414c6434436c4d6c376b62596b5f693338572d597a37743177635377514c69494a7764656574684f3655485530733132455335684c365a7964534f30386767617a3163713845436f61772e55576a335636633378656131734e6270734d51494777"})//process.env.I3M_WALLET_SESSION_TOKEN //as string
 
 //process.env.I3M_WALLET_SESSION_TOKEN as string
 const IS_BROWSER = false
@@ -315,17 +315,6 @@ Steps for creating a token:
 }
 
 
-it('it should GET active agreements', (done) => {
-  chai.request('http://localhost:3333')
-      .get('/check_active_agreements')
-      .end((err, res) => {
-            should.exist(res.body);
-            res.should.have.status(200);
-            res.body.should.be.a('array');
-            expect(res.body[0]).to.have.property("state").to.equal(0)
-        done();
-      })
-})
 
 
 describe('/POST create agreement', () => {
@@ -477,6 +466,19 @@ it('it should sign the raw transaction', (done) => {
      
   });
 
+  
+it('it should GET active agreements', (done) => {
+  chai.request('http://localhost:3333')
+      .get('/check_active_agreements')
+      .end((err, res) => {
+            should.exist(res.body);
+            res.should.have.status(200);
+            res.body.should.be.a('array');
+            expect(res.body[0]).to.have.property("state").to.equal(0)
+        done();
+      })
+})
+
 // it('it should deploy the signed transaction', (done) => {
 //   let signed_transaction = 
 //       {
@@ -515,10 +517,52 @@ const strDecrypted = new TextDecoder().decode(new Uint8Array(uint8Decrypted.plai
 const jsonDecrypted = JSON.parse(strDecrypted)
 
 console.log('Decrypted: ', jsonDecrypted)
-done();
+
 })
  })
 
+
+ /*
+  const api = await walletApi();
+        const info = await api.identities.info({ did: user.DID });
+        const ethereumAddress = info.addresses[0];
+
+        fetch('/api/offerings/createAgreement', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                template: data.template,
+                senderAddress: ethereumAddress
+            })
+        }).then(res => {
+            res.json().then(async rawTransaction => {
+                const body = {
+                    type: 'Transaction',
+                    data: rawTransaction
+                };
+                const signRes = await api.identities.sign({ did: user.DID }, body);
+
+                fetch('/api/offerings/deployTransaction', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(signRes),
+                }).then(res => {
+                    res.json().then(deployRes => {
+                        console.log('transaction deployed', deployRes);
+
+                        fetch('/api/notifications', {
+                            method: 'DELETE',
+                            body: JSON.stringify({ notificationId: id })
+                        }).then(() => {
+                            router.back();
+                        });
+                    });
+                });
+            });
+        });
+    }
+
+*/
 
 
 

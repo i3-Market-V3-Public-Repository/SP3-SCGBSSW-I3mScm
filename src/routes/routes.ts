@@ -410,12 +410,6 @@ export default async (): Promise<typeof router> => {
                             }
                             status = 'accepted'
                             break
-                        case 'TerminationProposal':
-                            message = {
-                                agreementId: agreementId
-                            }
-                            status = 'terminationproposal'
-                            break
                         case 'AgreementTerminated':
                             type = 'agreement.termination'
                             message = {
@@ -456,8 +450,7 @@ export default async (): Promise<typeof router> => {
                 const predefined = true
                 let publicKey1 : string = logs.args.providerPublicKey
                 const publicKey2 : string = logs.args.consumerPublicKey
-                if(type == 'agreement.terminationproposal')
-                    publicKey1 = logs.args.publicKey
+               
                 if(publicKey1!=undefined)
                 {
                     const publickeyJsonObj1 = JSON.parse(publicKey1)
@@ -524,10 +517,6 @@ export default async (): Promise<typeof router> => {
                     formatedAgreements.push(formatedAgreement)
                 }
 
-                console.log(
-                    'Number of active agreements by Consumer Public key: ' +
-                    formatedAgreements.length,
-                )
                 }
                 res.status(200).send(formatedAgreements)
         } catch (error) {
@@ -564,7 +553,7 @@ export default async (): Promise<typeof router> => {
             }
             const sub = decodedResolution.payload.sub
 
-
+            console.log(resolution)
             console.log(dataExchangeId)
             //get agreement id from data access
             const agreementIdJson = await getAgreementId(dataExchangeId)
@@ -708,61 +697,82 @@ export default async (): Promise<typeof router> => {
         }
     })
 
-
-    router.put('/request_termination', async (req, res, next) => {
-        try {
-            const agreementId = req.body.agreementId
-            const publicKey = req.body.publicKey
-            const senderAddress = req.body.senderAddress
-            console.log(publicKey)
-            const agreementLength = await contract.getAgreementsLength()
-            if (agreementId < agreementLength) {
-                const unsignedRequestAgreementTerminationTx = (await contract.populateTransaction.requestAgreementTermination(
-                    agreementId,
-                    publicKey,
-                    { gasLimit: gasLimit },
-                    )) as any
-                    const formatedRawTransaction = formatTransaction(
-                            await createRawTransaction(
-                                provider,
-                                unsignedRequestAgreementTerminationTx,
-                                senderAddress,
-                            ),
-                    )
-            res.status(200).send(formatedRawTransaction)
-           } else {
-               res.status(400).send('Invalid agreement id.')
-           }
-            
-        } catch (error) {
-            if (error instanceof Error) {
-                console.log(`${error.message}`)
-                res
-                    .status(500)
-                    .send({ name: `${error.name}`, message: `${error.message}` })
-            }
-        }
-    })
-
     router.put('/terminate', async (req, res, next) => {
         try {
             
             const senderAddress = req.body.senderAddress
             const agreementId = req.body.agreementId
+            const agreement = await contract.getAgreement(agreementId)
             
-            const unsignedTerminateAgreementTx = (await contract.populateTransaction.terminateAgreement(
-                    agreementId,
-                    { gasLimit: gasLimit },
-                    )) as any
+            if(agreement.typeOfData.dataStream){
+                const date = new Date()
+                const now = Math.floor(new Date(date.getFullYear(), date.getMonth(), date.getDate(),).getTime() / 1000)
+                if(parseInt(agreement.agreementDates[2])<now){
+                    const unsignedTerminateAgreementTx = (await contract.populateTransaction.terminateAgreement(
+                        agreementId,
+                        true,
+                        { gasLimit: gasLimit },
+                        )) as any
                     const formatedRawTransaction = formatTransaction(
                             await createRawTransaction(
                                 provider,
                                 unsignedTerminateAgreementTx,
                                 senderAddress,
-                            ),
-                    )
-            res.status(200).send(formatedRawTransaction)
-          
+                                ),
+                        )
+                    res.status(200).send(formatedRawTransaction)
+                }
+                else {
+                    res.status(400).send("End date of the agreement is not reached.")
+                }
+            }
+            else{
+                const signedResolution = req.body.signedResolution
+                    
+                const decodedResolution = await nonRepudiationLibrary.ConflictResolution.verifyResolution(
+                    signedResolution,
+                )
+
+                const trustedIssuers = [
+                    '{"alg":"ES256","crv":"P-256","d":"ugSiI9ILGgMc5Nc0nAa3qFN3AN0oGba33IAakHqdvmg","kty":"EC","x":"L6WfVXGbH0io6Jpm94S1lpdi6yGtT1OmZ65A_kS_hk8","y":"6YE0oPOpWBqC75D_jtJUfy5lsXlGjO5g6QXivDwMDKc"}',
+                    '{"alg":"ES256","crv":"P-256","d":"-C4voepzHNpinEkDK6LdC0pdvqhohpZ60jo3qj9MUeY","kty":"EC","x":"4d3u9jd5Ch8oOF3FAqH-EDpzA7VhXxscVwbF5yA-Ds8","y":"SWqpZyQ1GREbLq1oUpO-8zFCq5d64OhCz3sTGnblhzY"}'
+                ]
+                const proofType = decodedResolution.payload.proofType
+                const type = decodedResolution.payload.type
+                const resolution = decodedResolution.payload.resolution 
+                const dataExchangeId = decodedResolution.payload.dataExchangeId
+                const iat = decodedResolution.payload.iat
+                const iss = decodedResolution.payload.iss
+                if (!trustedIssuers.includes(iss)) {
+                    throw new Error('untrusted issuer')
+                }
+                const sub = decodedResolution.payload.sub
+
+
+                console.log(dataExchangeId)
+                //get agreement id from data access
+                const agreementIdJson = await getAgreementId(dataExchangeId)
+
+                if(agreementIdJson.AgreementId == undefined)
+                    throw new Error(agreementIdJson.msg)
+                const agreementIdBatchData = parseInt(agreementIdJson.AgreementId);
+
+                if(agreementIdBatchData == agreementId && (resolution === "completed" || resolution === "denied")){
+                    const unsignedTerminateAgreementTx = (await contract.populateTransaction.terminateAgreement(
+                        agreementId,
+                        true,
+                        { gasLimit: gasLimit },
+                        )) as any
+                    const formatedRawTransaction = formatTransaction(
+                            await createRawTransaction(
+                                provider,
+                                unsignedTerminateAgreementTx,
+                                senderAddress,
+                                ),
+                        )
+                     res.status(200).send(formatedRawTransaction)
+                }
+            }
         } catch (error) {
             if (error instanceof Error) {
                 console.log(`${error.message}`)

@@ -347,26 +347,6 @@ paths:
                 $ref: '#/components/schemas/raw_transaction_template'
       security:
         - jwt: []
-  /request_termination:
-    put:
-      tags:
-        - Agreement
-      summary: Request Agreement Termination
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/requestTermination'
-        required: true
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/raw_transaction_template'
-      security:
-        - jwt: []
   /terminate:
     put:
       tags:
@@ -931,16 +911,6 @@ components:
                   type: string
             isFree:
               type: boolean
-    requestTermination:
-      type: object
-      properties:
-        senderAddress:
-          type: string
-        agreementId:
-          type: integer
-          format: int64
-        publicKey:
-          type: string
     terminate:
       type: object
       properties:
@@ -949,7 +919,7 @@ components:
         agreementId:
           type: integer
           format: int64
-        publicKey:
+        signedResolution:
           type: string
     signed_resolution_scm:
       type: object

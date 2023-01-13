@@ -85,12 +85,16 @@ export async function getFee(price: number) {
             },
         },
     ).catch((error: any) => {
-        console.error('Error:', error)
+        // console.log(error)
+     throw new Error('Error:'+ error)
+       
     })
 
     const feeJson = await feeRequest.json()
+    console.log(feeJson)
 
     const fee : string = feeJson
+    console.log(fee)
 
     return fee
 
@@ -402,6 +406,8 @@ export async function createRawTransaction(provider: any, unsignedTx: any, sende
 
     return unsignedTx;
 }
+
+
 
 
 
