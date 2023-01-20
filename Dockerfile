@@ -8,7 +8,7 @@ COPY ./ExplicitUserConsent.json ./ExplicitUserConsent.json
 
 ADD ./src /src
 
-ENV BACKPLANE_URL=http://95.211.3.249:3000
+ENV BACKPLANE_URL=http://95.211.3.244:3000
 ENV ADDRESS=0.0.0.0
 ENV PORT=3333
 
