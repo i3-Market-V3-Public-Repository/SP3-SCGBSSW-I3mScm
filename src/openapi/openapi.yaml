@@ -687,7 +687,8 @@ components:
                 repeat:
                   type: string
                 hasSubscriptionPrice:
-                  type: integer
+                   type: number
+                   format: float
             hasFreePrice:
               type: object
               properties:
@@ -865,11 +866,13 @@ components:
             paymentType:
               type: string
             price:
-              type: integer
+              type: number
+              format: float
             currency:
               type: string
             fee:
-              type: integer
+              type: number
+              format: float
             paymentOnSubscription:
               type: object
               properties:
@@ -897,11 +900,13 @@ components:
             paymentType:
               type: string
             price:
-              type: integer
+              type: number
+              format: float
             currency:
               type: string
             fee:
-              type: integer
+              type: number
+              format: float
             paymentOnSubscription:
               type: object
               properties:
