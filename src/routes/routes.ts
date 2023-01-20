@@ -94,8 +94,8 @@ export default async (): Promise<typeof router> => {
                 )
 
                 let template: Template = getTemplate(jsonTemplate, staticTemplate)
-
-                template.pricingModel.fee = parseFloat(await getFee(template.pricingModel.basicPrice))
+                if(!template.dataStream)
+                    template.pricingModel.fee = parseFloat(await getFee(template.pricingModel.basicPrice))
 
                 const response = JSON.parse(JSON.stringify(template))
 
@@ -115,11 +115,9 @@ export default async (): Promise<typeof router> => {
         try {
             const agreementId = parseInt(req.params.agreement_id)
             const agreementsLength = await contract.getAgreementsLength()
-            console.log(agreementsLength)
             const length = parseInt(agreementsLength)
             if (agreementId < length) {
                 const agreement = await contract.getAgreement(agreementId)
-                //console.log(agreement)
                 const response = JSON.parse(JSON.stringify(formatAgreement(agreement)))
                 res.status(200).send(response)
             } else {
@@ -532,7 +530,7 @@ export default async (): Promise<typeof router> => {
     router.post('/evaluate_signed_resolution', async (req, res, next) => {
         try {
             const signedResolution = req.body.proof
-            console.log(signedResolution)
+
             const decodedResolution = await nonRepudiationLibrary.ConflictResolution.verifyResolution(
                 signedResolution,
             )
@@ -553,9 +551,6 @@ export default async (): Promise<typeof router> => {
             }
             const sub = decodedResolution.payload.sub
 
-            console.log(resolution)
-            console.log(dataExchangeId)
-            //get agreement id from data access
             const agreementIdJson = await getAgreementId(dataExchangeId)
 
             if(agreementIdJson.AgreementId == undefined)
@@ -701,13 +696,15 @@ export default async (): Promise<typeof router> => {
         try {
             
             const senderAddress = req.body.senderAddress
-            const agreementId = req.body.agreementId
+            const agreementId = parseInt(req.body.agreementId)
             const agreement = await contract.getAgreement(agreementId)
-            
-            if(agreement.typeOfData.dataStream){
+            const dataStream : boolean = agreement.typeOfData.dataStream
+            if(dataStream == true)
+            {
                 const date = new Date()
                 const now = Math.floor(new Date(date.getFullYear(), date.getMonth(), date.getDate(),).getTime() / 1000)
-                if(parseInt(agreement.agreementDates[2])<now){
+                if(parseInt(agreement.agreementDates[2])<now)
+                {
                     const unsignedTerminateAgreementTx = (await contract.populateTransaction.terminateAgreement(
                         agreementId,
                         true,
@@ -737,8 +734,7 @@ export default async (): Promise<typeof router> => {
                     '{"alg":"ES256","crv":"P-256","d":"ugSiI9ILGgMc5Nc0nAa3qFN3AN0oGba33IAakHqdvmg","kty":"EC","x":"L6WfVXGbH0io6Jpm94S1lpdi6yGtT1OmZ65A_kS_hk8","y":"6YE0oPOpWBqC75D_jtJUfy5lsXlGjO5g6QXivDwMDKc"}',
                     '{"alg":"ES256","crv":"P-256","d":"-C4voepzHNpinEkDK6LdC0pdvqhohpZ60jo3qj9MUeY","kty":"EC","x":"4d3u9jd5Ch8oOF3FAqH-EDpzA7VhXxscVwbF5yA-Ds8","y":"SWqpZyQ1GREbLq1oUpO-8zFCq5d64OhCz3sTGnblhzY"}'
                 ]
-                const proofType = decodedResolution.payload.proofType
-                const type = decodedResolution.payload.type
+                
                 const resolution = decodedResolution.payload.resolution 
                 const dataExchangeId = decodedResolution.payload.dataExchangeId
                 const iat = decodedResolution.payload.iat
@@ -746,11 +742,7 @@ export default async (): Promise<typeof router> => {
                 if (!trustedIssuers.includes(iss)) {
                     throw new Error('untrusted issuer')
                 }
-                const sub = decodedResolution.payload.sub
 
-
-                console.log(dataExchangeId)
-                //get agreement id from data access
                 const agreementIdJson = await getAgreementId(dataExchangeId)
 
                 if(agreementIdJson.AgreementId == undefined)
@@ -792,8 +784,6 @@ export default async (): Promise<typeof router> => {
             const endDate = req.body.endDate
             const senderAddress = req.body.senderAddress
 
-            console.log(consentSubjects)
-
             const unsignedGiveConsentTx = (await explicitUserConsentContract.populateTransaction.giveConsent(
                 dataOfferingId,
                 consentSubjects,
@@ -825,13 +815,11 @@ export default async (): Promise<typeof router> => {
         try {
             const dataOfferingId = req.params.dataOfferingId
             let consentSubject = req.query.consentSubject
-            console.log(consentSubject)
             if(consentSubject == undefined)
                 consentSubject = ""
         
             const formatedConsents : any = []
             const consents = await explicitUserConsentContract.checkConsentStatus(dataOfferingId, consentSubject)
-            console.log(consents)
             consents.forEach((consent) => {
                 formatedConsents.push(parseInt(consent))
             })
@@ -893,7 +881,7 @@ export default async (): Promise<typeof router> => {
 
             const formatedTransactionReceipt = formatTransactionReceipt(receipt)
 
-            console.log(receipt.logs[0])
+            //console.log(receipt.logs[0])
             
             if (receipt.status == 1) {
                 if (receipt.logs.length > 0) {
@@ -953,7 +941,6 @@ export default async (): Promise<typeof router> => {
         }
         
     })
-
 
     return router
 }

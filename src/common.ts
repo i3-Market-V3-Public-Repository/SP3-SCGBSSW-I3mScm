@@ -118,8 +118,7 @@ export function processTemplate(template: Template) {
 
     const purpose = template.purpose
  
-    const date = new Date()
-    const creationDate = Math.floor(new Date(date.getFullYear(), date.getMonth(), date.getDate(),).getTime() / 1000)
+    const creationDate = template.duration.creationDate
     const startDate = template.duration.startDate
     const endDate = template.duration.endDate
     if(startDate < creationDate){
@@ -161,7 +160,12 @@ export function processTemplate(template: Template) {
     const typeOfData = [dataStream, personalData]
 
     const paymentType = template.pricingModel.paymentType
-    const basicPrice = template.pricingModel.basicPrice
+    let price
+    if(dataStream)
+        price = template.pricingModel.hasPaymentOnSubscription.hasSubscriptionPrice
+    else 
+        price = template.pricingModel.basicPrice
+        
     const currency = template.pricingModel.currency
     const fee =template.pricingModel.fee
 
@@ -171,7 +175,7 @@ export function processTemplate(template: Template) {
   
     const freePrice = template.pricingModel.hasFreePrice.hasPriceFree
 
-    const pricingModel = [paymentType, basicPrice*100, currency, fee*100, [timeDuration,repeat], freePrice]
+    const pricingModel = [paymentType, price*100, currency, fee*100, [timeDuration,repeat], freePrice]
 
     const signatures = [template.signatures.providerSignature, template.signatures.consumerSignature]
 
