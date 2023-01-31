@@ -272,13 +272,7 @@
             "style": "label",
             "explode": false,
             "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "example": [
-                "{\"kty\":\"EC\",\"crv\":\"P-256\",\"x\":\"6MGDu3EsCdEJZVV2KFhnF2lxCRI5yNpf4vWQrCIMk5M\",\"y\":\"0OZbKAdooCqrQcPB3Bfqy0g-Y5SmnTyovFoFY35F00N\",\"alg\":\"ES256\"}"
-              ]
+              "$ref": "#/components/schemas/public_keys_array"
             }
           },
           {
@@ -326,13 +320,7 @@
             "style": "label",
             "explode": false,
             "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "example": [
-                "{\"kty\":\"EC\",\"crv\":\"P-256\",\"x\":\"4sxPPpsZomxPmPwDAsqSp94QpZ3iXP8xX4VxWCSCfms\",\"y\":\"8YI_bvVrKPW63bGAsHgRvwXE6uj3TlnHwoQi9XaEBBE\",\"alg\":\"ES256\"}"
-              ]
+              "$ref": "#/components/schemas/public_keys_array"
             }
           },
           {
@@ -583,41 +571,6 @@
         ]
       }
     },
-    "/request_termination": {
-      "put": {
-        "tags": [
-          "Agreement"
-        ],
-        "summary": "Request Agreement Termination",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/requestTermination"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/raw_transaction_template"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "jwt": []
-          }
-        ]
-      }
-    },
     "/terminate": {
       "put": {
         "tags": [
@@ -807,6 +760,15 @@
   },
   "components": {
     "schemas": {
+      "public_keys_array": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "example": [
+          "{\"kty\":\"EC\",\"crv\":\"P-256\",\"x\":\"6MGDu3EsCdEJZVV2KFhnF2lxCRI5yNpf4vWQrCIMk5M\",\"y\":\"0OZbKAdooCqrQcPB3Bfqy0g-Y5SmnTyovFoFY35F00N\",\"alg\":\"ES256\"}"
+        ]
+      },
       "state": {
         "type": "object",
         "properties": {
@@ -1133,7 +1095,8 @@
                     "type": "string"
                   },
                   "hasSubscriptionPrice": {
-                    "type": "integer"
+                    "type": "number",
+                    "format": "float"
                   }
                 }
               },
@@ -1377,13 +1340,15 @@
                 "type": "string"
               },
               "price": {
-                "type": "integer"
+                "type": "number",
+                "format": "float"
               },
               "currency": {
                 "type": "string"
               },
               "fee": {
-                "type": "integer"
+                "type": "number",
+                "format": "float"
               },
               "paymentOnSubscription": {
                 "type": "object",
@@ -1412,10 +1377,10 @@
           "signatures": {
             "type": "object",
             "properties": {
-              "providerSigniture": {
+              "providerSignature": {
                 "type": "string"
               },
-              "consumerSigniture": {
+              "consumerSignature": {
                 "type": "string"
               }
             }
@@ -1429,13 +1394,15 @@
             "type": "string"
           },
           "price": {
-            "type": "integer"
+            "type": "number",
+            "format": "float"
           },
           "currency": {
             "type": "string"
           },
           "fee": {
-            "type": "integer"
+            "type": "number",
+            "format": "float"
           },
           "paymentOnSubscription": {
             "type": "object",
@@ -1453,23 +1420,12 @@
           }
         }
       },
-      "requestTermination": {
-        "type": "object",
-        "properties": {
-          "senderAddress": {
-            "type": "string"
-          },
-          "agreementId": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "publicKey": {
-            "type": "string"
-          }
-        }
-      },
       "terminate": {
         "type": "object",
+        "required": [
+          "senderAddress",
+          "agreementId"
+        ],
         "properties": {
           "senderAddress": {
             "type": "string"
@@ -1478,7 +1434,7 @@
             "type": "integer",
             "format": "int64"
           },
-          "publicKey": {
+          "signedResolution": {
             "type": "string"
           }
         }

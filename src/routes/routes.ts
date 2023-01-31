@@ -94,9 +94,9 @@ export default async (): Promise<typeof router> => {
                 )
 
                 let template: Template = getTemplate(jsonTemplate, staticTemplate)
-                if(!template.dataStream)
-                    template.pricingModel.fee = parseFloat(await getFee(template.pricingModel.basicPrice))
-
+                if(template.dataStream)
+                    template.pricingModel.fee = parseFloat(await getFee(template.pricingModel.hasPaymentOnSubscription.hasSubscriptionPrice))
+                else template.pricingModel.fee = parseFloat(await getFee(template.pricingModel.basicPrice))
                 const response = JSON.parse(JSON.stringify(template))
 
                 res.status(200).send(response)

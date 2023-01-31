@@ -890,9 +890,9 @@ components:
         signatures:
           type: object
           properties:
-            providerSigniture:
+            providerSignature:
               type: string
-            consumerSigniture:
+            consumerSignature:
               type: string
     pricingModelTemplate:
       type: object

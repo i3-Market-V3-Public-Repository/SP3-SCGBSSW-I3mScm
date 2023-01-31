@@ -518,6 +518,14 @@ const jsonDecrypted = JSON.parse(strDecrypted)
 
 console.log('Decrypted: ', jsonDecrypted)
 
+const uint8Decrypted2 = await nonRepudiationLibrary.jweDecrypt(
+  "eyJhbGciOiJFQ0RILUVTIiwiZW5jIjoiQTI1NkdDTSIsImVwayI6eyJ4IjoicnlhUzBmdDdaelo5N25pWVJ6Z0VpeUNqUVJMWk11djhNYTZnaHUycWJLQSIsImNydiI6IlAtMjU2Iiwia3R5IjoiRUMiLCJ5IjoiWnZ4dm9HakFPejczd3RpWndyU0xxUEM2ZjhwVUJhREdLQWc3M2JCT2RPSSJ9fQ..kmfNcsp-Th8OPvl8.DuRvP4DTgJSb3qiBV9VX_PItH1XSPffEHOkyAj16Zih6JBJlopaIlGRFlcLpnI4Ol8jtz9QTG-voDg.0b0vqlwr1BPCUqVzFYi39A",
+  {"alg":"ES256","crv":"P-256","d":"BciQbSgMcogZwV2E31MZNXrIh-smQ8hiXmX43726EaU","kty":"EC","x":"1bUMLq4TBXlXYoDHrdKwGB4JNpuwIdrWOWeFQdAyThw","y":"ZrU4SnYjBgY957lQPiBZMmsSv7WUdly-Tkav8zd8nNE"})
+const strDecrypted2 = new TextDecoder().decode(new Uint8Array(uint8Decrypted2.plaintext))
+const jsonDecrypted2 = JSON.parse(strDecrypted2)
+
+console.log('Decrypted: ', jsonDecrypted2)
+
 })
  })
 
