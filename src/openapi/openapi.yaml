@@ -166,10 +166,11 @@ paths:
           style: label
           explode: false
           schema:
-            type: array
-            items:
-              type: string
-            example: ['{"kty":"EC","crv":"P-256","x":"6MGDu3EsCdEJZVV2KFhnF2lxCRI5yNpf4vWQrCIMk5M","y":"0OZbKAdooCqrQcPB3Bfqy0g-Y5SmnTyovFoFY35F00N","alg":"ES256"}']
+             $ref: '#/components/schemas/public_keys_array'
+            # type: array
+            # items:
+            #   type: string
+            # example: ['{"kty":"EC","crv":"P-256","x":"6MGDu3EsCdEJZVV2KFhnF2lxCRI5yNpf4vWQrCIMk5M","y":"0OZbKAdooCqrQcPB3Bfqy0g-Y5SmnTyovFoFY35F00N","alg":"ES256"}']
         - name: active
           in: path
           required: true
@@ -457,6 +458,10 @@ paths:
         - jwt: []    
 components:
   schemas:
+    public_keys_array:
+      type: array
+      items:
+         type: string
     state:
       type: object
       properties:
