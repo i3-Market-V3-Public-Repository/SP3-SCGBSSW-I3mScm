@@ -11,10 +11,11 @@
   },
   "servers": [
     {
-      "url": "http://95.211.3.244:3333"
+      "url": "/"
     },
     {
-      "url": "http://95.211.3.249:3333"
+      "url": "http://95.211.3.249:3333",
+      "variables": {}
     }
   ],
   "security": [
@@ -117,7 +118,7 @@
         },
         "security": [
           {
-            "jwt": ["provider"]
+            "jwt": []
           }
         ]
       }
@@ -258,35 +259,22 @@
         ]
       }
     },
-    "/check_agreements_by_consumer/{consumer_public_keys}/{active}": {
-      "get": {
+    "/check_agreements_by_consumer": {
+      "post": {
         "tags": [
           "Agreement"
         ],
         "summary": "Check agreements by consumer",
-        "parameters": [
-          {
-            "name": "consumer_public_keys",
-            "in": "path",
-            "required": true,
-            "style": "label",
-            "explode": false,
-            "schema": {
-              "$ref": "#/components/schemas/public_keys_array"
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/public_keys_active"
+              }
             }
           },
-          {
-            "name": "active",
-            "in": "path",
-            "required": true,
-            "style": "simple",
-            "explode": false,
-            "example": false,
-            "schema": {
-              "type": "boolean"
-            }
-          }
-        ],
+          "required": true
+        },
         "responses": {
           "200": {
             "description": "OK",
@@ -306,35 +294,22 @@
         ]
       }
     },
-    "/check_agreements_by_provider/{provider_public_keys}/{active}": {
-      "get": {
+    "/check_agreements_by_provider": {
+      "post": {
         "tags": [
           "Agreement"
         ],
         "summary": "Check agreements by provider",
-        "parameters": [
-          {
-            "name": "provider_public_keys",
-            "in": "path",
-            "required": true,
-            "style": "label",
-            "explode": false,
-            "schema": {
-              "$ref": "#/components/schemas/public_keys_array"
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/public_keys_active"
+              }
             }
           },
-          {
-            "name": "active",
-            "in": "path",
-            "required": true,
-            "style": "simple",
-            "explode": false,
-            "schema": {
-              "type": "boolean"
-            },
-            "example": false
-          }
-        ],
+          "required": true
+        },
         "responses": {
           "200": {
             "description": "OK",
@@ -496,7 +471,7 @@
         },
         "security": [
           {
-            "jwt": ["consumer"]
+            "jwt": []
           }
         ]
       }
@@ -531,7 +506,7 @@
         },
         "security": [
           {
-            "jwt": ["consumer"]
+            "jwt": []
           }
         ]
       }
@@ -566,7 +541,7 @@
         },
         "security": [
           {
-            "jwt": ["provider"]
+            "jwt": []
           }
         ]
       }
@@ -760,14 +735,23 @@
   },
   "components": {
     "schemas": {
-      "public_keys_array": {
-        "type": "array",
-        "items": {
-          "type": "string"
-        },
-        "example": [
-          "{\"kty\":\"EC\",\"crv\":\"P-256\",\"x\":\"6MGDu3EsCdEJZVV2KFhnF2lxCRI5yNpf4vWQrCIMk5M\",\"y\":\"0OZbKAdooCqrQcPB3Bfqy0g-Y5SmnTyovFoFY35F00N\",\"alg\":\"ES256\"}"
-        ]
+      "public_keys_active": {
+        "type": "object",
+        "required": [
+          "public_keys",
+          "active"
+        ],
+        "properties": {
+          "public_keys": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "active": {
+            "type": "boolean"
+          }
+        }
       },
       "state": {
         "type": "object",
@@ -865,7 +849,7 @@
       "signed_transaction": {
         "type": "object",
         "required": [
-          "signedTransaction"
+            "signedTransaction"
         ],
         "properties": {
           "signedTransaction": {
@@ -1177,21 +1161,21 @@
                 "description": "Maximum acceptable time in milliseconds between issued PoO and verified PoR",
                 "type": "integer",
                 "minimum": 0,
-                
+                "exclusiveMinimum": true,
                 "example": 10000
               },
               "pooToPopDelay": {
                 "description": "Maximum acceptable time in milliseconds between issued PoO and issued PoP",
                 "type": "integer",
                 "minimum": 0,
-                
+                "exclusiveMinimum": true,
                 "example": 20000
               },
               "pooToSecretDelay": {
                 "description": "Maximum acceptable time between issued PoO and secret published on the ledger",
                 "type": "integer",
                 "minimum": 0,
-               
+                "exclusiveMinimum": true,
                 "example": 180000
               }
             }
@@ -1204,14 +1188,10 @@
             ],
             "properties": {
               "providerSignature": {
-                "title": "CompactJWS",
-                "type": "string",
-                "pattern": "^[a-zA-Z0-9_-]+\\.[a-zA-Z0-9_-]+\\.[a-zA-Z0-9_-]+$"
+                "type": "string"
               },
               "consumerSignature": {
-                "title": "CompactJWS",
-                "type": "string",
-                "pattern": "^[a-zA-Z0-9_-]+\\.[a-zA-Z0-9_-]+\\.[a-zA-Z0-9_-]+$"
+                "type": "string"
               }
             }
           }
@@ -1423,8 +1403,8 @@
       "terminate": {
         "type": "object",
         "required": [
-          "senderAddress",
-          "agreementId"
+            "senderAddress",
+            "agreementId"
         ],
         "properties": {
           "senderAddress": {
@@ -1442,8 +1422,8 @@
       "signed_resolution_scm": {
         "type": "object",
         "required": [
-          "proof",
-          "sender_address"
+            "proof",
+            "sender_address"
         ],
         "properties": {
           "proof": {
@@ -1461,10 +1441,10 @@
       "choose_penalty": {
         "type": "object",
         "required": [
-          "agreementId",
-          "chosenPenalty",
-          "paymentPercentage",
-          "newEndDate"
+            "agreementId",
+            "chosenPenalty",
+            "paymentPercentage",
+            "newEndDate"
         ],
         "properties": {
           "agreementId": {
@@ -1486,11 +1466,11 @@
       "enforce_penalty": {
         "type": "object",
         "required": [
-          "senderAddress",
-          "agreementId",
-          "chosenPenalty",
-          "paymentPercentage",
-          "newEndDate"
+            "senderAddress",
+            "agreementId",
+            "chosenPenalty",
+            "paymentPercentage",
+            "newEndDate"
         ],
         "properties": {
           "senderAddress": {
@@ -1515,12 +1495,12 @@
       "consent": {
         "type": "object",
         "required": [
-          "dataOfferingId",
-          "consentSubjects",
-          "consentFormHash",
-          "startDate",
-          "endDate",
-          "senderAddress"
+            "dataOfferingId",
+            "consentSubjects",
+            "consentFormHash",
+            "startDate",
+            "endDate",
+            "senderAddress"
         ],
         "properties": {
           "dataOfferingId": {
@@ -1549,9 +1529,9 @@
       "revokeConsent": {
         "type": "object",
         "required": [
-          "dataOfferingId",
-          "consentSubjects",
-          "senderAddress"
+            "dataOfferingId",
+            "consentSubjects",
+            "senderAddress"
         ],
         "properties": {
           "dataOfferingId": {

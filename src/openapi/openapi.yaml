@@ -154,31 +154,17 @@ paths:
                 $ref: '#/components/schemas/active_agreements'
       security:
         - jwt: []
-  /check_agreements_by_consumer/{consumer_public_keys}/{active}:
-    get:
+  /check_agreements_by_consumer:
+    post:
       tags:
         - Agreement
       summary: Check agreements by consumer
-      parameters:
-        - name: consumer_public_keys
-          in: path
-          required: true
-          style: label
-          explode: false
-          schema:
-             $ref: '#/components/schemas/public_keys_array'
-            # type: array
-            # items:
-            #   type: string
-            # example: ['{"kty":"EC","crv":"P-256","x":"6MGDu3EsCdEJZVV2KFhnF2lxCRI5yNpf4vWQrCIMk5M","y":"0OZbKAdooCqrQcPB3Bfqy0g-Y5SmnTyovFoFY35F00N","alg":"ES256"}']
-        - name: active
-          in: path
-          required: true
-          style: simple
-          explode: false
-          example: false
-          schema:
-            type: boolean
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/public_keys_active' 
+        required: true
       responses:
         '200':
           description: OK
@@ -188,30 +174,17 @@ paths:
                 $ref: '#/components/schemas/active_agreements'
       security:
         - jwt: []
-  /check_agreements_by_provider/{provider_public_keys}/{active}:
-    get:
+  /check_agreements_by_provider:
+    post:
       tags:
         - Agreement
       summary: Check agreements by provider
-      parameters:
-        - name: provider_public_keys
-          in: path
-          required: true
-          style: label
-          explode: false
-          schema:
-            type: array
-            items:
-              type: string
-            example: ['{"kty":"EC","crv":"P-256","x":"4sxPPpsZomxPmPwDAsqSp94QpZ3iXP8xX4VxWCSCfms","y":"8YI_bvVrKPW63bGAsHgRvwXE6uj3TlnHwoQi9XaEBBE","alg":"ES256"}']
-        - name: active
-          in: path
-          required: true
-          style: simple
-          explode: false
-          schema:
-            type: boolean
-          example: false
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/public_keys_active' 
+        required: true
       responses:
         '200':
           description: OK
@@ -458,10 +431,18 @@ paths:
         - jwt: []    
 components:
   schemas:
-    public_keys_array:
-      type: array
-      items:
-         type: string
+    public_keys_active:
+      type: object
+      required:
+        - public_keys
+        - active
+      properties:
+        public_keys:
+          type: array
+          items:
+            type: string
+        active:
+          type: boolean
     state:
       type: object
       properties:
@@ -527,6 +508,8 @@ components:
             type: integer     
     signed_transaction:
       type: object
+      required:
+        - signedTransaction
       properties:
         signedTransaction:
           type: string
@@ -551,6 +534,7 @@ components:
           - dataOfferingId
           - version
           - active
+          - title
           properties:
             dataOfferingId:
               type: string
@@ -923,6 +907,9 @@ components:
               type: boolean
     terminate:
       type: object
+      required:
+        - senderAddress
+        - agreementId
       properties:
         senderAddress:
           type: string
@@ -933,6 +920,9 @@ components:
           type: string
     signed_resolution_scm:
       type: object
+      required:
+        - proof
+        - sender_address
       properties:
         proof:
           type: string
@@ -943,6 +933,11 @@ components:
         sender_address: '0x4d82Bd33baA4Fe5489C45bBdC206019403dcF829'
     choose_penalty:
       type: object
+      required:
+        - agreementId
+        - chosenPenalty
+        - paymentPercentage
+        - newEndDate
       properties:
         agreementId:
           type: integer
@@ -956,6 +951,12 @@ components:
           format: int64
     enforce_penalty:
       type: object
+      required:
+        - senderAddress
+        - agreementId
+        - chosenPenalty
+        - paymentPercentage
+        - newEndDate
       properties:
         senderAddress:
           type: string
@@ -971,6 +972,13 @@ components:
           format: int64
     consent:
       type: object
+      required:
+        - dataOfferingId
+        - consentSubjects
+        - consentFormHash
+        - startDate
+        - endDate
+        - senderAddress
       properties:
         dataOfferingId:
           type: string
@@ -988,6 +996,10 @@ components:
           type: string
     revokeConsent:
       type: object
+      required:
+        - dataOfferingId
+        - consentSubjects
+        - senderAddress
       properties:
         dataOfferingId:
           type: string

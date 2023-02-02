@@ -179,15 +179,12 @@ export default async (): Promise<typeof router> => {
         }
     })
 
-    router.get('/check_agreements_by_consumer/:consumer_public_keys/:active', async (req, res) => {
+    router.post('/check_agreements_by_consumer', async (req, res) => {
         try {
 
-            const consumerPublicKeysSerialised = req.params.consumer_public_keys
-            console.log(consumerPublicKeysSerialised)
-            const consumerPublicKeys = consumerPublicKeysSerialised.split('.')
-            console.log(consumerPublicKeys)
+            const consumerPublicKeys = req.body.public_keys
 
-            const active :boolean = JSON.parse(req.params.active)
+            const active :boolean = JSON.parse(req.body.active)
             
             const formatedAgreements: ReturnType<typeof formatAgreement>[] = []
             const activeAgreements = await contract.getAgreementsByConsumer(
@@ -200,10 +197,6 @@ export default async (): Promise<typeof router> => {
                 formatedAgreements.push(formatedAgreement)
             })
 
-            console.log(
-                'Number of active agreements by Consumer: ' + formatedAgreements.length,
-            )
-
             res.status(200).send(formatedAgreements)
         } catch (error) {
             if (error instanceof Error) {
@@ -215,15 +208,11 @@ export default async (): Promise<typeof router> => {
         }
     })
 
-
-    router.get('/check_agreements_by_provider/:provider_public_keys/:active', async (req, res) => {
+    router.post('/check_agreements_by_provider', async (req, res) => {
         try {
-            const providerPublicKeysSerialised = req.params.provider_public_keys
-            const active :boolean = JSON.parse(req.params.active)
+            const providerPublicKeys = req.body.public_keys
+            const active :boolean = JSON.parse(req.body.active)
             
-            const providerPublicKeys = providerPublicKeysSerialised.split('.')
-            console.log(providerPublicKeys)
-
             const formatedAgreements: ReturnType<typeof formatAgreement>[] = []
             const activeAgreements = await contract.getAgreementsByProvider(
                 providerPublicKeys,
@@ -235,11 +224,8 @@ export default async (): Promise<typeof router> => {
                 formatedAgreements.push(formatedAgreement)
             })
 
-            console.log(
-                'Number of active agreements by Provider: ' + formatedAgreements.length,
-            )
-
             res.status(200).send(formatedAgreements)
+            
         } catch (error) {
             if (error instanceof Error) {
                 console.log(`${error.message}`)
