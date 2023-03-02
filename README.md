@@ -73,19 +73,15 @@ docker run -p 3333:3333 -e PRIVATE_KEY=smartContractUserPrivateKey -e PRIVATE_AD
   
     <mark>POST /create_agreement _raw_transaction/{sender_address}</mark>
 
-+ Sign agreement (raw transaction):
++ Deploy signed transaction:
 
-    <mark>GET /sign_agreement_raw_transaction/{agreement_id}/{consumer_id}/{sender_address}<mark>
-
-+ Update agreement (raw transaction):
-  
-    <mark>POST /update_agreement_raw_transaction/{agreement_id}/{provider_id}/{sender_address}<mark>
+    <mark>POST /deploy_signed_transaction<mark>
 
 + Retrieve the agreement with the id received from the notification manager when creating the agreement:
 
     <mark>GET /get_agreement/{agreement_id}<mark>
 
-+ Check active agreements. The agreements become active after they are signed and the start date is reached:
++ Check active agreements. The agreements are active after they are stored on the blockchain
 
     <mark>GET /check_active_agreements<mark>
 
@@ -101,9 +97,7 @@ docker run -p 3333:3333 -e PRIVATE_KEY=smartContractUserPrivateKey -e PRIVATE_AD
 
     <mark>GET /state/{agreement_id}<mark>
 
-+ Deploy signed transaction:
 
-    <mark>POST /deploy_signed_transaction<mark>
 
 <br/>
 

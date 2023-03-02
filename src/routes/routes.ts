@@ -66,9 +66,10 @@ export default async (): Promise<typeof router> => {
         res.send(oas)
     })
 
-    router.get('/template/:template_id', async (req, res) => {
+    router.get('/template/:offering_id', async (req, res) => {
+
         let staticParameters: any = await _fetch(
-            `${process.env.BACKPLANE_URL}/semantic-engine/api/registration/contract-parameter/${req.params.template_id}/offeringId`,
+            `${process.env.BACKPLANE_URL}/semantic-engine/api/registration/federated-contract-parameter/${req.params.offering_id}/offeringId`,
             {
                 method: 'GET',
                 headers: {
