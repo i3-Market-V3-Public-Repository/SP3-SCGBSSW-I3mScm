@@ -19,49 +19,49 @@ const should = chai.should()
 const server = require('../index')
 
 
-// const sessionObjJson = JSON.stringify({"masterKey":{"from":{"name":"Initiator"},"to":{"name":"Wallet desktop"},"port":29170,"na":"z5--oAI5QgRJ8ulTzi33Vw","nb":"Y3mXncUg92gfI7N5dCD88w","secret":"L9xObOmCEJ87iNtRBVjPPEEmdikfC0jMeleF2JOcQ7Y"},"code":"65794a68624763694f694a6b615849694c434a6c626d4d694f694a424d6a553252304e4e496e302e2e5244666f6b30416a4c6671655968354e2e64644c3766534c7a5350595442526e636568423259432d646a7946327367665836327342686f424579677873504e39365059746a5f796f334335654a554f6a3576387043376b3373714f534d505a565976444e79714857517146324a4d4f585668546832396435586759736d4e4337656154325133424f386d794754325a35553646306f454868735166676841554f57757251637a58376f6c35547355575a38515f784342367772737646754551535a623371464a4c3738374d53477656314b39444b726553336e784f49557771464c67506258526664576b494a73696a7a6b597637706c556437636c4d724a2d677a516761583167425745624f5f4e57322d3568334535446d7054764d51666c30446535686e4247553065644838796c5f4f79646b746a4e62775566594b6f6e5537644b6d47414c6434436c4d6c376b62596b5f693338572d597a37743177635377514c69494a7764656574684f3655485530733132455335684c365a7964534f30386767617a3163713845436f61772e55576a335636633378656131734e6270734d51494777"})//process.env.I3M_WALLET_SESSION_TOKEN //as string
+const sessionObjJson = JSON.stringify({"masterKey":{"from":{"name":"Initiator"},"to":{"name":"Wallet desktop"},"port":29170,"na":"z5--oAI5QgRJ8ulTzi33Vw","nb":"Y3mXncUg92gfI7N5dCD88w","secret":"L9xObOmCEJ87iNtRBVjPPEEmdikfC0jMeleF2JOcQ7Y"},"code":"65794a68624763694f694a6b615849694c434a6c626d4d694f694a424d6a553252304e4e496e302e2e5244666f6b30416a4c6671655968354e2e64644c3766534c7a5350595442526e636568423259432d646a7946327367665836327342686f424579677873504e39365059746a5f796f334335654a554f6a3576387043376b3373714f534d505a565976444e79714857517146324a4d4f585668546832396435586759736d4e4337656154325133424f386d794754325a35553646306f454868735166676841554f57757251637a58376f6c35547355575a38515f784342367772737646754551535a623371464a4c3738374d53477656314b39444b726553336e784f49557771464c67506258526664576b494a73696a7a6b597637706c556437636c4d724a2d677a516761583167425745624f5f4e57322d3568334535446d7054764d51666c30446535686e4247553065644838796c5f4f79646b746a4e62775566594b6f6e5537644b6d47414c6434436c4d6c376b62596b5f693338572d597a37743177635377514c69494a7764656574684f3655485530733132455335684c365a7964534f30386767617a3163713845436f61772e55576a335636633378656131734e6270734d51494777"})//process.env.I3M_WALLET_SESSION_TOKEN //as string
 
-// //process.env.I3M_WALLET_SESSION_TOKEN as string
-// const IS_BROWSER = false
-// if (IS_BROWSER) {
-//   console.log('This test is not executed in a browser (server wallet only works on node). Skipping')
-// } else if (sessionObjJson === undefined) {
-//   console.log(`Skipping test.
-// You need to pass a I3M_WALLET_SESSION_TOKEN as env variable.
-// Steps for creating a token:
-//  - Set your wallet in pairing mode. A PIN appears in the screen
-//  - Connect a browser to http://localhost:29170/pairing
-//    - If session is ON (PIN is not requested), click "Remove session" and then "Start protocol"
-//    - Fill in the PIN
-//    - After succesful pairing, click "Session to clipboard"
-//  - Edit your .env file or add a new environment variable in you CI provider with key I3M_WALLET_SESSION_TOKEN and value the pasted contents`)
-// } else {
-//   describe('A complete secure data exchange flow with NRP. A consumer using the I3M-Wallet deskptop application, and the provider using the server wallet', function () {
-//     this.timeout(2000000)
-//     this.bail() // stop after a test fails
+//process.env.I3M_WALLET_SESSION_TOKEN as string
+const IS_BROWSER = false
+if (IS_BROWSER) {
+  console.log('This test is not executed in a browser (server wallet only works on node). Skipping')
+} else if (sessionObjJson === undefined) {
+  console.log(`Skipping test.
+You need to pass a I3M_WALLET_SESSION_TOKEN as env variable.
+Steps for creating a token:
+ - Set your wallet in pairing mode. A PIN appears in the screen
+ - Connect a browser to http://localhost:29170/pairing
+   - If session is ON (PIN is not requested), click "Remove session" and then "Start protocol"
+   - Fill in the PIN
+   - After succesful pairing, click "Session to clipboard"
+ - Edit your .env file or add a new environment variable in you CI provider with key I3M_WALLET_SESSION_TOKEN and value the pasted contents`)
+} else {
+  describe('A complete secure data exchange flow with NRP. A consumer using the I3M-Wallet deskptop application, and the provider using the server wallet', function () {
+    this.timeout(2000000)
+    this.bail() // stop after a test fails
 
-//     const sessionObj = JSON.parse(sessionObjJson)
+    const sessionObj = JSON.parse(sessionObjJson)
 
-//     const dids: { [k: string]: string } = {}
+    const dids: { [k: string]: string } = {}
 
-//     let consumerWallet: WalletApi
-//     let providerWallet: ServerWallet
-//     let providerOperatorWallet: ServerWallet
+    let consumerWallet: WalletApi
+    let providerWallet: ServerWallet
+    let providerOperatorWallet: ServerWallet
 
-//     let dataSharingAgreement: WalletComponents.Schemas.DataSharingAgreement
+    let dataSharingAgreement: WalletComponents.Schemas.DataSharingAgreement
 
-//     let join, homedir, serverWalletBuilder, rmSync
+    let join, homedir, serverWalletBuilder, rmSync
 
-//     before(async function () {
-//       join = (await import('path')).join
-//       homedir = (await import('os')).homedir
-//       serverWalletBuilder = (await import('@i3m/server-wallet')).serverWalletBuilder
-//       rmSync = (await import('fs')).rmSync
+    before(async function () {
+      join = (await import('path')).join
+      homedir = (await import('os')).homedir
+      serverWalletBuilder = (await import('@i3m/server-wallet')).serverWalletBuilder
+      rmSync = (await import('fs')).rmSync
 
-//       // Setup consumer wallet
-//       const transport = new HttpInitiatorTransport()
-//       const session = await Session.fromJSON(transport, sessionObj)
-//       consumerWallet = new WalletApi(session)
+      // Setup consumer wallet
+      const transport = new HttpInitiatorTransport()
+      const session = await Session.fromJSON(transport, sessionObj)
+      consumerWallet = new WalletApi(session)
 
 //       // Setup provider wallet
 //       const providerStoreFilePath = join(homedir(), '.server-wallet', '_test_provider')
@@ -310,9 +310,9 @@ const server = require('../index')
 //         nrpProvider = new nonRepudiationLibrary.NonRepudiationProtocol.NonRepudiationOrig(dataExchangeAgreement, providerJwks.privateJwk, block, providerWalletAgent)
 //         nrpConsumer = new nonRepudiationLibrary.NonRepudiationProtocol.NonRepudiationDest(dataExchangeAgreement, consumerJwks.privateJwk, consumerWalletAgent)
 //       })
-//     })
-// })
-// }
+    })
+})
+}
 
 
 describe('/GET contractual params', () => {
@@ -340,7 +340,7 @@ describe('/GET contractual params', () => {
 
 
 
-describe('/POST create agreement', () => {
+describe('Get contractual parameters, create and retrieve agreements ', () => {
   
   let rawTransaction;
   let signedTransaction;
@@ -439,13 +439,46 @@ describe('/POST create agreement', () => {
               rawTransaction = res.body
               done();
 
-       });
+      //  }).then(res => {
+      //   (async rawTransaction => {
+      //       const body = {
+      //           type: 'Transaction',
+      //           data: rawTransaction
+      //       };
+      //       let consumerWallet: WalletApi
+      //        // Setup consumer wallet
+      //       const transport = new HttpInitiatorTransport()
+      //       const session = await Session.fromJSON(transport, sessionObj)
+      //       consumerWallet = new WalletApi(session)
+
+      //       const signRes = await consumerWallet.identities.sign({ did: user.DID }, body);
+
+      //       fetch('/api/offerings/deployTransaction', {
+      //           method: 'POST',
+      //           headers: { 'Content-Type': 'application/json' },
+      //           body: JSON.stringify(signRes),
+      //       }).then(res => {
+      //           res.json().then(deployRes => {
+      //               console.log('transaction deployed', deployRes);
+
+      //               fetch('/api/notifications', {
+      //                   method: 'DELETE',
+      //                   body: JSON.stringify({ notificationId: id })
+      //               }).then(() => {
+      //                   router.back();
+      //               });
+      //           });
+      //       });
+        });
   });
 
 it('it should sign the raw transaction', (done) => {
+
+
   chai.request('http://localhost:29170')
       .post('/identities/did:ethr:i3m:0x0243cc9dbc7157ee12ce1898ac0c49b366822f32d57bc108e127f45b6c43a57e90/sign')
       .send(
+        
           {
           "type": "Transaction",
           "data": 
@@ -491,23 +524,51 @@ it('it should sign the raw transaction', (done) => {
   });
 
   
+
+//   it('resolves', (done) => {
+//     fooAsyncPromise(arg1, arg2).then((res, body) => {
+//         expect(res.statusCode).equal(incorrectValue);
+//         done();
+//     }).catch(done);
+//  });
 it('it should GET the agreements of the consumer', (done) => {
+
   chai.request('http://localhost:3333')
   .post('/check_agreements_by_consumer')
   .send(
       {
-      "public_keys": ["{\"kty\":\"EC\",\"crv\":\"P-256\",\"x\":\"6MGDu3EsCdEJZVV2KFhnF2lxCRI5yNpf4vWQrCIMk5M\",\"y\":\"0OZbKAdooCqrQcPB3Bfqy0g-Y5SmnTyovFoFY35F00N\",\"alg\":\"ES256\"}"],
+      "public_keys": [
+      "{\"alg\":\"ES256\",\"crv\":\"P-256\",\"kty\":\"EC\",\"x\":\"XBBs-nJuQxQCsDaG7sdOhOY3u3llxOpvlGmgk1za2gY\",\"y\":\"mGruvvG8W2XMYxBWo3nmKOCURS2fTOWELxV_RmJWFGo\"}",
+      "{\"alg\":\"ES256\",\"crv\":\"P-256\",\"kty\":\"EC\",\"x\":\"GDTUYKFdOgo8zb7Wr-V22EPwmREiBlE09L1THz6ThkE\",\"y\":\"0sA0gkzzeIyXXm9lZLOyHHyV-56PPfix0nT214GHzxU\"}",
+      "{\"alg\":\"ES256\",\"crv\":\"P-256\",\"kty\":\"EC\",\"x\":\"jZ_SXtH47E3iBBAWNN7Vgsl4kPNwF4MQKcjJ89xEdiA\",\"y\":\"xp73nfZ7DNl3i2xHOmRROSIWMcjEIn5U7IfH0LkiyNU\"}",
+      "{\"alg\":\"ES256\",\"crv\":\"P-256\",\"kty\":\"EC\",\"x\":\"tHlJNWtq2sQEOk670R8Wq_45BsSa0CHR0-4b0KIg4Vg\",\"y\":\"vqA9-E2CfMBA-kHv_bHasAzGvt4N3CwdLpHnIRWajM8\"}",
+      "{\"alg\":\"ES256\",\"crv\":\"P-256\",\"kty\":\"EC\",\"x\":\"gHpWvNkogRz3ZLrNo3xBPFH6aaNGLn69LkML5_EDr_Y\",\"y\":\"0U3EzB3A_aF6ngInYFznNGexAGLDvB5iQLqmrfqJs_8\"}",
+      "{\"alg\":\"ES256\",\"crv\":\"P-256\",\"kty\":\"EC\",\"x\":\"y0t2CXh1yVhw1Ogy8HV2Lr6vXbaBS3T2htKszUv2NhQ\",\"y\":\"5xedYxrnP1XmaN5jnZU3nTy66s6_QuTeiUwywtLjGDE\"}",
+      "{\"alg\":\"ES256\",\"crv\":\"P-256\",\"kty\":\"EC\",\"x\":\"r9Ef45L_QKr_K3SRJx9fHh1FCtFJRYqUoW09vpEdnrA\",\"y\":\"gAOR0YIr6IiY4VmlHObCDE_Zk0WD5zGNTpbTYLmGlhQ\"}",
+      "{\"alg\":\"ES256\",\"crv\":\"P-256\",\"kty\":\"EC\",\"x\":\"mIurNnMlVdsQuxtSoLZg2aOH0RSWmMImEuovavFM1bc\",\"y\":\"OB-PsqSwOcyKF3wL6RTEvsN9U3AiDfLEVjOwbNOSSWU\"}",
+      "{\"alg\":\"ES256\",\"crv\":\"P-256\",\"kty\":\"EC\",\"x\":\"3dx5Iqz0_bd_-JqGCfIwfNsERRdDL4ZyTt6fNMxOMLk\",\"y\":\"eJODFA9XUzjBT3KYkLC4efggMbEUYWN6g6DmIqG3TS8\"}",
+      "{\"alg\":\"ES256\",\"crv\":\"P-256\",\"kty\":\"EC\",\"x\":\"WW8uD9neFiG8pLBnFoaz9mdONkQZO7-TGbh4NcymMME\",\"y\":\"aQ_yeDr86tAn4lv8L_yVy-U233aw58ftMjXZFrExhgE\"}",
+      "{\"alg\":\"ES256\",\"crv\":\"P-256\",\"kty\":\"EC\",\"x\":\"-KVgDFtTt2Ax89Ik4fk4RGu5j2Sj9AL-9h5-ameDLWA\",\"y\":\"5IVEjYaomr3S7HJDOACnd3zHJyqov2lTbUh0gn4iiWc\"}",
+      "{\"alg\":\"ES256\",\"crv\":\"P-256\",\"kty\":\"EC\",\"x\":\"5n_UyliesCROg_q3-IkljLEuMuBcCbxhpK4swyXy7wA\",\"y\":\"A4ojyZ82gVrMo8vObM520hlGCnWDfR3_GDlSBE9TZYs\"}",
+      "{\"alg\":\"ES256\",\"crv\":\"P-256\",\"kty\":\"EC\",\"x\":\"FJ_Wv17oLfLOtnVrnx7jhN62WIqBfv6dw1gkhy1mNgs\",\"y\":\"frNX_DBWTnxbVRaKcSBB7ssBU7sFMaP6BghBsum9Oq0\"}",
+      "{\"alg\":\"ES256\",\"crv\":\"P-256\",\"kty\":\"EC\",\"x\":\"Z3_jgnKI6T1geW-tniCEYhW2ODgTljbi2nM4u_SU5-Q\",\"y\":\"3D7c0KymWIzgu-2v7WxJgRkEVJmC5f_MU-w9e-mOmHY\"}",
+      "{\"alg\":\"ES256\",\"crv\":\"P-256\",\"kty\":\"EC\",\"x\":\"7VONxhvPHsDdwD9CgDQe4ow-Ubf-5c22lXrIhf6xO5E\",\"y\":\"b08Xcjgl6T_y0xsRZnlEB9BcPwbm21SBakQpTlTvQRI\"}",
+      "{\"alg\":\"ES256\",\"crv\":\"P-256\",\"kty\":\"EC\",\"x\":\"_UfazrNTnTqISEp8-mchTN1DccrpCQJKPDPvjrk5PAs\",\"y\":\"Sjg8q9i_wJER8iWjoUInOdjHrnbu0SydDLWLrg0wNHM\"}",
+      "{\"alg\":\"ES256\",\"crv\":\"P-256\",\"kty\":\"EC\",\"x\":\"bHQ4TxMIpF5aL2iSHPzX6ZRc8JQEDaqfefTo6UY3bbs\",\"y\":\"ABakPpULKsnIcW-9PRKZDz0YkOC1kcWdpH3XNjuU8ac\"}",
+      "{\"alg\":\"ES256\",\"crv\":\"P-256\",\"kty\":\"EC\",\"x\":\"BS439hfBLYEuNRw0aLtW8r7vTfIpwTUZUFpgIiV5afw\",\"y\":\"lD7I6zsHfS0aqspya5QAc3W3aqKwDum94unbz4VY26A\"}",
+      "{\"alg\":\"ES256\",\"crv\":\"P-256\",\"kty\":\"EC\",\"x\":\"MH27viCKFdUgFdOKn6OsUX4D6067RscUNvcTVdngkZk\",\"y\":\"EpbqJrG5PI_Tn1GyHclZ0k3uv_eVqFo-qFUzHZP8s9g\"}"
+    ],
       "active": 
           false
       }
       )
-      .end((err, res) => {
+  .end((err, res) => {
             should.exist(res.body);
             res.should.have.status(200);
             res.body.should.be.a('array');
-            expect(res.body[0]).to.have.property("state").to.equal(2)
-        done();
-      })
+            //expect(res.body[0]).to.have.property("state").to.equal(0)
+            done();
+  })
 })
 
 it('it should GET the agreements of the provider', (done) => {

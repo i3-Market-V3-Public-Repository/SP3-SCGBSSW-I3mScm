@@ -84,20 +84,15 @@ export async function getFee(price: number) {
                 'Content-Type': 'application/json',
             },
         },
-    ).catch((error: any) => {
-        // console.log(error)
-     throw new Error('Error:'+ error)
-       
-    })
-
+    )
     const feeJson = await feeRequest.json()
-    console.log(feeJson)
-
+   
     const fee : string = feeJson
-    console.log(fee)
-
-    return fee
-
+    if(fee != null)
+            return fee
+    else  
+        throw new Error('Error:'+ feeJson) 
+    
 }
 
 
@@ -411,6 +406,10 @@ export async function createRawTransaction(provider: any, unsignedTx: any, sende
     return unsignedTx;
 }
 
+export function onlyUnique(value, index, array) {
+    return array.indexOf(value) === index;
+}
+  
 
 
 

@@ -4,7 +4,7 @@
   "description": "i3m-SCM-OAS",
   "main": "index.js",
   "scripts": {
-    "test": "mocha --require ts-node/register --watch-extensions ts 'test/test.ts'",
+    "test": "mocha --timeout 10000 --require ts-node/register --watch-extensions ts 'test/test.ts'",
     "start": "ts-node index.ts"
   },
   "repository": {

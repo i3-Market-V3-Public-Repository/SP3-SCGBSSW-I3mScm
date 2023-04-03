@@ -20,15 +20,14 @@ import {
     formatTransactionReceipt,
     parseHex,
     getAgreementId,
+    onlyUnique
 } from '../common'
 import { ethers } from 'ethers'
 import * as path from 'path'
 import { TextEncoder, TextDecoder } from 'util';
-import * as objectSha from 'object-sha'
+
 
 import * as nonRepudiationLibrary from '@i3m/non-repudiation-library'
-import { DisputeRequestPayload, exchangeId } from '@i3m/non-repudiation-library'
-import { NrpDltAgent } from '@i3m/non-repudiation-library/types/dlt/agents/NrpDltAgent'
 
 const dotenv = require('dotenv').config({
     path: path.resolve(__dirname, '../../.env'),
@@ -37,7 +36,6 @@ const dotenv = require('dotenv').config({
 const router = express.Router()
 router.use(bodyParser.json())
 
-const privateKey = String(process.env.PRIVATE_KEY)
 const providerAddress = String(process.env.PROVIDER_ADDRESS)
 
 const contractObj = require('../../DataSharingAgreement.json')
@@ -49,7 +47,7 @@ const contractAddressConsent = contractObjConsent.address
 const contractABIConsent = contractObjConsent.abi
 
 const provider = new ethers.providers.JsonRpcProvider(providerAddress)
-//const signer = new ethers.Wallet(privateKey, provider);
+
 const contract = new ethers.Contract(contractAddress, contractABI, provider)
 const explicitUserConsentContract = new ethers.Contract(contractAddressConsent, contractABIConsent, provider)
 
@@ -68,65 +66,74 @@ export default async (): Promise<typeof router> => {
 
     router.get('/template/:offering_id', async (req, res) => {
 
-        let staticParameters: any = await _fetch(
-            `${process.env.BACKPLANE_URL}/semantic-engine/api/registration/federated-contract-parameter/${req.params.offering_id}/offeringId`,
-            {
-                method: 'GET',
-                headers: {
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json',
-                },
-            },
-        ).catch((error: any) => {
-            console.error('Error:', error)
-        })
+        try {
 
-        const staticParametersJson = await staticParameters.json()
+            let staticParameters: any = await _fetch(
+                `${process.env.BACKPLANE_URL}/semantic-engine/api/registration/federated-contract-parameter/${req.params.offering_id}/offeringId`,
+                {
+                    method: 'GET',
+                    headers: {
+                        Accept: 'application/json',
+                        'Content-Type': 'application/json',
+                    },
+                },)
 
-        let parsedToJson = JSON.parse(JSON.stringify(staticParametersJson))
+            const staticParametersJson = await staticParameters.json()
 
-        if (parsedToJson != undefined) {
-            try {
-                const staticTemplate: StaticParametersTemplate = ConvertToStaticParametersTemplate.toStaticParametersTemplate(
-                    JSON.stringify(parsedToJson),
-                )
-                const jsonTemplate: Template = ConvertToTemplate.toTemplate(
-                    JSON.stringify(jsonTemplateFile),
-                )
+            if (staticParametersJson.offeringId != undefined) {
 
-                let template: Template = getTemplate(jsonTemplate, staticTemplate)
-                if(template.dataStream)
-                    template.pricingModel.fee = parseFloat(await getFee(template.pricingModel.hasPaymentOnSubscription.hasSubscriptionPrice))
-                else template.pricingModel.fee = parseFloat(await getFee(template.pricingModel.basicPrice))
-                const response = JSON.parse(JSON.stringify(template))
+                let parsedToJson = JSON.parse(JSON.stringify(staticParametersJson))
 
-                res.status(200).send(response)
-            } catch (error) {
+                try {
+                    const staticTemplate: StaticParametersTemplate = ConvertToStaticParametersTemplate.toStaticParametersTemplate(
+                        JSON.stringify(parsedToJson),
+                    )
+                    const jsonTemplate: Template = ConvertToTemplate.toTemplate(
+                        JSON.stringify(jsonTemplateFile),
+                    )
+
+                    let template: Template = getTemplate(jsonTemplate, staticTemplate)
+                    if(template.dataStream)
+                        template.pricingModel.fee = parseFloat(await getFee(template.pricingModel.hasPaymentOnSubscription.hasSubscriptionPrice))
+                    else template.pricingModel.fee = parseFloat(await getFee(template.pricingModel.basicPrice))
+                    const response = JSON.parse(JSON.stringify(template))
+
+                    res.status(200).send(response)
+
+                } catch (error) {
+                    if (error instanceof Error) {
+                        res
+                            .status(500)
+                            .send({ name: `${error.name}`, message: `${error.message}` })
+                    }
+                }
+            }
+            else {
+                res
+                    .status(staticParametersJson.error.statusCode)
+                    .send (staticParametersJson.error)
+            }    
+          } catch (error) {
                 if (error instanceof Error) {
-                    console.log(`${error.message}`)
                     res
                         .status(500)
                         .send({ name: `${error.name}`, message: `${error.message}` })
                 }
             }
-        }
     })
 
     router.get('/get_agreement/:agreement_id', async (req, res) => {
         try {
             const agreementId = parseInt(req.params.agreement_id)
-            const agreementsLength = await contract.getAgreementsLength()
-            const length = parseInt(agreementsLength)
-            if (agreementId < length) {
-                const agreement = await contract.getAgreement(agreementId)
+            const agreement = await contract.getAgreement(agreementId)
+            if (agreement.agreementId == 0) 
+                     res.status(400).send('Invalid agreement id.')
+            else {
                 const response = JSON.parse(JSON.stringify(formatAgreement(agreement)))
                 res.status(200).send(response)
-            } else {
-              res.status(400).send('Invalid agreement id.')
             }
         } catch (error) {
             if (error instanceof Error) {
-                console.log(`${error.message}`)
                 res
                     .status(500)
                     .send({ name: `${error.name}`, message: `${error.message}` })
@@ -137,42 +144,16 @@ export default async (): Promise<typeof router> => {
     router.get('/get_pricing_model/:agreement_id', async (req, res) => {
         try {
             const agreementId = parseInt(req.params.agreement_id)
-            const agreementsLength = await contract.getAgreementsLength()
-            const length = parseInt(agreementsLength)
-            if (agreementId < length) {
+            const agreement = await contract.getAgreement(agreementId)
+            if (agreement.agreementId == 0) 
+                     res.status(400).send('Invalid agreement id.')
+            else {
                 const pricingModel = await contract.retrievePricingModel(agreementId) 
                 const response = JSON.parse(JSON.stringify(formatPricingModel(pricingModel)))
                 res.status(200).send(response)
-            } else {
-                res.status(400).send('Invalid agreement id.')
-            }
+            } 
         } catch (error) {
             if (error instanceof Error) {
-                console.log(`${error.message}`)
-                res
-                    .status(500)
-                    .send({ name: `${error.name}`, message: `${error.message}` })
-            }
-        }
-    })
-
-    router.get('/check_active_agreements', async (req, res) => {
-        try {
-            const formatedAgreements: ReturnType<typeof formatAgreement>[] = []
-            const activeAgreements = await contract.checkActiveAgreements()
-
-            activeAgreements.forEach((agreement) => {
-                const formatedAgreement = formatAgreement(agreement)
-                console.log(formatedAgreement)
-                formatedAgreements.push(formatedAgreement)
-            })
-
-            console.log('Number of active agreements: ' + formatedAgreements.length)
-
-            res.status(200).send(formatedAgreements)
-        } catch (error) {
-            if (error instanceof Error) {
-                console.log(`${error.message}`)
                 res
                     .status(500)
                     .send({ name: `${error.name}`, message: `${error.message}` })
@@ -183,25 +164,29 @@ export default async (): Promise<typeof router> => {
     router.post('/check_agreements_by_consumer', async (req, res) => {
         try {
 
-            const consumerPublicKeys = req.body.public_keys
+            let consumerPublicKeys : string[] = req.body.public_keys
+            const active : boolean = JSON.parse(req.body.active)
 
-            const active :boolean = JSON.parse(req.body.active)
+            consumerPublicKeys = consumerPublicKeys.filter(onlyUnique);
             
             const formatedAgreements: ReturnType<typeof formatAgreement>[] = []
-            const activeAgreements = await contract.getAgreementsByConsumer(
-                consumerPublicKeys,
-                active
-            )
-
-            activeAgreements.forEach((agreement) => {
-                const formatedAgreement = formatAgreement(agreement)
-                formatedAgreements.push(formatedAgreement)
-            })
+            
+            const promises = consumerPublicKeys.map((consumerPublicKey) =>
+                        contract.getAgreementsByConsumer(
+                        consumerPublicKey,
+                        active,
+                    ).then((agreement) => {
+                        if(parseInt(agreement.agreementId)){
+                            formatedAgreements.push(formatAgreement(agreement))
+                        }
+                    })
+            );
+            await Promise.all(promises);
 
             res.status(200).send(formatedAgreements)
+
         } catch (error) {
             if (error instanceof Error) {
-                console.log(`${error.message}`)
                 res
                     .status(500)
                     .send({ name: `${error.name}`, message: `${error.message}` })
@@ -211,25 +196,31 @@ export default async (): Promise<typeof router> => {
 
     router.post('/check_agreements_by_provider', async (req, res) => {
         try {
-            const providerPublicKeys = req.body.public_keys
-            const active :boolean = JSON.parse(req.body.active)
+
+            let providerPublicKeys : string[] = req.body.public_keys
+            const active : boolean = JSON.parse(req.body.active)
+
+            providerPublicKeys = providerPublicKeys.filter(onlyUnique);
             
             const formatedAgreements: ReturnType<typeof formatAgreement>[] = []
-            const activeAgreements = await contract.getAgreementsByProvider(
-                providerPublicKeys,
-                active
-            )
-            activeAgreements.forEach((agreement) => {
-                const formatedAgreement = formatAgreement(agreement)
-                console.log(formatedAgreement.providerPublicKey)
-                formatedAgreements.push(formatedAgreement)
-            })
+            
+            const promises = providerPublicKeys.map((providerPublicKey) =>
+                        contract.getAgreementsByProvider(
+                        providerPublicKey,
+                        active,
+                    ).then((agreement) => {
+                        if(parseInt(agreement.agreementId)){
+                            formatedAgreements.push(formatAgreement(agreement))
+                        }
+                    })
+            );
+            await Promise.all(promises);
 
             res.status(200).send(formatedAgreements)
+        
             
         } catch (error) {
             if (error instanceof Error) {
-                console.log(`${error.message}`)
                 res
                     .status(500)
                     .send({ name: `${error.name}`, message: `${error.message}` })
@@ -241,20 +232,22 @@ export default async (): Promise<typeof router> => {
         try {
             const offeringId = req.params.offering_id
             const formatedAgreements: ReturnType<typeof formatAgreement>[] = []
-            const agreements = await contract.checkAgreementsByDataOffering(
+            const agreementIds = await contract.checkAgreementsByDataOffering(
                 offeringId,
             )
-
-            agreements.forEach((agreement) => {
-                const formatedAgreement = formatAgreement(agreement)
-                console.log(formatedAgreement.providerPublicKey)
-                formatedAgreements.push(formatedAgreement)
-            })
+                
+            const promises = agreementIds.map((agreementId : number) =>
+                     contract.getAgreement(agreementId)
+                     .then((agreement) => (formatedAgreements.push(formatAgreement(agreement)))
+                    )
+                );
+            await Promise.all(promises);
 
             res.status(200).send(formatedAgreements)
+
         } catch (error) {
             if (error instanceof Error) {
-                console.log(`${error.message}`)
+
                 res
                     .status(500)
                     .send({ name: `${error.name}`, message: `${error.message}` })
@@ -271,7 +264,7 @@ export default async (): Promise<typeof router> => {
             res.status(200).send(response)
         } catch (error) {
             if (error instanceof Error) {
-                console.log(`${error.message}`)
+             
                 res
                     .status(500)
                     .send({ name: `${error.name}`, message: `${error.message}` })
@@ -286,12 +279,10 @@ export default async (): Promise<typeof router> => {
                 const senderAddress = req.params.sender_address
                 const dataSharingAgreement : nonRepudiationLibrary.DataSharingAgreement = req.body
                 nonRepudiationLibrary.validateDataSharingAgreementSchema(dataSharingAgreement)
-                console.log(dataSharingAgreement)
                 const template = ConvertToTemplate.toTemplate(JSON.stringify(req.body))
                 let consentGiven : boolean = true
                 if(template.personalData){
                     const consents = await explicitUserConsentContract.checkConsentStatus(template.dataOfferingDescription.dataOfferingId, "")
-                    console.log(consents)
                     if(consents.length!=0)
                         consents.forEach((consent) => {
                             if(parseInt(consent) == 0){
@@ -350,7 +341,6 @@ export default async (): Promise<typeof router> => {
                 }
             } catch (error) {
                 if (error instanceof Error) {
-                    console.log(`${error.message}`)
                     res
                         .status(500)
                         .send({ name: `${error.name}`, message: `${error.message}` })
@@ -371,15 +361,12 @@ export default async (): Promise<typeof router> => {
 
             const formatedTransactionReceipt = formatTransactionReceipt(receipt)
 
-            console.log(receipt.logs[0])
-
             if (receipt.status == 1) {
                 if (receipt.logs.length > 0) {
                     let logs = new ethers.utils.Interface(contractABI).parseLog(
                         receipt.logs[0],
                     )
                     
-                    console.log(logs.eventFragment)
                     const eventName = logs.eventFragment.name
 
                     let type: string = 'unrecognizedEvent'
@@ -442,7 +429,7 @@ export default async (): Promise<typeof router> => {
                     const strData = JSON.stringify(message)
                     const uint8Data = new TextEncoder().encode(strData)
                     const jwe1 = await nonRepudiationLibrary.jweEncrypt(uint8Data, publickeyJsonObj1, "A256GCM")
-                    console.log('Ciphertext: ', jwe1)
+                  
                     await notify(
                         origin,
                         predefined,
@@ -459,7 +446,6 @@ export default async (): Promise<typeof router> => {
                     const strData2 = JSON.stringify(message)
                     const uint8Data2 = new TextEncoder().encode(strData2)
                     const jwe2 = await nonRepudiationLibrary.jweEncrypt(uint8Data2, publickeyJsonObj2, "A256GCM")
-                    console.log('Ciphertext: ', jwe2)
 
                     await notify(
                         origin,
@@ -475,7 +461,7 @@ export default async (): Promise<typeof router> => {
             } else throw new Error('Transaction unsuccessful. Status:' + receipt.status)
         } catch (error) {
             if (error instanceof Error) {
-                console.log(`${error.message}`)
+             
                 res
                     .status(500)
                     .send({ name: `${error.name}`, message: `${error.message}` })
@@ -486,27 +472,29 @@ export default async (): Promise<typeof router> => {
 
     router.get('/retrieve_agreements/:consumer_public_key', async (req, res) => {
         try {
-            const consumer_public_key = req.params.consumer_public_key
+            const consumerPublicKey = req.params.consumer_public_key
 
             const formatedAgreements: ReturnType<typeof formatAgreement>[] = []
-            const agreementsTx = await contract.retrieveAgreements(
-                consumer_public_key,
-            )
-            const activeAgreements = agreementsTx[0]
-            const length = parseInt(agreementsTx[1])
-
-            if(length!=0){
-
-                for(let i=0; i<length; i++){
-                    const formatedAgreement = formatAgreement(activeAgreements[i])
+            
+            let  agreement = await contract.getAgreementsByConsumer(
+                    consumerPublicKey,
+                    true,
+                )
+         
+            if(parseInt(agreement.agreementId) && parseInt(agreement.agreementDates[1])<= Math.floor(new Date().getTime() / 1000)){
+                    const formatedAgreement = formatAgreement(agreement)
                     formatedAgreements.push(formatedAgreement)
+                    res.status(200).send(formatedAgreements)
                 }
+            else if(parseInt(agreement.agreementDates[1])>= Math.floor(new Date().getTime() / 1000))
+                    res.status(400).send("Start date not reached.")
+            else 
+                    res.status(404).send("Agreement not found.")
+            
 
-                }
-                res.status(200).send(formatedAgreements)
         } catch (error) {
             if (error instanceof Error) {
-                console.log(`${error.message}`)
+               
                 res
                     .status(500)
                     .send({ name: `${error.name}`, message: `${error.message}` })
@@ -574,7 +562,7 @@ export default async (): Promise<typeof router> => {
 
         } catch (error) {
             if (error instanceof Error) {
-                console.log(`${error.message}`)
+               
                 res
                     .status(500)
                     .send({ name: `${error.name}`, message: `${error.message}` })
@@ -595,7 +583,7 @@ export default async (): Promise<typeof router> => {
                 throw new Error("End date must be after current date.")
             const agreement = await contract.getAgreement(agreementId)
             const providerPublicKey = agreement.providerPublicKey
-            console.log(agreement.state)
+        
             if(agreement.state == 1){
                 const type = 'agreement.proposepenalty'
                 const message = {
@@ -627,7 +615,7 @@ export default async (): Promise<typeof router> => {
             else throw new Error("Agreement is not violated.")
         } catch (error) {
             if (error instanceof Error) {
-                console.log(`${error.message}`)
+              
                 res
                     .status(500)
                     .send({ name: `${error.name}`, message: `${error.message}` })
@@ -671,7 +659,7 @@ export default async (): Promise<typeof router> => {
 
         } catch (error) {
             if (error instanceof Error) {
-                console.log(`${error.message}`)
+              
                 res
                     .status(500)
                     .send({ name: `${error.name}`, message: `${error.message}` })
@@ -754,7 +742,7 @@ export default async (): Promise<typeof router> => {
             }
         } catch (error) {
             if (error instanceof Error) {
-                console.log(`${error.message}`)
+           
                 res
                     .status(500)
                     .send({ name: `${error.name}`, message: `${error.message}` })
@@ -789,7 +777,7 @@ export default async (): Promise<typeof router> => {
             res.status(200).send(formatedRawTransaction)
         } catch (error) {
             if (error instanceof Error) {
-                console.log(`${error.message}`)
+           
                 res
                     .status(500)
                     .send({ name: `${error.name}`, message: `${error.message}` })
@@ -815,7 +803,7 @@ export default async (): Promise<typeof router> => {
 
         } catch (error) {
             if (error instanceof Error) {
-                console.log(`${error.message}`)
+      
                 res
                     .status(500)
                     .send({ name: `${error.name}`, message: `${error.message}` })
@@ -846,7 +834,7 @@ export default async (): Promise<typeof router> => {
             res.status(200).send(formatedRawTransaction)
         } catch (error) {
             if (error instanceof Error) {
-                console.log(`${error.message}`)
+            
                 res
                     .status(500)
                     .send({ name: `${error.name}`, message: `${error.message}` })
@@ -867,8 +855,6 @@ export default async (): Promise<typeof router> => {
             const receipt = await provider.getTransactionReceipt(hash)
 
             const formatedTransactionReceipt = formatTransactionReceipt(receipt)
-
-            //console.log(receipt.logs[0])
             
             if (receipt.status == 1) {
                 if (receipt.logs.length > 0) {
@@ -902,7 +888,6 @@ export default async (): Promise<typeof router> => {
                             const strData = JSON.stringify(message)
                             const uint8Data = new TextEncoder().encode(strData)
                             const jwe = await nonRepudiationLibrary.jweEncrypt(uint8Data, publickeyJsonObj1, "A256GCM")
-                            console.log('Ciphertext: ', jwe)
 
                             await notify(
                                 origin,
@@ -920,7 +905,6 @@ export default async (): Promise<typeof router> => {
             } else throw new Error('Transaction unsuccessful. Status:' + receipt.status)
         } catch (error) {
             if (error instanceof Error) {
-                console.log(`${error.message}`)
                 res
                     .status(500)
                     .send({ name: `${error.name}`, message: `${error.message}` })

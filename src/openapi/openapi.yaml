@@ -140,20 +140,6 @@ paths:
                 $ref: '#/components/schemas/pricingModelTemplate'
       security:
         - jwt: []
-  /check_active_agreements:
-    get:
-      tags:
-        - Agreement
-      summary: Check active agreements
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/active_agreements'
-      security:
-        - jwt: []
   /check_agreements_by_consumer:
     post:
       tags:

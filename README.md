@@ -35,13 +35,31 @@
 
 The Smart Contract Manager (SCM) enforces the contractual agreements between the data provider and the data consumer.
 
-The SCM provides a gateway to access the Smart Contracts on HyperLedger Besu and is used by other subsystems to integrate their functionalities.
+SCM facilitates the creation of agreement objects using the Data Sharing Agreement (DSA) Smart Contract. The DSA Solidity contract is based on a legal agreement for data sharing, considering the existing legal framework (e.g., GDPR). The agreement objects are used to enforce agreed-upon obligations from provider and consumer side. 
 
-The Smart Contract Manager extracts the static contractual parameters from the data offering description using the semantic data model. The dynamic parameters, such as start date and end date of the agreement, the consumer id, are filled when a data purchase request is created. As soon as, the negotiation between the provider and consumer is over and they agreed on specific contractual parameters, the provider can create an agreement with those parameters.
+The Smart Contracts of the SCM combine legal certainty with automated enforcement and integrated conflict resolution mechanisms. 
 
-SCM uses the Notification Manager to notify the provider or consumer about the changes that occurred to the agreement. For example, whether the agreement has been created, signed, updated or terminated.
+The SCM provides a gateway to access the Smart Contracts on Hyperledger Besu. 
+
+SCM relies on other subsystems, such as the semantic engine. It extracts the contractual parameters from the data offering description and returns a template with possible contractual parameters. 
+
+Other subsystems use the SCM to integrate certain functionalities (secure data access, explicit user consent).
+
+SCM uses the Notification Manager to notify the provider or consumer about the changes that occurred to the agreement. For example, whether the agreement has been created, violated or terminated.
 
 <br/>
+
+# 2. Data Sharing Agreement negotiation, key pair generation, storage in Wallet, agreement creation on blockchain 
+
+Before the agreement is stored on the blockchain, the consumer should retrieve the contractual parameters template and fill in the dynamic parameters, such as the consumer did and public key, start date and end date of the agreement. These are filled in when a data purchase request is created. Both parties, the provider and the consumer, should generate their public-private keys (using the non-repudiation library) and they should each sign the contract. After they filled in their public keys and the contract is signed, they should store the generated key pairs and data sharing agreement in their Wallets.
+
+As soon as, the negotiation between the provider and consumer is finished and they agreed on specific contractual parameters, as well as stored the final data sharing agreement and the key pairs in their Wallets, the provider can create the agreement on the blockchain (using the Smart Contract Manager).
+
+Firstly, a raw transaction is created using the data sharing agreement, which was saved in the Wallet. The successful response of creating an agreement request is a raw transaction object. This raw transaction has to be signed using the wallet. After the signed transaction is obtained from the wallet, it has to be deployed. The response should be a transaction object with information about the transaction. If the confirmaton is 1, the transaction was successfully deployed and the agreement was stored on the blockchain.
+
+After this, the provider and consumer receive a notification that the agreement is Active, which means it was created and stored on the blockchain. This notification will be encrypted and contains the agreement id. The notifications should be retrieved from the Notification Manager based on the provider/consumer public key and decrypted using the corresponding private key. After they receive this notification, the provider should POST the data exchange agreement, the agreement id and the private key to data access and then the consumer can start the transfer.
+
+![ContractingFlow](./docs/ContractingFlow.png)
 
 # 2. Run the Smart Contract Manager using the docker image
 
@@ -77,26 +95,25 @@ docker run -p 3333:3333 -e PRIVATE_KEY=smartContractUserPrivateKey -e PRIVATE_AD
 
     <mark>POST /deploy_signed_transaction<mark>
 
-+ Retrieve the agreement with the id received from the notification manager when creating the agreement:
++ Retrieve the agreement by agreement id:
 
     <mark>GET /get_agreement/{agreement_id}<mark>
 
-+ Check active agreements. The agreements are active after they are stored on the blockchain
++ Check agreements by consumer public keys:
 
-    <mark>GET /check_active_agreements<mark>
+    <mark>POST /check_agreements_by_consumer <mark>
 
-+ Check active agreements by the consumer id:
++ Check agreements by provider public keys:
 
-    <mark>GET /check_agreements_by_consumer/{consumer_id}<mark>
+    <mark>POST /check_agreements_by_provider <mark>
 
-+ Check active agreements by the provider id:
++ Check agreements by data offering:
 
-    <mark>GET /check_agreements_by_provider/{provider_id}<mark>
+    <mark>GET /check_agreements_by_data_offering/{offering_id} <mark>
 
-+ Check the agreement state (created, active, violated, terminated):
++ Check the agreement state (active - 0, violated - 1, terminated - 2):
 
     <mark>GET /state/{agreement_id}<mark>
-
 
 
 <br/>
@@ -117,32 +134,6 @@ The successful response of creating an agreement request is a raw transaction ob
 
 ### Notification
 
-A notification will be sent from the Smart Contract Manager to the Notification Manager. The provider and consumer will be notified about the changes that occurred to their agreement. If the agreement was successfully created, they will each receive a notification: “Agreement with id: *agreementId* was created.”
+A notification will be sent from the Smart Contract Manager to the Notification Manager. The provider and consumer will be notified about the changes that occurred to their agreement. If the agreement was successfully created, they will each receive a notification: “Agreement with id: *agreementId* is Active.”
 <br/><br/>
 
-## Sign agreement
-
-An agreement has to be signed by a data consumer.
-
-In the */sign_agreement _raw_transaction/{agreement_id}/}/{consumer_id}/{sender_address}* API the agreement id, the consumer id and sender address must be given.
-
-The sender address is the Ethereum address of the consumer which can be found in their wallet.
-
-The successful response of this request is a raw transaction object, which has to be signed with the wallet and then deployed using the SCM, as described in the “Transaction signing and deployment” section.
-
-If the agreement was successfully signed, the provider and consumer will receive a notification: “Agreement with id: *agreementId* was signed.”
-<br/><br/>
-
-## Update agreement
-
-An agreement can be updated by a data provider just when it is in state Active. The agreement is Active when the consumer signed it and the start date is reached.
-
-In the */update_agreement _raw_transaction/{agreement_id}/{provider_id}/{sender_address}* API the agreement id, the provider id, the sender address and the JSON template with the contractual parameters have to be specified.
-
-The sender address is the Ethereum address of the provider which can be found in their wallet.
-
-The successful response of this request is a raw transaction object, which has to be signed with the wallet and then deployed using the SCM, as described in the “Transaction signing and deployment” section.
-
-If the agreement was successfully updated, the provider and consumer will receive a notification: “Agreement with id: *agreementId* was updated.”
-
-After the agreement is updated, its state will change to Updated and the consumer has to sign it so the agreement can be Active again.
