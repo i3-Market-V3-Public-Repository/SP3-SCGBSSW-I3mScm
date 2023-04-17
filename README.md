@@ -83,6 +83,8 @@ docker run -p 3333:3333 -e PRIVATE_KEY=smartContractUserPrivateKey -e PRIVATE_AD
 
 # 3. Smart Contract Manager endpoints
 
+## Agreement
+
 + Retrieve the template with the static contractual parameters:
   
     <mark>GET /template/{offering_id}</mark>
@@ -98,6 +100,10 @@ docker run -p 3333:3333 -e PRIVATE_KEY=smartContractUserPrivateKey -e PRIVATE_AD
 + Retrieve the agreement by agreement id:
 
     <mark>GET /get_agreement/{agreement_id}<mark>
+
++ Retrieve the agreement's pricing model by agreement id:
+
+    <mark>GET /get_pricing_model/{agreement_id}<mark>
 
 + Check agreements by consumer public keys:
 
@@ -115,12 +121,49 @@ docker run -p 3333:3333 -e PRIVATE_KEY=smartContractUserPrivateKey -e PRIVATE_AD
 
     <mark>GET /state/{agreement_id}<mark>
 
++ Retrieve the active agreement by consumer public key which start date is reached 
+
+<mark>GET /retrieve_agreements/{consumer_public_key}<mark>
+
++ Verify signed resolution
+
+    <mark>POST /evaluate signed resolution <mark>
+
++ Propose penalty
+
+    <mark>POST /propose_penalty <mark>
+
++ Enforce penalty
+
+    <mark>PUT /enforce_penalty <mark>
+
++ Terminate agreement
+
+  <mark>PUT /terminate <mark>
+
+## Explicit User Consent
+
++ Give consent
+
+    <mark>POST /give_consent <mark>
+
++ Check consent status
+
+    <mark>GET /check_consent_status/{dataOfefringId} <mark>
+
++ Revoke consent
+
+  <mark>PUT /revoke_consent <mark>
+
++ Deploy consent signed transaction:
+
+    <mark>POST /deploy_consent_signed_transaction<mark>
 
 <br/>
 
 # 4. Use cases
 
-## Create agreement
+## Agreement creation
 
 An agreement can be created by a data provider.
 
@@ -136,4 +179,27 @@ The successful response of creating an agreement request is a raw transaction ob
 
 A notification will be sent from the Smart Contract Manager to the Notification Manager. The provider and consumer will be notified about the changes that occurred to their agreement. If the agreement was successfully created, they will each receive a notification: “Agreement with id: *agreementId* is Active.”
 <br/><br/>
+
+## Agreement Violation - Conflict resolution 
+After the data transfer is finished, a consumer can request a verification or initiate a dispute using the conflict resolution. The proof of the completeness of the data exchange will be checked and the consumer receives the signed resolution based on that proof.
+
+The Smart Contract Manager evaluates the signed resolution. Within this evaluation, the resolution is decoded and depending on the resolution, the agreement’s state can change from Active to Violated. 
+
+The transfer was unsuccessful when the resolution is:
+
+•	not completed (in case of a verification): the decryption key was not published
+
+•	accepted (in case of a dispute): the cypher block cannot be properly decrypted. 
+
+If the transfer was not successful, the agreement is violated. When the agreement is violated, the consumer receives a list of penalties.
+
+These penalties could be: 
+
+•	New end date for agreement
+
+•	New end date for agreement and a price reduction
+
+•	Terminate agreement
+
+The consumer should propose one of these penalty to the provider. The provider will receive a notification with the chosen penalty and if he agrees to the penalty, he should enforce on the blockchain. By enforcing the new penalty, the agreement state changes from Violated to Active or Terminated (in case the penalty termination is chosen).
 
