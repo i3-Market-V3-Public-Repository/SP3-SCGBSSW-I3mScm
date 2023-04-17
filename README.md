@@ -123,7 +123,7 @@ docker run -p 3333:3333 -e PRIVATE_KEY=smartContractUserPrivateKey -e PRIVATE_AD
 
 + Retrieve the active agreement by consumer public key which start date is reached 
 
-<mark>GET /retrieve_agreements/{consumer_public_key}<mark>
+    <mark>GET /retrieve_agreements/{consumer_public_key}<mark>
 
 + Verify signed resolution
 
@@ -181,6 +181,7 @@ A notification will be sent from the Smart Contract Manager to the Notification 
 <br/><br/>
 
 ## Agreement Violation - Conflict resolution 
+
 After the data transfer is finished, a consumer can request a verification or initiate a dispute using the conflict resolution. The proof of the completeness of the data exchange will be checked and the consumer receives the signed resolution based on that proof.
 
 The Smart Contract Manager evaluates the signed resolution. Within this evaluation, the resolution is decoded and depending on the resolution, the agreement’s state can change from Active to Violated. 
@@ -203,3 +204,4 @@ These penalties could be:
 
 The consumer should propose one of these penalty to the provider. The provider will receive a notification with the chosen penalty and if he agrees to the penalty, he should enforce on the blockchain. By enforcing the new penalty, the agreement state changes from Violated to Active or Terminated (in case the penalty termination is chosen).
 
+![SCMConflictResolution](./docs/SCM-ConflictResolution.png)
