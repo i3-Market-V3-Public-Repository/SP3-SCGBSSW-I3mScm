@@ -58,6 +58,7 @@ As soon as, the negotiation between the provider and consumer is finished and th
 Firstly, a raw transaction is created using the data sharing agreement, which was saved in the Wallet. The successful response of creating an agreement request is a raw transaction object. This raw transaction has to be signed using the wallet. After the signed transaction is obtained from the wallet, it has to be deployed. The response should be a transaction object with information about the transaction. If the confirmaton is 1, the transaction was successfully deployed and the agreement was stored on the blockchain.
 
 After this, the provider and consumer receive a notification that the agreement is Active, which means it was created and stored on the blockchain. This notification will be encrypted and contains the agreement id. The notifications should be retrieved from the Notification Manager based on the provider/consumer public key and decrypted using the corresponding private key. After they receive this notification, the provider should POST the data exchange agreement, the agreement id and the private key to data access and then the consumer can start the transfer.
+<br></br>
 
 ![ContractingFlow](./docs/ContractingFlow.png)
 
