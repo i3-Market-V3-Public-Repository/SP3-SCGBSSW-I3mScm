@@ -15,7 +15,7 @@
   "license": "ISC",
   "dependencies": {
     "@i3m/non-repudiation-library": "^2.5.6",
-    "@i3m/server-wallet": "^2.5.3",
+    "@i3m/server-wallet": "^2.5.7",
     "@i3m/wallet-protocol": "^2.5.3",
     "@i3m/wallet-protocol-api": "^2.5.3",
     "@types/big-integer": "0.0.31",
